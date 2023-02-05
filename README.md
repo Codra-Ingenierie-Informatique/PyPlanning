@@ -10,6 +10,10 @@ to quickly create simple project plannings.
 
 ![Team schedule](./examples/team_schedule-daily.png)
 
+## Team schedule (tasks view)
+
+![Team schedule / Tasks](./examples/team_schedule-tasks.png)
+
 ## Simple project planning
 
 ![Simple project planning](./examples/project_planning.png)
