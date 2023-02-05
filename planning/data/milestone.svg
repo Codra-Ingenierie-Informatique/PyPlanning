@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   role="img"
+   focusable="false"
+   aria-hidden="true"
+   viewBox="0 0 14 14"
+   version="1.1"
+   id="svg6"
+   sodipodi:docname="milestone.svg"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs10" />
+  <sodipodi:namedview
+     id="namedview8"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="59.428571"
+     inkscape:cx="6.9915865"
+     inkscape:cy="7.0084135"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg6" />
+  <path
+     fill="#f44336"
+     d="M6.2244898 12.67346931L1.3265307 7.7755102c-.43537415-.43537414-.43537415-1.11564624 0-1.55102039l4.8979591-4.89795913c.43537414-.43537414 1.11564624-.43537414 1.55102039 0l4.89795912 4.89795912c.43537414.43537415.43537414 1.11564625 0 1.5510204L7.7755102 12.6734693c-.43537415.43537415-1.14285713.43537415-1.5510204 0z"
+     id="path2" />
+</svg>

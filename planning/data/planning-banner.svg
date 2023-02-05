@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   role="img"
+   focusable="false"
+   aria-hidden="true"
+   viewBox="0 0 25.999999 10"
+   version="1.1"
+   id="svg12"
+   sodipodi:docname="planning-banner.svg"
+   width="26"
+   height="10"
+   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+   inkscape:export-filename="planning-banner.png"
+   inkscape:export-xdpi="1228.8"
+   inkscape:export-ydpi="1228.8"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs16" />
+  <sodipodi:namedview
+     id="namedview14"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     units="px"
+     inkscape:zoom="21.011173"
+     inkscape:cx="19.394443"
+     inkscape:cy="6.2823718"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg12"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1" />
+  <rect
+     style="fill:#ffffff;stroke-width:0.949386"
+     id="rect227"
+     width="26"
+     height="10"
+     x="0"
+     y="0"
+     ry="0.66079283" />
+  <rect
+     style="fill:#999999;stroke:#cc3535;stroke-width:0"
+     id="rect572"
+     width="0.73174608"
+     height="3.0395608"
+     x="6.573534"
+     y="4.9492426"
+     ry="0.32928586"
+     transform="matrix(0.92676537,0.37564072,-0.49447014,0.86919462,0,0)" />
+  <rect
+     style="fill:#999999;stroke:#cc3535;stroke-width:0"
+     id="rect572-3"
+     width="0.73174608"
+     height="3.0395608"
+     x="-1.0076591"
+     y="8.2256145"
+     ry="0.32928586"
+     transform="matrix(-0.92676537,0.37564072,0.49447014,0.86919462,0,0)" />
+  <path
+     fill="#cfd8dc"
+     d="M 0.74328039,6.6293728 V 1.9681302 H 8.1235813 v 4.6612426 c 0,0.4272805 -0.349593,0.7768734 -0.776874,0.7768734 H 1.5201541 c -0.4272805,0 -0.77687371,-0.3495929 -0.77687371,-0.7768734 z"
+     id="path2"
+     style="stroke-width:0.63121" />
+  <path
+     fill="#f44336"
+     d="M 8.1235813,1.0358815 V 1.9681302 H 0.74328039 V 1.0358815 c 0,-0.34182437 0.34959321,-0.62149877 0.77687371,-0.62149877 h 5.8265532 c 0.427281,0 0.776874,0.2796744 0.776874,0.62149877 z"
+     id="path4"
+     style="fill:#ffd42a;stroke-width:0.564571" />
+  <rect
+     style="fill:#ffffff;stroke:#cc3535;stroke-width:0"
+     id="rect35"
+     width="6.3774037"
+     height="5.8389425"
+     x="1.2637134"
+     y="1.1622562"
+     ry="0.21875" />
+  <rect
+     style="fill:#ff0000;stroke:#cccccc;stroke-width:0.181325;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="rect1103"
+     width="4.6629062"
+     height="0.8186751"
+     x="1.6077409"
+     y="1.6408989"
+     ry="0" />
+  <rect
+     style="fill:#00ff00;stroke:#cccccc;stroke-width:0.181529;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="rect1103-1"
+     width="2.8453944"
+     height="0.81847095"
+     x="2.9035163"
+     y="2.9815466"
+     ry="0" />
+  <rect
+     style="fill:#0000ff;stroke:#cccccc;stroke-width:0.181864;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="rect1103-3"
+     width="1.7176554"
+     height="0.81813586"
+     x="2.0959916"
+     y="4.3222599"
+     ry="0" />
+  <rect
+     style="fill:#ff00ff;stroke:#cccccc;stroke-width:0.181325;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="rect1103-0"
+     width="4.6629062"
+     height="0.81867468"
+     x="2.5837026"
+     y="5.6625366"
+     ry="0" />
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4px;line-height:1.25;font-family:'Franklin Gothic Medium Cond';-inkscape-font-specification:'Franklin Gothic Medium Cond';letter-spacing:0px;word-spacing:0px;fill:#999999;fill-opacity:1;stroke:none"
+     x="8.6969252"
+     y="5.8183613"
+     id="text172"><tspan
+       sodipodi:role="line"
+       id="tspan170"
+       x="8.6969252"
+       y="5.8183613">PyPlanning</tspan></text>
+</svg>

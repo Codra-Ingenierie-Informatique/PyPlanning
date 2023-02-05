@@ -1,0 +1,44 @@
+<PROJECT name="New Software ABC">
+  <CHARTS>
+    <CHART start="09/12/22" stop="31/08/26" today="01/02/23" type="t" scale="m" t0mode="False" />
+  </CHARTS>
+  <TASKS>
+    <RESOURCE name="Development">
+      <TASK start="09/12/22" stop="30/09/23" name="WP1: software development" />
+      <TASK stop="31/12/23" name="WP2: test phase" id="1" />
+      <TASK duration="124" name="WP3: 6 months warranty" id="2" />
+    </RESOURCE>
+    <RESOURCE name="Maintenance">
+      <TASK start="01/01/24" duration="257" name="WP4: Corrective maintenance (12 months)" id="3" depends_of="2" />
+      <TASK duration="261" name="WP6: Corrective maintenance (12 months)" depends_of="3" />
+      <TASK start="01/01/23" duration="252" name="WP5: Evolutive maintenance (12 months)" id="4" depends_of="1" />
+      <TASK start="01/01/23" duration="261" name="WP7: Evolutive maintenance (12 months)" depends_of="4" />
+    </RESOURCE>
+  </TASKS>
+  <CLOSINGDAYS>
+    <CLOSINGDAY start="20/12/22" stop="02/01/23" />
+    <CLOSINGDAY start="06/02/23" stop="10/02/23" />
+    <CLOSINGDAY start="10/04/23" />
+    <CLOSINGDAY start="17/04/23" stop="21/04/23" />
+    <CLOSINGDAY start="01/05/23" />
+    <CLOSINGDAY start="08/05/23" />
+    <CLOSINGDAY start="18/05/23" stop="19/05/23" />
+    <CLOSINGDAY start="29/05/23" />
+    <CLOSINGDAY start="14/07/23" />
+    <CLOSINGDAY start="01/08/23" stop="31/08/23" />
+    <CLOSINGDAY start="09/10/23" stop="14/10/23" />
+    <CLOSINGDAY start="01/11/23" />
+    <CLOSINGDAY start="18/12/23" stop="22/12/23" />
+    <CLOSINGDAY start="25/12/23" />
+    <CLOSINGDAY start="01/01/24" />
+    <CLOSINGDAY start="01/04/24" />
+    <CLOSINGDAY start="01/05/24" />
+    <CLOSINGDAY start="08/05/24" />
+    <CLOSINGDAY start="09/05/24" />
+    <CLOSINGDAY start="20/05/24" />
+    <CLOSINGDAY start="15/08/24" />
+    <CLOSINGDAY start="01/11/24" />
+    <CLOSINGDAY start="11/11/24" />
+    <CLOSINGDAY start="25/12/24" />
+  </CLOSINGDAYS>
+</PROJECT>

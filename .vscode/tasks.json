@@ -1,0 +1,182 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "gettext - Scan",
+            "type": "shell",
+            "command": "cmd",
+            "args": [
+                "/c",
+                "gettext_scan.bat",
+            ],
+            "options": {
+                "cwd": "scripts",
+                "env": {
+                    "UNATTENDED": "1",
+                    "PYTHON": "${env:PYTHON_PYPLANNING_DEV}",
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "gettext - Compile",
+            "type": "shell",
+            "command": "cmd",
+            "args": [
+                "/c",
+                "gettext.bat",
+                "compile",
+            ],
+            "options": {
+                "cwd": "scripts",
+                "env": {
+                    "UNATTENDED": "1",
+                    "PYTHON": "${env:PYTHON_PYPLANNING_DEV}",
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "Clean Up",
+            "type": "shell",
+            "command": "cmd",
+            "args": [
+                "/c",
+                "clean_up.bat"
+            ],
+            "options": {
+                "cwd": "scripts",
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "Create executable",
+            "type": "shell",
+            "command": "cmd",
+            "options": {
+                "cwd": "scripts",
+                "env": {
+                    "PYTHON": "${env:PYTHON_PYPLANNING_DEV}",
+                    "UNATTENDED": "1",
+                }
+            },
+            "args": [
+                "/c",
+                "build_exe.bat"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            }
+        },
+        {
+            "label": "Create installer",
+            "type": "shell",
+            "command": "cmd",
+            "options": {
+                "cwd": "scripts",
+                "env": {
+                    "PYTHON": "${env:PYTHON_PYPLANNING_DEV}",
+                    "UNATTENDED": "1",
+                    "NSIS_COPYRIGHT_INFO": "Copyright (c) CODRA 2022",
+                }
+            },
+            "args": [
+                "/c",
+                "build_installer.bat"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            }
+        },
+        {
+            "label": "New release",
+            "type": "shell",
+            "command": "cmd",
+            "args": [
+                "/c",
+                "release.bat"
+            ],
+            "options": {
+                "cwd": "scripts",
+                "env": {
+                    "PYTHON": "${env:PYTHON_PYPLANNING_DEV}",
+                    "UNATTENDED": "1",
+                }
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Clean Up",
+                "Create executable",
+                "Create installer",
+            ]
+        },
+    ]
+}

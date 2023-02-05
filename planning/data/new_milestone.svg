@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   role="img"
+   focusable="false"
+   aria-hidden="true"
+   viewBox="0 0 10 10"
+   version="1.1"
+   id="svg12"
+   sodipodi:docname="new_milestone.svg"
+   width="10"
+   height="10"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs16" />
+  <sodipodi:namedview
+     id="namedview14"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="42.022346"
+     inkscape:cx="3.724209"
+     inkscape:cy="4.7950678"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg12"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <path
+     fill="#f44336"
+     d="M 3.9183676,8.7551022 0.24489799,5.0816329 c -0.32653065,-0.3265306 -0.32653065,-0.8367347 0,-1.1632654 L 3.9183676,0.24489795 c 0.3265305,-0.3265306 0.8367347,-0.3265306 1.1632654,0 L 8.7551022,3.9183675 c 0.3265305,0.3265307 0.3265305,0.8367348 0,1.1632654 L 5.081633,8.7551022 c -0.3265307,0.3265305 -0.8571429,0.3265305 -1.1632654,0 z"
+     id="path2"
+     style="stroke-width:0.75" />
+  <g
+     transform="matrix(0.90900899,0,0,0.90900899,8.4278808,-948.44135)"
+     id="g10">
+    <circle
+       cx="-1.2195116"
+       cy="1051.4354"
+       r="2.9268293"
+       fill="#43a047"
+       id="circle2" />
+    <g
+       fill="#ffffff"
+       id="g8">
+      <path
+         d="m -1.8048775,1049.6793 h 1.1707317 v 3.5121 h -1.1707317 z"
+         id="path4" />
+      <path
+         d="m -2.9756092,1050.85 h 3.51219512 v 1.1707 H -2.9756092 Z"
+         id="path6" />
+    </g>
+  </g>
+</svg>

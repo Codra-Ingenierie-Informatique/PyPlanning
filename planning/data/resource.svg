@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   role="img"
+   focusable="false"
+   aria-hidden="true"
+   viewBox="0 0 9.9999997 10"
+   version="1.1"
+   id="svg12"
+   sodipodi:docname="resource.svg"
+   width="10"
+   height="10"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs16" />
+  <sodipodi:namedview
+     id="namedview14"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     units="px"
+     inkscape:zoom="59.428571"
+     inkscape:cx="2.3978365"
+     inkscape:cy="4.1814904"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg12" />
+  <g
+     id="g2565"
+     transform="scale(1.3224555,1.3212241)">
+    <path
+       style="fill:#ff7043;fill-opacity:1;stroke:#cc3535;stroke-width:0"
+       d="M 3.5177084,7.56085 C 2.6391239,7.506727 1.7920648,7.12842 1.1476228,6.5023405 0.54100612,5.9130095 0.16379036,5.1825887 0.03059156,4.3393808 -0.01059614,4.0786439 -0.01010184,3.4867487 0.03152466,3.2220087 0.31097662,1.4447272 1.7692188,0.11171995 3.5488007,0.00679885 c 1.3651489,-0.080487 2.6357935,0.5575832 3.4004575,1.70758195 0.06154,0.092548 0.160207,0.2667067 0.219266,0.3870192 0.252947,0.5152933 0.368948,0.9752118 0.390456,1.548077 0.05561,1.4811841 -0.748132,2.8405355 -2.0778605,3.514235 C 4.8753062,7.470644 4.2165113,7.603898 3.5177084,7.56085 Z"
+       id="path2148" />
+    <g
+       fill="#ab300b"
+       transform="matrix(0.3,0,0,0.3,-4.0191545,-3.4156307)"
+       id="g10">
+      <circle
+         cx="26"
+         cy="20"
+         r="4"
+         id="circle6" />
+      <path
+         d="m 33,30 c 0,0 -1.9,-4 -7,-4 -5.1,0 -7,4 -7,4 v 2 h 14 z"
+         id="path8" />
+    </g>
+  </g>
+</svg>

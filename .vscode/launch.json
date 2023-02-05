@@ -1,0 +1,37 @@
+{
+    // Utilisez IntelliSense pour en savoir plus sur les attributs possibles.
+    // Pointez pour afficher la description des attributs existants.
+    // Pour plus d'informations, visitez : https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run PyPlanning",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/planning/app.py",
+            "console": "integratedTerminal",
+            "python": "${config:python.defaultInterpreterPath}",
+            "args": [
+                // "examples/project_planning.xml",
+                // "examples/project_planning-detailed.xml",
+                "examples/team_schedule.xml",
+            ],
+            "env": {
+                "PLANNINGDEBUG": "1",
+                // "LANG": "en",
+                // "QT_COLOR_MODE": "light",
+            },
+        },
+        {
+            "name": "Run current file",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "python": "${config:python.defaultInterpreterPath}",
+            "env": {
+                "PLANNINGDEBUG": "1",
+            },
+        }
+    ]
+}

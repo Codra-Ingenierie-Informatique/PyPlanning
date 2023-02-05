@@ -1,0 +1,17 @@
+[FORMAT]
+# Essential to be able to compare code side-by-side (`black` default setting)
+# and best compromise to minimize file size
+max-line-length=88
+
+[TYPECHECK]
+ignored-modules=qtpy.QtWidgets,qtpy.QtCore,qtpy.QtGui
+
+[MESSAGES CONTROL]
+disable=wrong-import-order
+
+[DESIGN]
+max-args=7  # default: 5
+max-attributes=7
+max-branches=15  # default: 12
+max-locals=20  # default: 15
+min-public-methods=0  # default: 2

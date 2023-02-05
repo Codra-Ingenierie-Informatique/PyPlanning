@@ -1,0 +1,8 @@
+guidata
+pylint
+black
+pycodestyle
+pyinstaller
+python-dateutil
+svgwrite
+twine

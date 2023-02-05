@@ -1,0 +1,115 @@
+<PROJECT name="General" color="#FFFF88">
+  <CHARTS>
+    <CHART start="30/01/23" stop="05/03/23" today="01/02/23" type="r" scale="d" t0mode="False" />
+    <CHART start="01/01/23" stop="30/06/23" today="23/01/23" type="r" scale="w" t0mode="False" />
+    <CHART start="01/12/22" stop="30/08/23" today="18/01/23" type="t" scale="w" t0mode="False" />
+  </CHARTS>
+  <TASKS>
+    <RESOURCE name="PSm" fullname="Paul Smith">
+      <TASK start="02/01/23" stop="31/08/23" name="Project A / Task #23" />
+      <LEAVE start="26/12/22" stop="03/01/23" />
+      <LEAVE start="24/02/23" />
+      <LEAVE start="11/04/23" />
+      <LEAVE start="02/05/23" />
+      <LEAVE start="24/07/23" stop="04/08/23" />
+    </RESOURCE>
+    <RESOURCE name="PRo" fullname="Peter Rodriguez">
+      <TASK start="02/01/23" stop="10/02/23" name="Project A / Task #12" />
+      <TASK duration="20" name="Project B / Task #1" />
+      <TASK duration="94" name="Project B / Task #2" />
+      <LEAVE start="22/12/22" stop="02/01/23" />
+      <LEAVE start="09/01/23" stop="10/01/23" />
+      <LEAVE start="06/02/23" stop="10/02/23" />
+    </RESOURCE>
+    <RESOURCE name="CDo" fullname="Christopher Douglas">
+      <TASK start="02/01/23" stop="31/03/23" name="Project ABC / Task #41" project="ABC" />
+      <TASK duration="100" name="Project ABC / Task #44" project="ABC" color="o" />
+    </RESOURCE>
+    <RESOURCE name="OMo" fullname="Oliver Monroe">
+      <TASK start="02/01/23" stop="28/02/23" name="Quality management" />
+      <TASK start="01/03/23" stop="31/12/23" name="PMO / Quality management" />
+      <LEAVE start="01/07/22" stop="31/12/22" />
+      <LEAVE start="19/01/23" />
+    </RESOURCE>
+    <RESOURCE name="LCo" fullname="Lionel Connor">
+      <TASK start="03/01/23" stop="17/01/23" name="DEF development" />
+      <TASK duration="12" name="Library maintenance (Python)" />
+      <TASK duration="15" name="SCADA project" color="b" />
+      <TASK duration="100" name="Project C / Task #9" color="o" />
+      <LEAVE start="02/01/23" />
+      <LEAVE start="20/01/23" />
+      <LEAVE start="01/02/23" />
+    </RESOURCE>
+    <RESOURCE name="TIr" fullname="Thomas Ironside">
+      <TASK start="01/09/22" stop="08/12/22" name="Project D / Task #1" />
+      <TASK start="09/12/22" duration="3" name="Project D / Task #2" />
+      <TASK start="14/12/22" duration="8" name="Project D / Task #3" />
+      <TASK duration="14" name="Project D / Task #4" />
+      <TASK duration="40" name="Project D / Task #5" color="b" />
+      <LEAVE start="26/12/22" stop="30/12/22" />
+      <LEAVE start="02/01/23" />
+      <LEAVE start="31/01/23" />
+      <LEAVE start="26/05/23" />
+    </RESOURCE>
+    <RESOURCE name="MPo" fullname="Matthew Potter">
+      <TASK start="02/01/23" duration="10" name="Project ABC / Task #33" />
+      <TASK duration="30" name="Project F / Task #1" />
+      <TASK duration="75" name="Project F / Task #2" />
+    </RESOURCE>
+    <TASK start="08/03/22" duration="45" name="Coding CodraFT v1.8" project="B" color="c" />
+    <TASK duration="7" name="Integration CodraFT v1.8" project="B" color="c" />
+    <TASK duration="4" name="Internal review CodraFT v1.8" project="B" color="c" />
+    <TASK start="01/01/22" duration="90" name="Coding / Unit tests" project="E" color="s" />
+    <TASK duration="34" name="Integration" project="E" color="s" />
+    <TASK duration="10" name="Preparing FAT" project="E" color="s" />
+    <TASK duration="2" name="Factory Acceptance Testing (Sim)" project="E" color="r" />
+    <TASK duration="10" name="Fixes and final delivery" project="E" color="s" id="100" />
+    <TASK start="31/08/22" duration="5" name="Testing with real instruments" project="E" color="s" id="101" depends_of="100" />
+    <TASK start="14/09/22" duration="5" name="Testing with real instruments" project="E" color="s" depends_of="101" />
+    <TASK duration="15" name="Factory Acceptance Testing (Real)" project="E" color="s" />
+    <TASK start="14/02/22" duration="62" name="Coding / Unit tests" project="B" color="s" />
+    <TASK duration="10" name="Integration and preparing FAT" project="B" color="s" />
+    <TASK duration="5" name="Factory Acceptance Testing (Sim)" project="B" color="r" />
+    <TASK duration="10" name="Fixes and final delivery" project="B" color="s" />
+    <TASK start="02/08/22" duration="3" name="Testing with real instruments" project="B" color="s" />
+    <TASK start="12/05/22" duration="36" name="Preliminary design" project="F" color="s" />
+    <TASK duration="9" name="PDR" project="F" color="s" />
+    <TASK duration="100" name="Factory Acceptance Testing (Real)" project="F" color="s" />
+    <TASK duration="20" name="CDR" project="F" color="s" />
+    <TASK duration="85" name="Coding/testing/Sim FAT" project="F" color="s" />
+    <TASK duration="36" name="FAT (Real)" project="F" color="s" />
+  </TASKS>
+  <CLOSINGDAYS>
+    <CLOSINGDAY start="18/04/22" />
+    <CLOSINGDAY start="01/05/22" />
+    <CLOSINGDAY start="08/05/22" />
+    <CLOSINGDAY start="26/05/22" stop="27/05/22" />
+    <CLOSINGDAY start="06/06/22" />
+    <CLOSINGDAY start="14/07/22" stop="15/07/22" />
+    <CLOSINGDAY start="15/08/22" />
+    <CLOSINGDAY start="31/10/22" stop="01/11/22" />
+    <CLOSINGDAY start="01/11/22" />
+    <CLOSINGDAY start="11/11/22" />
+    <CLOSINGDAY start="25/12/22" />
+    <CLOSINGDAY start="01/01/23" />
+    <CLOSINGDAY start="10/04/23" />
+    <CLOSINGDAY start="01/05/23" />
+    <CLOSINGDAY start="08/05/23" />
+    <CLOSINGDAY start="18/05/23" stop="19/05/23" />
+    <CLOSINGDAY start="29/05/23" />
+    <CLOSINGDAY start="14/07/23" />
+    <CLOSINGDAY start="15/08/23" />
+    <CLOSINGDAY start="01/11/23" />
+    <CLOSINGDAY start="25/12/23" />
+    <CLOSINGDAY start="01/01/24" />
+    <CLOSINGDAY start="01/04/24" />
+    <CLOSINGDAY start="01/05/24" />
+    <CLOSINGDAY start="08/05/24" />
+    <CLOSINGDAY start="09/05/24" />
+    <CLOSINGDAY start="20/05/24" />
+    <CLOSINGDAY start="15/08/24" />
+    <CLOSINGDAY start="01/11/24" />
+    <CLOSINGDAY start="11/11/24" />
+    <CLOSINGDAY start="25/12/24" />
+  </CLOSINGDAYS>
+</PROJECT>
