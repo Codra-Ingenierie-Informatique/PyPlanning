@@ -184,6 +184,23 @@ class PlanningCentralWidget(QSplitter):
         """Return toolbars"""
         return self.editor.trees.toolbars
 
+    def _print_do_not_panic(self):
+        """Print 'do not panic' message in console"""
+        tbtext = traceback.format_exc()
+        self.SIG_MESSAGE.emit(tbtext, 10000)
+        if DEBUG:
+            raise
+        else:
+            print("")
+            print("+-------------------------------------------------------+")
+            print("| Please do not panic: this is not an error message     |")
+            print("| (otherwise it would be written in red...).            |")
+            print("| This is not a bug.                                    |")
+            print("| This is just logging, for debugging purpose.          |")
+            print("+-------------------------------------------------------+")
+            print("")
+            print(tbtext)
+
     def xml_code_changed(self):
         """XML code has changed"""
         self.SIG_MODIFIED.emit()
@@ -198,9 +215,7 @@ class PlanningCentralWidget(QSplitter):
             planning.generate_charts()
             self.preview.update_tabs(planning.chart_filenames)
         except (ValueError, KeyError, AssertionError, TypeError):
-            self.SIG_MESSAGE.emit(traceback.format_exc(), 10000)
-            if DEBUG:
-                raise
+            self._print_do_not_panic()
 
     def tree_changed(self):
         """Tree widget has changed"""
@@ -209,9 +224,7 @@ class PlanningCentralWidget(QSplitter):
             self.planning.generate_charts()
             self.preview.update_tabs(self.planning.chart_filenames)
         except (ValueError, KeyError, AssertionError, TypeError, AttributeError):
-            self.SIG_MESSAGE.emit(traceback.format_exc(), 10000)
-            if DEBUG:
-                raise
+            self._print_do_not_panic()
 
     def new_file(self):
         """New file"""

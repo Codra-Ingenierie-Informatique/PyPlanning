@@ -17,6 +17,7 @@ import platform
 from guidata import __version__ as GUIDATA_VERSION_STR
 from guidata.configtools import get_icon
 from guidata.qthelpers import add_actions, create_action, win32_fix_title_bar_background
+from guidata.widgets.console import DockableConsole
 from qtpy import QtCore as QC
 from qtpy import QtWidgets as QW
 from qtpy.compat import getopenfilename, getsavefilename
@@ -46,6 +47,11 @@ class PlanningMainWindow(QW.QMainWindow):
         self._is_modified = None
         self.filename = None
         self.recent_files = CONF.get("main", "recent_files", [])
+
+        self.console = DockableConsole(self, namespace={"win": self}, message="")
+        dockwidget, location = self.console.create_dockwidget("Console")
+        self.addDockWidget(location, dockwidget)
+        dockwidget.hide()
 
         self.central_widget = PlanningCentralWidget()
 
@@ -255,7 +261,9 @@ Thanks for your patience."""
         add_actions(self.charts_menu, actions["charts"])
         self.menuBar().addSeparator()
         help_menu = self.menuBar().addMenu("?")
-        add_actions(help_menu, (self.about_act,))
+        add_actions(
+            help_menu, self.createPopupMenu().actions() + [None, self.about_act]
+        )
 
     def update_menu(self):
         """Update menu"""
@@ -416,6 +424,10 @@ Thanks for your patience."""
         """Reimplement QMainWindow method"""
         if self.maybe_save(_("Quit")):
             self.__save_pos_and_size()
+            try:
+                self.console.close()
+            except RuntimeError:
+                pass
             event.accept()
         else:
             event.ignore()
