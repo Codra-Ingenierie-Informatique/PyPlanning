@@ -149,8 +149,8 @@ class BaseTreeWidget(QW.QTreeView):
     TITLE = None
     SIG_MODEL_CHANGED = QC.Signal()
     COLUMNS_TO_RESIZE = [0]
-    MIN_COLUMN_THRESHOLD = 40
-    MIN_COLUMN_WIDTH = 110
+    MIN_COLUMN_THRESHOLD = 60
+    MIN_COLUMN_WIDTH = 120
     COLUMNS_TO_EDIT_ON_CLICK = ()
 
     def __init__(self, parent=None, debug=False):
