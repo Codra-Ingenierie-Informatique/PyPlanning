@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-02-05 15:44+0100\n"
+"POT-Creation-Date: 2023-02-11 16:06+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 
 #: planning\config.py:19
 msgid "PyPlanning"
-msgstr ""
+msgstr "PyPlanning"
 
 #: planning\config.py:20
 msgid "Manage team schedules and quickly create simple project plannings.\n"
@@ -26,19 +26,19 @@ msgstr ""
 "Gestion de plannings d'équipe et création rapide de plannings projet "
 "simples.\n"
 
-#: planning\gui\mainwindow.py:35
+#: planning\gui\mainwindow.py:36
 msgid "untitled"
 msgstr "sanstitre"
 
-#: planning\gui\mainwindow.py:78
+#: planning\gui\mainwindow.py:86
 msgid "Welcome to %s!"
 msgstr "Bienvenue dans %s!"
 
-#: planning\gui\mainwindow.py:150
+#: planning\gui\mainwindow.py:158
 msgid "Error"
 msgstr "Erreur"
 
-#: planning\gui\mainwindow.py:151
+#: planning\gui\mainwindow.py:159
 msgid ""
 "This feature is not yet available.\n"
 "Thanks for your patience."
@@ -46,95 +46,103 @@ msgstr ""
 "Cette fonctionnalité n'est pas encore disponible.\n"
 "Merci pour votre patience."
 
-#: planning\gui\mainwindow.py:173
+#: planning\gui\mainwindow.py:181
 msgid "Advanced XML mode"
 msgstr "Mode avancé XML"
 
-#: planning\gui\mainwindow.py:179
+#: planning\gui\mainwindow.py:187
 msgid "&New"
 msgstr "&Nouveau"
 
-#: planning\gui\mainwindow.py:186
+#: planning\gui\mainwindow.py:194
 msgid "&Open..."
 msgstr "&Ouvrir..."
 
-#: planning\gui\mainwindow.py:193
+#: planning\gui\mainwindow.py:201
 msgid "Open working directory"
 msgstr "Ouvrir le répertoire de travail"
 
-#: planning\gui\mainwindow.py:199
+#: planning\gui\mainwindow.py:207
 msgid "&Save"
 msgstr "&Enregistrer"
 
-#: planning\gui\mainwindow.py:206
+#: planning\gui\mainwindow.py:214
 msgid "Save as..."
 msgstr "Enregistrer &sous..."
 
-#: planning\gui\mainwindow.py:212 planning\gui\mainwindow.py:417
+#: planning\gui\mainwindow.py:220 planning\gui\mainwindow.py:429
 msgid "Quit"
 msgstr "Quitter"
 
-#: planning\gui\mainwindow.py:219
+#: planning\gui\mainwindow.py:227
 msgid "About..."
 msgstr "A propos..."
 
-#: planning\gui\mainwindow.py:230
+#: planning\gui\mainwindow.py:238
 msgid "&File"
 msgstr "&Fichier"
 
-#: planning\gui\mainwindow.py:231
+#: planning\gui\mainwindow.py:239
 msgid "Open recent file"
 msgstr "Ouvrir un fichier récent"
 
-#: planning\gui\mainwindow.py:250
+#: planning\gui\mainwindow.py:258
 msgid "&Edit"
 msgstr "&Edition"
 
-#: planning\gui\mainwindow.py:252
+#: planning\gui\mainwindow.py:260
 msgid "&Tasks"
 msgstr "&Tâche"
 
-#: planning\gui\mainwindow.py:254
+#: planning\gui\mainwindow.py:262
 msgid "&Charts"
 msgstr "&Diagramme"
 
-#: planning\gui\mainwindow.py:277
+#: planning\gui\mainwindow.py:287
 msgid "Main toolbar"
 msgstr "Barre d'outil principale"
 
-#: planning\gui\mainwindow.py:296
+#: planning\gui\mainwindow.py:306
 msgid "Switching mode"
 msgstr "Changement de mode"
 
-#: planning\gui\mainwindow.py:307
+#: planning\gui\mainwindow.py:317
 msgid "Do you want to save XML file before continuing?"
 msgstr "Souhaitez-vous d'abord enregistrer le fichier XML ?"
 
-#: planning\gui\mainwindow.py:319
+#: planning\gui\mainwindow.py:329
 msgid "New file"
 msgstr "Nouveau fichier"
 
-#: planning\gui\mainwindow.py:339
+#: planning\gui\mainwindow.py:349
 msgid "Open file"
 msgstr "Ouvrir un fichier"
 
-#: planning\gui\mainwindow.py:343
+#: planning\gui\mainwindow.py:353
 msgid "Open"
 msgstr "Ouvrir"
 
-#: planning\gui\mainwindow.py:396
+#: planning\gui\mainwindow.py:406
 msgid "Save as"
 msgstr "Enregistrer sous"
 
-#: planning\gui\mainwindow.py:406
+#: planning\gui\mainwindow.py:416
 msgid "About"
 msgstr "A propos de "
 
-#: planning\gui\mainwindow.py:407
+#: planning\gui\mainwindow.py:417
+msgid "Create a non empty environment variable called PLANNINGDEBUG"
+msgstr "Créer une variable d'environnement non vide PLANNINGDEBUG"
+
+#: planning\gui\mainwindow.py:417
+msgid "How to enable debug mode?"
+msgstr "Comment activer le mode de débogage ?"
+
+#: planning\gui\mainwindow.py:417
 msgid "Software created by"
 msgstr "Logiciel réalisé par"
 
-#: planning\gui\mainwindow.py:407
+#: planning\gui\mainwindow.py:417
 msgid "under"
 msgstr "sous"
 
@@ -142,155 +150,155 @@ msgstr "sous"
 msgid "Untitled"
 msgstr "Sans nom"
 
-#: planning\gui\treewidgets.py:239
+#: planning\gui\treewidgets.py:241
 msgid "Edit"
 msgstr "Modifier"
 
-#: planning\gui\treewidgets.py:246
+#: planning\gui\treewidgets.py:248
 msgid "Delete"
 msgstr "Supprimer"
 
-#: planning\gui\treewidgets.py:253
+#: planning\gui\treewidgets.py:255
 msgid "Move up"
 msgstr "Monter"
 
-#: planning\gui\treewidgets.py:259
+#: planning\gui\treewidgets.py:261
 msgid "Move down"
 msgstr "Descendre"
 
-#: planning\gui\treewidgets.py:490
+#: planning\gui\treewidgets.py:494
 msgid "Task tree"
 msgstr "Arbre des tâches"
 
-#: planning\gui\treewidgets.py:491
+#: planning\gui\treewidgets.py:495
 msgid "Color"
 msgstr "Couleur"
 
-#: planning\gui\treewidgets.py:491
+#: planning\gui\treewidgets.py:495
 msgid "Duration"
 msgstr "Durée"
 
-#: planning\gui\treewidgets.py:491 planning\gui\treewidgets.py:733
+#: planning\gui\treewidgets.py:495 planning\gui\treewidgets.py:737
 msgid "Name"
 msgstr "Nom"
 
-#: planning\gui\treewidgets.py:491 planning\gui\treewidgets.py:734
+#: planning\gui\treewidgets.py:495 planning\gui\treewidgets.py:738
 msgid "Start"
 msgstr "Début"
 
-#: planning\gui\treewidgets.py:491 planning\gui\treewidgets.py:736
+#: planning\gui\treewidgets.py:495 planning\gui\treewidgets.py:740
 msgid "End"
 msgstr "Fin"
 
-#: planning\gui\treewidgets.py:491 planning\gui\treewidgets.py:740
+#: planning\gui\treewidgets.py:495 planning\gui\treewidgets.py:744
 msgid "Project"
 msgstr "Projet"
 
-#: planning\gui\treewidgets.py:524
+#: planning\gui\treewidgets.py:528
 msgid "New resource"
 msgstr "Nouvelle ressource"
 
-#: planning\gui\treewidgets.py:530
+#: planning\gui\treewidgets.py:534
 msgid "New task"
 msgstr "Nouvelle tâche"
 
-#: planning\gui\treewidgets.py:536
+#: planning\gui\treewidgets.py:540
 msgid "New milestone"
 msgstr "Nouveau jalon"
 
-#: planning\gui\treewidgets.py:542
+#: planning\gui\treewidgets.py:546
 msgid "New leave"
 msgstr "Nouvelle absence"
 
-#: planning\gui\treewidgets.py:547
+#: planning\gui\treewidgets.py:551
 msgid "Duration mode"
 msgstr "Tâche en mode durée"
 
-#: planning\gui\treewidgets.py:550
+#: planning\gui\treewidgets.py:554
 msgid "Remove start date"
 msgstr "Supprimer la date de début"
 
-#: planning\gui\treewidgets.py:731
+#: planning\gui\treewidgets.py:735
 msgid "Chart tree"
 msgstr "Arbre des graphes"
 
-#: planning\gui\treewidgets.py:735
+#: planning\gui\treewidgets.py:739
 msgid "Today"
 msgstr "Aujourd'hui"
 
-#: planning\gui\treewidgets.py:737
+#: planning\gui\treewidgets.py:741
 msgid "Type"
 msgstr "Type"
 
-#: planning\gui\treewidgets.py:738
+#: planning\gui\treewidgets.py:742
 msgid "Scale"
 msgstr "Echelle"
 
-#: planning\gui\treewidgets.py:739
+#: planning\gui\treewidgets.py:743
 msgid "T0 mode"
 msgstr "Mode T0"
 
-#: planning\gui\treewidgets.py:766
+#: planning\gui\treewidgets.py:770
 msgid "Set current date to today"
 msgstr "Mettre à jour à la date d'aujourd'hui"
 
-#: planning\gui\treewidgets.py:772
+#: planning\gui\treewidgets.py:776
 msgid "New chart"
 msgstr "Nouveau graphe"
 
-#: planning\gui\treewidgets.py:818
+#: planning\gui\treewidgets.py:822
 msgid "General"
 msgstr "Général"
 
-#: planning\gui\treewidgets.py:875
+#: planning\gui\treewidgets.py:879
 msgid "Undo"
 msgstr "Annuler"
 
-#: planning\gui\treewidgets.py:882
+#: planning\gui\treewidgets.py:886
 msgid "Redo"
 msgstr "Répéter"
 
-#: planning\gui\treewidgets.py:889
+#: planning\gui\treewidgets.py:893
 msgid "Collapse all"
 msgstr "Tout replier"
 
-#: planning\gui\treewidgets.py:895
+#: planning\gui\treewidgets.py:899
 msgid "Expand all"
 msgstr "Tout déplier"
 
-#: planning\model.py:148
+#: planning\model.py:145
 msgid "day"
 msgstr "jour"
 
-#: planning\model.py:473
+#: planning\model.py:470
 msgid "Days"
 msgstr "Jours"
 
-#: planning\model.py:474
+#: planning\model.py:471
 msgid "Weeks"
 msgstr "Semaines"
 
-#: planning\model.py:475
+#: planning\model.py:472
 msgid "Months"
 msgstr "Mois"
 
-#: planning\model.py:477
+#: planning\model.py:474
 msgid "Resources"
 msgstr "Ressources"
 
-#: planning\model.py:477
+#: planning\model.py:474
 msgid "Tasks"
 msgstr "Tâches"
 
-#: planning\model.py:842
+#: planning\model.py:839
 msgid "Closing"
 msgstr "Fermeture"
 
-#: planning\model.py:853
+#: planning\model.py:850
 msgid "Leave"
 msgstr "Absence"
 
-#: planning\model.py:894
+#: planning\model.py:891
 msgid "All projects"
 msgstr "Tous les projets"
 

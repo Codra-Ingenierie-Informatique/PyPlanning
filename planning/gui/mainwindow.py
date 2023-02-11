@@ -25,7 +25,7 @@ from qtpy.compat import getopenfilename, getsavefilename
 #  Local imports
 from planning import __version__
 from planning import qthelpers as qth
-from planning.config import APP_DESC, APP_NAME, CONF, DATAPATH, _
+from planning.config import APP_DESC, APP_NAME, CONF, DATAPATH, DEBUG, _
 from planning.gui.centralwidget import PlanningCentralWidget
 
 
@@ -48,7 +48,9 @@ class PlanningMainWindow(QW.QMainWindow):
         self.filename = None
         self.recent_files = CONF.get("main", "recent_files", [])
 
-        self.console = DockableConsole(self, namespace={"win": self}, message="")
+        self.console = DockableConsole(
+            self, namespace={"win": self}, message="", debug=DEBUG
+        )
         dockwidget, location = self.console.create_dockwidget("Console")
         self.addDockWidget(location, dockwidget)
         dockwidget.hide()
@@ -168,7 +170,7 @@ Thanks for your patience."""
             name = osp.basename(self.filename)
         if self._is_modified:
             name = name + "*"
-        self.setWindowTitle(f"{APP_NAME} - {name}")
+        self.setWindowTitle(f"{APP_NAME}{' [DEBUG]' if DEBUG else ''} - {name}")
 
     def create_actions(self):
         """Create actions"""
@@ -417,7 +419,9 @@ Thanks for your patience."""
             <br>Copyright &copy; 2022 CODRA
             <p>guidata {GUIDATA_VERSION_STR}
             <br>Python {platform.python_version()},
-            Qt {QC.__version__} {_('under')} {platform.system()}""",
+            Qt {QC.__version__} {_('under')} {platform.system()}
+            <p><br><i>{_('How to enable debug mode?')}</i>
+            <br>{_('Create a non empty environment variable called PLANNINGDEBUG')}""",
         )
 
     def closeEvent(self, event):  # pylint: disable=C0103
