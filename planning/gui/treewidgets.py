@@ -213,6 +213,8 @@ class BaseTreeWidget(QW.QTreeView):
         data_id = self.get_current_id()
         model = self.model()
         model.clear()
+        self.item_data = {}
+        self.item_rows = {}
         self.populate_tree()
         model.setHorizontalHeaderLabels(self.NAMES)
         self.expandAll()
@@ -377,10 +379,12 @@ class BaseTreeWidget(QW.QTreeView):
 
     def set_current_id(self, data_id, scroll_to=False):
         """Set current item by data id"""
-        index = self.get_item_row_from_id(data_id)[0].index()
-        self.setCurrentIndex(index)
-        if scroll_to:
-            self.scrollTo(index, QW.QTreeView.PositionAtCenter)
+        item_row = self.get_item_row_from_id(data_id)
+        if item_row is not None:
+            index = item_row[0].index()
+            self.setCurrentIndex(index)
+            if scroll_to:
+                self.scrollTo(index, QW.QTreeView.PositionAtCenter)
 
     def model_item_changed(self, item):
         """Model item has changed"""
