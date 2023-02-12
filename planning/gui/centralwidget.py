@@ -14,7 +14,7 @@ from guidata.widgets.codeeditor import CodeEditor
 from qtpy.QtCore import Qt, Signal
 from qtpy.QtWidgets import QSplitter, QStackedWidget, QTabWidget
 
-from planning.config import CONF, DEBUG
+from planning.config import DEBUG, Conf
 from planning.gui.svgviewer import SVGViewer
 from planning.gui.treewidgets import TreeWidgets
 from planning.model import PlanningData
@@ -39,7 +39,7 @@ class PlanningEditor(QStackedWidget):
     @property
     def xml_mode(self):
         """Return True if XML mode is enabled"""
-        return CONF.get("main", "xml_mode", default=False)
+        return Conf.main.xml_mode.get(False)
 
     def current_changed(self, index=None):
         """Current widget has changed"""

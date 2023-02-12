@@ -15,7 +15,7 @@ from qtpy import QtCore as QC
 from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
 
-from planning.config import CONF, _
+from planning.config import MAIN_FONT_FAMILY, Conf, _
 from planning.model import (
     ChartData,
     DataItem,
@@ -175,11 +175,14 @@ class BaseTreeWidget(QW.QTreeView):
             }}
             """
             )
-        font = get_font(CONF, "main", "normal")
-        self.setFont(font)
 
+        families = [MAIN_FONT_FAMILY, "Verdana"]
+        nfont = Conf.tree.normal.get({"family": families, "size": 11})
+        sfont = Conf.tree.small.get({"family": families, "size": 10})
+
+        self.setFont(nfont)
         header = self.header()
-        header.setFont(get_font(CONF, "main", "small"))
+        header.setFont(sfont)
         header.setDefaultAlignment(QC.Qt.AlignCenter)
         header.setStretchLastSection(True)
 

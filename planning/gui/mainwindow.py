@@ -24,9 +24,10 @@ from qtpy.compat import getopenfilename, getsavefilename
 
 #  Local imports
 from planning import __version__
-from planning import qthelpers as qth
-from planning.config import APP_DESC, APP_NAME, CONF, DATAPATH, DEBUG, _
+from planning.config import APP_DESC, APP_NAME, DATAPATH, DEBUG, Conf, _
 from planning.gui.centralwidget import PlanningCentralWidget
+from planning.gui.logviewer import exec_logviewer_dialog
+from planning.utils import qthelpers as qth
 
 
 class PlanningMainWindow(QW.QMainWindow):
@@ -46,7 +47,7 @@ class PlanningMainWindow(QW.QMainWindow):
         self._last_basedir = None
         self._is_modified = None
         self.filename = None
-        self.recent_files = CONF.get("main", "recent_files", [])
+        self.recent_files = Conf.main.recent_files.get()
 
         self.console = DockableConsole(
             self, namespace={"win": self}, message="", debug=DEBUG >= 1
@@ -97,16 +98,33 @@ class PlanningMainWindow(QW.QMainWindow):
 
         self.__restore_pos_and_size()
 
+    def check_for_previous_crash(self):  # pragma: no cover
+        """Check for previous crash"""
+        if Conf.main.faulthandler_log_available.get(
+            False
+        ) or Conf.main.traceback_log_available.get(False):
+            txt = "<br>".join(
+                [
+                    _("Log files were generated during last session."),
+                    "",
+                    _("Do you want to see available log files?"),
+                ]
+            )
+            btns = QW.QMessageBox.StandardButton.Yes | QW.QMessageBox.StandardButton.No
+            choice = QW.QMessageBox.warning(self, APP_NAME, txt, btns)
+            if choice == QW.QMessageBox.StandardButton.Yes:
+                self.show_log_viewer()
+
     def __restore_pos_and_size(self):
         """Restore main window position and size from configuration"""
-        maximized = CONF.get("main", "window_maximized", None)
+        maximized = Conf.main.window_maximized.get(None)
         if maximized:
             self.setWindowState(QC.Qt.WindowMaximized)
-        pos = CONF.get("main", "window_position", None)
+        pos = Conf.main.window_position.get(None)
         if pos is not None:
             posx, posy = pos
             self.move(QC.QPoint(posx, posy))
-        size = CONF.get("main", "window_size", None)
+        size = Conf.main.window_size.get(None)
         if size is not None:
             width, height = size
             self.resize(QC.QSize(width, height))
@@ -123,12 +141,12 @@ class PlanningMainWindow(QW.QMainWindow):
     def __save_pos_and_size(self):
         """Save main window position and size to configuration"""
         is_maximized = self.windowState() == QC.Qt.WindowMaximized
-        CONF.set("main", "window_maximized", is_maximized)
+        Conf.main.window_maximized.set(is_maximized)
         if not is_maximized:
             size = self.size()
-            CONF.set("main", "window_size", (size.width(), size.height()))
+            Conf.main.window_size.set((size.width(), size.height()))
             pos = self.pos()
-            CONF.set("main", "window_position", (pos.x(), pos.y()))
+            Conf.main.window_position.set((pos.x(), pos.y()))
 
     def sizeHint(self):  # pylint: disable=C0103,R0201
         """Reimplement QWidget method"""
@@ -181,7 +199,7 @@ Thanks for your patience."""
         self.xmlmode_act = create_action(
             self, _("Advanced XML mode"), toggled=self.switch_xml_mode
         )
-        self.xmlmode_act.setChecked(CONF.get("main", "xml_mode", False))
+        self.xmlmode_act.setChecked(Conf.main.xml_mode.get(False))
 
         self.new_act = create_action(
             self,
@@ -264,8 +282,15 @@ Thanks for your patience."""
         add_actions(self.charts_menu, actions["charts"])
         self.menuBar().addSeparator()
         help_menu = self.menuBar().addMenu("?")
+        logv_act = create_action(
+            self,
+            _("Show log files..."),
+            icon=get_icon("logs.svg"),
+            triggered=self.show_log_viewer,
+        )
         add_actions(
-            help_menu, self.createPopupMenu().actions() + [None, self.about_act]
+            help_menu,
+            self.createPopupMenu().actions() + [None, logv_act, self.about_act],
         )
 
     def update_menu(self):
@@ -305,8 +330,8 @@ Thanks for your patience."""
     def switch_xml_mode(self, state):
         """Switch to XML advanced mode"""
         if self.maybe_save(_("Switching mode")):
-            if CONF.get("main", "xml_mode", default=False) != state:
-                CONF.set("main", "xml_mode", state)
+            if Conf.main.xml_mode.get(False) != state:
+                Conf.main.xml_mode.set(state)
                 self.central_widget.editor.switch_mode(self.filename)
 
     def maybe_save(self, title):
@@ -379,7 +404,7 @@ Thanks for your patience."""
         self.recent_files.insert(0, fname)
         while len(self.recent_files) > self.MAX_RECENT_FILES:
             self.recent_files.pop(-1)
-        CONF.set("main", "recent_files", self.recent_files)
+        Conf.main.recent_files.set(self.recent_files)
 
     def __save(self, fname):
         """Save current file"""
@@ -424,6 +449,10 @@ Thanks for your patience."""
             <p><br><i>{_('How to enable debug mode?')}</i>
             <br>{_('Set the PLANNINGDEBUG environment variable to 1 or 2')}""",
         )
+
+    def show_log_viewer(self):
+        """Show error logs"""
+        exec_logviewer_dialog(self)
 
     def closeEvent(self, event):  # pylint: disable=C0103
         """Reimplement QMainWindow method"""
