@@ -22,7 +22,10 @@ APP_DESC = _(
 """
 )
 
-DEBUG = len(os.environ.get("PLANNINGDEBUG", "")) > 0
+try:
+    DEBUG = int(os.environ.get("PLANNINGDEBUG", ""))
+except ValueError:
+    DEBUG = 1 if len(os.environ.get("PLANNINGDEBUG", "")) > 0 else 0
 
 MAIN_FONT_FAMILY = "Yu Gothic UI"  # "Bahnschrift Light"
 
@@ -36,7 +39,7 @@ DEFAULTS = {
 }
 DEFAULTS = {}
 CONF = UserConfig(DEFAULTS)
-CONF.set_application(APP_NAME, "1.0.0", load=not DEBUG)
+CONF.set_application(APP_NAME, "1.0.0", load=DEBUG <= 1)
 
 DATAPATH = configtools.get_module_data_path("planning", relpath="data")
 TESTPATH = configtools.get_module_data_path("planning", relpath="tests")

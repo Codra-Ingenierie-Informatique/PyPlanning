@@ -49,7 +49,7 @@ class PlanningMainWindow(QW.QMainWindow):
         self.recent_files = CONF.get("main", "recent_files", [])
 
         self.console = DockableConsole(
-            self, namespace={"win": self}, message="", debug=DEBUG
+            self, namespace={"win": self}, message="", debug=DEBUG >= 1
         )
         dockwidget, location = self.console.create_dockwidget("Console")
         self.addDockWidget(location, dockwidget)
@@ -170,7 +170,8 @@ Thanks for your patience."""
             name = osp.basename(self.filename)
         if self._is_modified:
             name = name + "*"
-        self.setWindowTitle(f"{APP_NAME}{' [DEBUG]' if DEBUG else ''} - {name}")
+        debugtxt = f" [DEBUG={DEBUG}]" if DEBUG else ""
+        self.setWindowTitle(f"{APP_NAME}{debugtxt} - {name}")
 
     def create_actions(self):
         """Create actions"""
@@ -421,7 +422,7 @@ Thanks for your patience."""
             <br>Python {platform.python_version()},
             Qt {QC.__version__} {_('under')} {platform.system()}
             <p><br><i>{_('How to enable debug mode?')}</i>
-            <br>{_('Create a non empty environment variable called PLANNINGDEBUG')}""",
+            <br>{_('Set the PLANNINGDEBUG environment variable to 1 or 2')}""",
         )
 
     def closeEvent(self, event):  # pylint: disable=C0103
