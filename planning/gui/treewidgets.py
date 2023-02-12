@@ -40,6 +40,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
     def __init__(self, parent, margin):
         QW.QItemDelegate.__init__(self, parent)
         self.margin = margin
+        self.editor_opened = False
 
     def sizeHint(self, option, index):  # pylint: disable=invalid-name
         """Reimplement Qt method"""
@@ -59,6 +60,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
 
     def createEditor(self, parent, opt, index):  # pylint: disable=invalid-name
         """Reimplement Qt method"""
+        self.editor_opened = True
         ditem = self.dataitem_from_index(index)
         if ditem.datatype == DTypes.DAYS:
             editor = QW.QSpinBox(parent)
@@ -90,6 +92,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
 
     def commitAndCloseEditor(self):  # pylint: disable=invalid-name
         """Reimplement Qt method"""
+        self.editor_opened = False
         editor = self.sender()
         self.commitData.emit(editor)
         self.closeEditor.emit(editor)
@@ -382,6 +385,8 @@ class BaseTreeWidget(QW.QTreeView):
 
     def set_current_id(self, data_id, scroll_to=False):
         """Set current item by data id"""
+        if self.itemDelegate().editor_opened:
+            return
         item_row = self.get_item_row_from_id(data_id)
         if item_row is not None:
             index = item_row[0].index()
