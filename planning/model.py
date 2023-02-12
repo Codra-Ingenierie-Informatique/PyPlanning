@@ -133,6 +133,8 @@ class DataItem:
             if self.datatype == DTypes.BOOLEAN:
                 return False
             if self.datatype == DTypes.COLOR:
+                if self.value is None:
+                    return None
                 for cname in self.COLORS:
                     if cname.startswith(self.value):
                         return self.value
