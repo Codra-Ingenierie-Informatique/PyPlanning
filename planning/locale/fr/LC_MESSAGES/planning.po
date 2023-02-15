@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-02-12 11:09+0100\n"
+"POT-Creation-Date: 2023-02-15 18:21+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -176,127 +176,119 @@ msgstr "sous"
 msgid "Untitled"
 msgstr "Sans nom"
 
-#: planning\gui\treewidgets.py:244
+#: planning\gui\treewidgets.py:247
 msgid "Edit"
 msgstr "Modifier"
 
-#: planning\gui\treewidgets.py:251
+#: planning\gui\treewidgets.py:254
 msgid "Delete"
 msgstr "Supprimer"
 
-#: planning\gui\treewidgets.py:258
+#: planning\gui\treewidgets.py:261
 msgid "Move up"
 msgstr "Monter"
 
-#: planning\gui\treewidgets.py:264
+#: planning\gui\treewidgets.py:267
 msgid "Move down"
 msgstr "Descendre"
 
-#: planning\gui\treewidgets.py:497
+#: planning\gui\treewidgets.py:502
 msgid "Task tree"
 msgstr "Arbre des tâches"
-
-#: planning\gui\treewidgets.py:499 planning\gui\treewidgets.py:753
-msgid "Name"
-msgstr "Nom"
-
-#: planning\gui\treewidgets.py:500 planning\gui\treewidgets.py:754
-msgid "Start"
-msgstr "Début"
-
-#: planning\gui\treewidgets.py:501
-msgid "Duration"
-msgstr "Durée"
-
-#: planning\gui\treewidgets.py:502 planning\gui\treewidgets.py:756
-msgid "End"
-msgstr "Fin"
 
 #: planning\gui\treewidgets.py:503
 msgid "Color"
 msgstr "Couleur"
 
-#: planning\gui\treewidgets.py:504
-msgid "#"
-msgstr "N°"
+#: planning\gui\treewidgets.py:503
+msgid "Duration"
+msgstr "Durée"
 
-#: planning\gui\treewidgets.py:505
-msgid "Dependencies"
-msgstr "Dépendances"
+#: planning\gui\treewidgets.py:503 planning\gui\treewidgets.py:745
+msgid "Name"
+msgstr "Nom"
 
-#: planning\gui\treewidgets.py:506 planning\gui\treewidgets.py:760
+#: planning\gui\treewidgets.py:503 planning\gui\treewidgets.py:746
+msgid "Start"
+msgstr "Début"
+
+#: planning\gui\treewidgets.py:503 planning\gui\treewidgets.py:748
+msgid "End"
+msgstr "Fin"
+
+#: planning\gui\treewidgets.py:503 planning\gui\treewidgets.py:752
 msgid "Project"
 msgstr "Projet"
 
-#: planning\gui\treewidgets.py:544
+#: planning\gui\treewidgets.py:536
 msgid "New resource"
 msgstr "Nouvelle ressource"
 
-#: planning\gui\treewidgets.py:550
+#: planning\gui\treewidgets.py:542
 msgid "New task"
 msgstr "Nouvelle tâche"
 
-#: planning\gui\treewidgets.py:556
+#: planning\gui\treewidgets.py:548
 msgid "New milestone"
 msgstr "Nouveau jalon"
 
-#: planning\gui\treewidgets.py:562
+#: planning\gui\treewidgets.py:554
 msgid "New leave"
 msgstr "Nouvelle absence"
 
-#: planning\gui\treewidgets.py:567
+#: planning\gui\treewidgets.py:559
 msgid "Duration mode"
 msgstr "Tâche en mode durée"
 
-#: planning\gui\treewidgets.py:570
+#: planning\gui\treewidgets.py:562
 msgid "Remove start date"
 msgstr "Supprimer la date de début"
 
-#: planning\gui\treewidgets.py:751
+#: planning\gui\treewidgets.py:743
 msgid "Chart tree"
 msgstr "Arbre des graphes"
 
-#: planning\gui\treewidgets.py:755
+#: planning\gui\treewidgets.py:747
 msgid "Today"
 msgstr "Aujourd'hui"
 
-#: planning\gui\treewidgets.py:757
+#: planning\gui\treewidgets.py:749
 msgid "Type"
 msgstr "Type"
 
-#: planning\gui\treewidgets.py:758
+#: planning\gui\treewidgets.py:750
 msgid "Scale"
 msgstr "Echelle"
 
-#: planning\gui\treewidgets.py:759
+#: planning\gui\treewidgets.py:751
 msgid "T0 mode"
 msgstr "Mode T0"
 
-#: planning\gui\treewidgets.py:786
+#: planning\gui\treewidgets.py:778
 msgid "Set current date to today"
 msgstr "Mettre à jour à la date d'aujourd'hui"
 
-#: planning\gui\treewidgets.py:792
+#: planning\gui\treewidgets.py:784
 msgid "New chart"
 msgstr "Nouveau graphe"
 
-#: planning\gui\treewidgets.py:838
+#: planning\gui\treewidgets.py:830
 msgid "General"
 msgstr "Général"
 
-#: planning\gui\treewidgets.py:895
+#: planning\gui\treewidgets.py:887
 msgid "Undo"
 msgstr "Annuler"
 
-#: planning\gui\treewidgets.py:902
+#: planning\gui\treewidgets.py:894
 msgid "Redo"
 msgstr "Répéter"
 
-#: planning\gui\treewidgets.py:909
+#: planning\gui\treewidgets.py:901
 msgid "Collapse all"
 msgstr "Tout replier"
 
-#: planning\gui\treewidgets.py:915
+#: planning\gui\treewidgets.py:907
 msgid "Expand all"
 msgstr "Tout déplier"
 
@@ -347,3 +339,9 @@ msgstr "fonction"
 #: planning\utils\qthelpers.py:47
 msgid "Error message:"
 msgstr "Message d'erreur :"
+
+#~ msgid "#"
+#~ msgstr "N°"
+
+#~ msgid "Dependencies"
+#~ msgstr "Dépendances"

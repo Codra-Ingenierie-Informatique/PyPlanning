@@ -703,7 +703,7 @@ def _get_maxx(scale, start_date, end_date):
     return maxx
 
 
-def _time_diff(scale, start_date, end_date, milestone=False, rounding=None):
+def _time_diff(scale, start_date, end_date, milestone=False):
     """Return time difference, depending on scale"""
     if scale == DRAW_WITH_DAILY_SCALE:
         return (end_date - start_date).days
@@ -722,10 +722,7 @@ def _time_diff(scale, start_date, end_date, milestone=False, rounding=None):
         return td
     if scale == DRAW_WITH_MONTHLY_SCALE:
         rdelta = relativedelta(end_date, start_date)
-        diff = rdelta.months + rdelta.years * 12
-        if rounding == "ceil" and rdelta.days >= 1:
-            diff += 1
-        return diff
+        return rdelta.months + rdelta.years * 12
 
 
 class Task(object):
@@ -1188,7 +1185,7 @@ class Task(object):
         # cas 1 -s--S==E--e-
         if self.start_date() >= start and self.end_date() <= end:
             # print("cas 1 -s--S==E--e-")
-            x = _time_diff(scale, start, self.start_date(), rounding="ceil") * 10
+            x = _time_diff(scale, start, self.start_date()) * 10
             d = (_time_diff(scale, self.start_date(), self.end_date()) + 1) * 10
             self.drawn_x_begin_coord = x
             self.drawn_x_end_coord = x + d
