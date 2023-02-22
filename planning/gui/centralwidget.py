@@ -188,7 +188,7 @@ class PlanningCentralWidget(QSplitter):
         """Print 'do not panic' message in console"""
         tbtext = traceback.format_exc()
         self.SIG_MESSAGE.emit(tbtext, 10000)
-        if DEBUG >= 2:
+        if DEBUG >= 3:
             raise
         else:
             print("")

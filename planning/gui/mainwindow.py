@@ -49,12 +49,15 @@ class PlanningMainWindow(QW.QMainWindow):
         self.filename = None
         self.recent_files = Conf.main.recent_files.get()
 
-        self.console = DockableConsole(
-            self, namespace={"win": self}, message="", debug=DEBUG >= 1
-        )
-        dockwidget, location = self.console.create_dockwidget("Console")
-        self.addDockWidget(location, dockwidget)
-        dockwidget.hide()
+        if DEBUG >= 3:
+            self.console = None
+        else:
+            self.console = DockableConsole(
+                self, namespace={"win": self}, message="", debug=DEBUG >= 1
+            )
+            dockwidget, location = self.console.create_dockwidget("Console")
+            self.addDockWidget(location, dockwidget)
+            dockwidget.hide()
 
         self.central_widget = PlanningCentralWidget()
 
@@ -288,10 +291,11 @@ Thanks for your patience."""
             icon=get_icon("logs.svg"),
             triggered=self.show_log_viewer,
         )
-        add_actions(
-            help_menu,
-            self.createPopupMenu().actions() + [None, logv_act, self.about_act],
-        )
+        help_actions = [logv_act, self.about_act]
+        view_menu = self.createPopupMenu()
+        if view_menu is not None:
+            help_actions = view_menu.actions() + [None] + help_actions
+        add_actions(help_menu, help_actions)
 
     def update_menu(self):
         """Update menu"""
@@ -447,7 +451,7 @@ Thanks for your patience."""
             <br>Python {platform.python_version()},
             Qt {QC.__version__} {_('under')} {platform.system()}
             <p><br><i>{_('How to enable debug mode?')}</i>
-            <br>{_('Set the PLANNINGDEBUG environment variable to 1 or 2')}""",
+            <br>{_('Set the PLANNINGDEBUG environment variable to 1, 2 or 3')}""",
         )
 
     def show_log_viewer(self):
@@ -458,10 +462,11 @@ Thanks for your patience."""
         """Reimplement QMainWindow method"""
         if self.maybe_save(_("Quit")):
             self.__save_pos_and_size()
-            try:
-                self.console.close()
-            except RuntimeError:
-                pass
+            if self.console is not None:
+                try:
+                    self.console.close()
+                except RuntimeError:
+                    pass
             event.accept()
         else:
             event.ignore()

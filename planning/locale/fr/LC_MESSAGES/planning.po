@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-02-15 18:21+0100\n"
+"POT-Creation-Date: 2023-02-22 14:26+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,23 +42,23 @@ msgstr "Les journaux de bord sont vides."
 msgid "untitled"
 msgstr "sanstitre"
 
-#: planning\gui\mainwindow.py:87
+#: planning\gui\mainwindow.py:90
 msgid "Welcome to %s!"
 msgstr "Bienvenue dans %s!"
 
-#: planning\gui\mainwindow.py:108
+#: planning\gui\mainwindow.py:111
 msgid "Log files were generated during last session."
 msgstr "Des journaux de bord ont été générés lors de la dernière session."
 
-#: planning\gui\mainwindow.py:110
+#: planning\gui\mainwindow.py:113
 msgid "Do you want to see available log files?"
 msgstr "Souhaitez-vous consulter les journaux de bord disponibles ?"
 
-#: planning\gui\mainwindow.py:176
+#: planning\gui\mainwindow.py:179
 msgid "Error"
 msgstr "Erreur"
 
-#: planning\gui\mainwindow.py:177
+#: planning\gui\mainwindow.py:180
 msgid ""
 "This feature is not yet available.\n"
 "Thanks for your patience."
@@ -66,109 +66,109 @@ msgstr ""
 "Cette fonctionnalité n'est pas encore disponible.\n"
 "Merci pour votre patience."
 
-#: planning\gui\mainwindow.py:200
+#: planning\gui\mainwindow.py:203
 msgid "Advanced XML mode"
 msgstr "Mode avancé XML"
 
-#: planning\gui\mainwindow.py:206
+#: planning\gui\mainwindow.py:209
 msgid "&New"
 msgstr "&Nouveau"
 
-#: planning\gui\mainwindow.py:213
+#: planning\gui\mainwindow.py:216
 msgid "&Open..."
 msgstr "&Ouvrir..."
 
-#: planning\gui\mainwindow.py:220
+#: planning\gui\mainwindow.py:223
 msgid "Open working directory"
 msgstr "Ouvrir le répertoire de travail"
 
-#: planning\gui\mainwindow.py:226
+#: planning\gui\mainwindow.py:229
 msgid "&Save"
 msgstr "&Enregistrer"
 
-#: planning\gui\mainwindow.py:233
+#: planning\gui\mainwindow.py:236
 msgid "Save as..."
 msgstr "Enregistrer &sous..."
 
-#: planning\gui\mainwindow.py:239 planning\gui\mainwindow.py:459
+#: planning\gui\mainwindow.py:242 planning\gui\mainwindow.py:462
 msgid "Quit"
 msgstr "Quitter"
 
-#: planning\gui\mainwindow.py:246
+#: planning\gui\mainwindow.py:249
 msgid "About..."
 msgstr "A propos..."
 
-#: planning\gui\mainwindow.py:257
+#: planning\gui\mainwindow.py:260
 msgid "&File"
 msgstr "&Fichier"
 
-#: planning\gui\mainwindow.py:258
+#: planning\gui\mainwindow.py:261
 msgid "Open recent file"
 msgstr "Ouvrir un fichier récent"
 
-#: planning\gui\mainwindow.py:277
+#: planning\gui\mainwindow.py:280
 msgid "&Edit"
 msgstr "&Edition"
 
-#: planning\gui\mainwindow.py:279
+#: planning\gui\mainwindow.py:282
 msgid "&Tasks"
 msgstr "&Tâche"
 
-#: planning\gui\mainwindow.py:281
+#: planning\gui\mainwindow.py:284
 msgid "&Charts"
 msgstr "&Diagramme"
 
-#: planning\gui\mainwindow.py:287
+#: planning\gui\mainwindow.py:290
 msgid "Show log files..."
 msgstr "Afficher les journaux de bords..."
 
-#: planning\gui\mainwindow.py:313
+#: planning\gui\mainwindow.py:316
 msgid "Main toolbar"
 msgstr "Barre d'outil principale"
 
-#: planning\gui\mainwindow.py:332
+#: planning\gui\mainwindow.py:335
 msgid "Switching mode"
 msgstr "Changement de mode"
 
-#: planning\gui\mainwindow.py:343
+#: planning\gui\mainwindow.py:346
 msgid "Do you want to save XML file before continuing?"
 msgstr "Souhaitez-vous d'abord enregistrer le fichier XML ?"
 
-#: planning\gui\mainwindow.py:355
+#: planning\gui\mainwindow.py:358
 msgid "New file"
 msgstr "Nouveau fichier"
 
-#: planning\gui\mainwindow.py:375
+#: planning\gui\mainwindow.py:378
 msgid "Open file"
 msgstr "Ouvrir un fichier"
 
-#: planning\gui\mainwindow.py:379
+#: planning\gui\mainwindow.py:382
 msgid "Open"
 msgstr "Ouvrir"
 
-#: planning\gui\mainwindow.py:432
+#: planning\gui\mainwindow.py:435
 msgid "Save as"
 msgstr "Enregistrer sous"
 
-#: planning\gui\mainwindow.py:442
+#: planning\gui\mainwindow.py:445
 msgid "About"
 msgstr "A propos de "
 
-#: planning\gui\mainwindow.py:443
+#: planning\gui\mainwindow.py:446
 msgid "How to enable debug mode?"
 msgstr "Comment activer le mode de débogage ?"
 
-#: planning\gui\mainwindow.py:443
-msgid "Set the PLANNINGDEBUG environment variable to 1 or 2"
+#: planning\gui\mainwindow.py:446
+msgid "Set the PLANNINGDEBUG environment variable to 1, 2 or 3"
 msgstr ""
-"Créer une variable d'environnement PLANNINGDEBUG et lui affecter la valeur 1 "
-"ou 2"
+"Définir la variable d'environnement PLANNINGDEBUG et lui affecter la valeur "
+"1, 2 ou 3"
 
-#: planning\gui\mainwindow.py:443
+#: planning\gui\mainwindow.py:446
 msgid "Software created by"
 msgstr "Logiciel réalisé par"
 
-#: planning\gui\mainwindow.py:443
+#: planning\gui\mainwindow.py:446
 msgid "under"
 msgstr "sous"
 
