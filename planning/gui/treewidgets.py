@@ -152,8 +152,7 @@ class BaseTreeWidget(QW.QTreeView):
     TITLE = None
     SIG_MODEL_CHANGED = QC.Signal()
     COLUMNS_TO_RESIZE = [0]
-    MIN_COLUMN_THRESHOLD = 60
-    MIN_COLUMN_WIDTH = 120
+    COLUMN_WIDTH_MARGIN = 20
     COLUMNS_TO_EDIT_ON_CLICK = ()
 
     def __init__(self, parent=None, debug=False):
@@ -226,8 +225,9 @@ class BaseTreeWidget(QW.QTreeView):
         self.expandAll()
         for col in self.COLUMNS_TO_RESIZE:
             self.resizeColumnToContents(col)
-            if self.columnWidth(col) < self.MIN_COLUMN_THRESHOLD:
-                self.setColumnWidth(col, self.MIN_COLUMN_WIDTH)
+            if col != 0:
+                column_width = self.columnWidth(col)
+                self.setColumnWidth(col, column_width + self.COLUMN_WIDTH_MARGIN)
         self.expandAll()
         if data_id is not None:
             self.set_current_id(data_id, scroll_to=True)
