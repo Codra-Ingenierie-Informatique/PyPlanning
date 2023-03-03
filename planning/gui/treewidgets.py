@@ -9,7 +9,7 @@ import datetime
 import xml.etree.ElementTree as ET
 
 from guidata import qthelpers
-from guidata.configtools import get_font, get_icon
+from guidata.configtools import get_icon
 from guidata.qthelpers import add_actions, create_action, keybinding
 from qtpy import QtCore as QC
 from qtpy import QtGui as QG
@@ -58,7 +58,8 @@ class TaskTreeDelegate(QW.QItemDelegate):
         """Return data item for index"""
         return self.parent().item_data[id(self.item_from_index(index))]
 
-    def createEditor(self, parent, opt, index):  # pylint: disable=invalid-name
+    # pylint: disable=unused-argument,invalid-name
+    def createEditor(self, parent, opt, index):
         """Reimplement Qt method"""
         self.editor_opened = True
         ditem = self.dataitem_from_index(index)
@@ -114,7 +115,8 @@ class TaskTreeDelegate(QW.QItemDelegate):
         else:
             editor.setText(value)
 
-    def setModelData(self, editor, mdl, index):  # pylint: disable=invalid-name
+    # pylint: disable=unused-argument,invalid-name
+    def setModelData(self, editor, mdl, index):
         """Reimplement Qt method"""
         ditem = self.dataitem_from_index(index)
         if ditem.datatype == DTypes.DAYS:
@@ -292,6 +294,7 @@ class BaseTreeWidget(QW.QTreeView):
         """Selection has changed"""
         self.selected_indexes_changed(selected.indexes(), deselected.indexes())
 
+    # pylint: disable=unused-argument
     def selected_indexes_changed(self, sel_indexes, desel_indexes):
         """Selected indexes have changed"""
         self.set_specific_actions_state(True)
@@ -318,7 +321,8 @@ class BaseTreeWidget(QW.QTreeView):
         self.update_menu()
         self.menu.popup(event.globalPos())
 
-    def get_actions_from_indexes(self, indexes):  # pylint: disable=R0201
+    # pylint: disable=unused-argument
+    def get_actions_from_indexes(self, indexes):
         """Get actions from indexes"""
         # Right here: add other actions if necessary
         # (reimplement this method)

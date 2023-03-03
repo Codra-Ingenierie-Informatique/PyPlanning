@@ -15,3 +15,7 @@ max-attributes=7
 max-branches=15  # default: 12
 max-locals=20  # default: 15
 min-public-methods=0  # default: 2
+max-public-methods=30  # default: 20
+
+[FUNCTIONS]
+max-returns=10  # default: 6

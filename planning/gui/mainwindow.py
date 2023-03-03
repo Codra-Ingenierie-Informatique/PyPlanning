@@ -151,11 +151,11 @@ class PlanningMainWindow(QW.QMainWindow):
             pos = self.pos()
             Conf.main.window_position.set((pos.x(), pos.y()))
 
-    def sizeHint(self):  # pylint: disable=C0103,R0201
+    def sizeHint(self):  # pylint: disable=C0103
         """Reimplement QWidget method"""
         return QC.QSize(1200, 600)
 
-    def minimumSizeHint(self):  # pylint: disable=C0103,R0201
+    def minimumSizeHint(self):  # pylint: disable=C0103
         """Reimplement QWidget method"""
         return QC.QSize(400, 200)
 

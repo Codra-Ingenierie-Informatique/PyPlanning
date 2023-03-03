@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# pylint: skip-file
+
 """
 gantt.py - version and date, see below
 

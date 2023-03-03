@@ -138,23 +138,23 @@ class FontOption(Option):
 class SectionMeta(type):
     """Configuration metaclass"""
 
-    def __new__(cls, name, bases, dct):
+    def __new__(mcs, name, bases, dct):
         optlist = []
         for attrname, obj in list(dct.items()):
             if isinstance(obj, Option):
                 obj.option = attrname
                 optlist.append(obj)
         dct["_options"] = optlist
-        return type.__new__(cls, name, bases, dct)
+        return type.__new__(mcs, name, bases, dct)
 
 
 class ConfMeta(type):
     """Configuration metaclass"""
 
-    def __new__(cls, name, bases, dct):
+    def __new__(mcs, name, bases, dct):
         for attrname, obj in list(dct.items()):
             if isinstance(obj, Section):
                 obj.set_name(attrname)
                 for option in obj._options:
                     option.section = attrname
-        return type.__new__(cls, name, bases, dct)
+        return type.__new__(mcs, name, bases, dct)

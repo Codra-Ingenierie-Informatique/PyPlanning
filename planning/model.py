@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """PyPlanning data model"""
 
+# pylint: disable=invalid-name  # Allows short reference names like x, y, ...
+
 import datetime
 import locale
 import os.path as osp
@@ -305,7 +307,7 @@ class AbstractData:
         """Return True if data project item is valid"""
         return self.project is not None and bool(self.project.value)
 
-    def is_read_only(self, name):  # pylint: disable=R0201
+    def is_read_only(self, name):
         """Return True if item name is read-only"""
         return name in self.READ_ONLY_ITEMS
 
@@ -363,7 +365,7 @@ class AbstractData:
         """Return True if item is set but not expected"""
         return check_name == item_name and self.has_item(item_name)
 
-    def is_valid(self, item_name):  # pylint: disable=R0201,W0613
+    def is_valid(self, item_name):  # pylint: disable=W0613
         """Check data item values, eventually depending on planning data"""
         return True
 

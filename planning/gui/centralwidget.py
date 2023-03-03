@@ -189,17 +189,16 @@ class PlanningCentralWidget(QSplitter):
         tbtext = traceback.format_exc()
         self.SIG_MESSAGE.emit(tbtext, 10000)
         if DEBUG >= 3:
-            raise
-        else:
-            print("")
-            print("+-------------------------------------------------------+")
-            print("| Please do not panic: this is not an error message     |")
-            print("| (otherwise it would be written in red...).            |")
-            print("| This is not a bug.                                    |")
-            print("| This is just logging, for debugging purpose.          |")
-            print("+-------------------------------------------------------+")
-            print("")
-            print(tbtext)
+            raise  # pylint: disable=misplaced-bare-raise
+        print("")
+        print("+-------------------------------------------------------+")
+        print("| Please do not panic: this is not an error message     |")
+        print("| (otherwise it would be written in red...).            |")
+        print("| This is not a bug.                                    |")
+        print("| This is just logging, for debugging purpose.          |")
+        print("+-------------------------------------------------------+")
+        print("")
+        print(tbtext)
 
     def xml_code_changed(self):
         """XML code has changed"""
