@@ -239,7 +239,8 @@ class AbstractData:
     DEFAULT_COLOR = None
     READ_ONLY_ITEMS = ()
 
-    def __init__(self, name=None, fullname=None):
+    def __init__(self, pdata, name=None, fullname=None):
+        self.pdata = pdata
         self.element = None
         if name is None:
             name = self.DEFAULT_NAME
@@ -260,41 +261,6 @@ class AbstractData:
     def gantt_object(self, value):
         """Set associated gantt object value"""
         self.__gantt_object = value
-
-    @property
-    def pdata(self):
-        """Return singleton instance of PlanningData class"""
-        return PlanningData.get_instance()
-
-    @property
-    def all_projects(self):
-        """Get PlanningData._all_projects instance"""
-        return self.pdata._all_projects
-
-    @all_projects.setter
-    def all_projects(self, value):
-        """Set PlanningData._all_projects instance"""
-        self.pdata._all_projects = value
-
-    @property
-    def all_tasks(self):
-        """Get PlanningData._all_tasks instance"""
-        return self.pdata._all_tasks
-
-    @all_tasks.setter
-    def all_tasks(self, value):
-        """Set PlanningData._all_tasks instance"""
-        self.pdata._all_tasks = value
-
-    @property
-    def all_resources(self):
-        """Get PlanningData._all_resources instance"""
-        return self.pdata._all_resources
-
-    @all_resources.setter
-    def all_resources(self, value):
-        """Set PlanningData._all_resources instance"""
-        self.pdata._all_resources = value
 
     @property
     def has_named_id(self):
@@ -321,9 +287,9 @@ class AbstractData:
         self.id = self.get_str("id", default=str(id(self)))
 
     @classmethod
-    def from_element(cls, element):
+    def from_element(cls, pdata, element):
         """Instantiate data set from XML element"""
-        instance = cls()
+        instance = cls(pdata)
         instance._init_from_element(element)
         return instance
 
@@ -422,8 +388,8 @@ class AbstractData:
 class DurationData(AbstractData):
     """Duration data set"""
 
-    def __init__(self, name=None, fullname=None):
-        super().__init__(name, fullname)
+    def __init__(self, pdata, name=None, fullname=None):
+        super().__init__(pdata, name, fullname)
         self.start = DataItem(self, "start", DTypes.DATE, None)
         self.stop = DataItem(self, "stop", DTypes.DATE, None)
         self.duration = DataItem(self, "duration", DTypes.DAYS, None)
@@ -558,7 +524,7 @@ class ChartData(DurationData):
                 end=self.stop.value,
                 filename=filename,
                 today=self.today.value,
-                resources=self.all_resources.values(),
+                resources=self.pdata.all_resources.values(),
                 one_line_for_tasks=one_line_for_tasks,
                 show_title=show_title,
                 show_conflicts=show_conflicts,
@@ -583,8 +549,8 @@ class ChartData(DurationData):
 class AbstractTaskData(DurationData):
     """Abstract Task data set"""
 
-    def __init__(self, name=None, fullname=None):
-        super().__init__(name, fullname)
+    def __init__(self, pdata, name=None, fullname=None):
+        super().__init__(pdata, name, fullname)
         self.depends_of = DataItem(self, "depends_of", DTypes.LIST, None)
 
     def _init_from_element(self, element):
@@ -599,9 +565,9 @@ class AbstractTaskData(DurationData):
     def process_gantt(self):
         """Create or update Gantt objects and add them to dictionaries"""
         task = self.gantt_object
-        if self.all_tasks:
+        if self.pdata.all_tasks:
             # Hopefully, dictionaries are officially ordered since Python 3.7:
-            prevtask = self.all_tasks[list(self.all_tasks.keys())[-1]]
+            prevtask = self.pdata.all_tasks[list(self.pdata.all_tasks.keys())[-1]]
             # No need to check if last task is related (same resource or no resource)
             # because model data is supposed to be valid at this stage:
             if task.start is None and prevtask is not None:
@@ -615,19 +581,19 @@ class AbstractTaskData(DurationData):
                 if prevtask not in task.depends_of:
                     task.depends_of.append(prevtask)
         projname = self.project.value
-        if projname not in self.all_projects:
-            self.all_projects[projname] = gantt.Project(name=projname)
-        self.all_projects[projname].add_task(task)
-        self.all_tasks[self.id.value] = task
+        if projname not in self.pdata.all_projects:
+            self.pdata.all_projects[projname] = gantt.Project(name=projname)
+        self.pdata.all_projects[projname].add_task(task)
+        self.pdata.all_tasks[self.id.value] = task
 
     def update_depends_of(self):
         """Update depends_of attribute of Gantt task"""
-        task = self.all_tasks[self.id.value]
+        task = self.pdata.all_tasks[self.id.value]
         if self.depends_of.value is not None:
             task.add_depends(
                 [
                     task
-                    for tskdata_id, task in self.all_tasks.items()
+                    for tskdata_id, task in self.pdata.all_tasks.items()
                     if tskdata_id in self.depends_of.value
                 ]
             )
@@ -647,8 +613,8 @@ class TaskData(AbstractTaskData):
     DEFAULT_ICON_NAME = "task.svg"
     READ_ONLY_ITEMS = ("start_calc", "stop_calc")
 
-    def __init__(self, name=None, fullname=None):
-        super().__init__(name, fullname)
+    def __init__(self, pdata, name=None, fullname=None):
+        super().__init__(pdata, name, fullname)
         self.start_calc = DataItem(self, "start", DTypes.DATE, None)
         self.stop_calc = DataItem(self, "stop", DTypes.DATE, None)
         self.percent_done = DataItem(self, "percent_done", DTypes.INTEGER, None)
@@ -764,7 +730,7 @@ class TaskData(AbstractTaskData):
         """Create or update Gantt objects and add them to dictionaries"""
         resource_list = [
             resource
-            for resource_id, resource in self.all_resources.items()
+            for resource_id, resource in self.pdata.all_resources.items()
             if resource_id in self.__resids
         ]
         if self.percent_done.value is None:
@@ -853,8 +819,8 @@ class LeaveData(AbstractVacationData):
     TAG = "LEAVE"
     DEFAULT_NAME = _("Leave")
 
-    def __init__(self, name=None, fullname=None):
-        super().__init__(name, fullname)
+    def __init__(self, pdata, name=None, fullname=None):
+        super().__init__(pdata, name, fullname)
         self.__resid = None
 
     def is_associated_to(self, resid):
@@ -871,7 +837,7 @@ class LeaveData(AbstractVacationData):
 
     def process_gantt(self):
         """Create or update Gantt objects and add them to dictionaries"""
-        resource = self.all_resources[self.__resid]
+        resource = self.pdata.all_resources[self.__resid]
         resource.add_vacations(dfrom=self.start.value, dto=self.stop.value)
 
 
@@ -884,7 +850,7 @@ class ResourceData(AbstractData):
 
     def process_gantt(self):
         """Create or update Gantt objects and add them to dictionaries"""
-        self.gantt_object = self.all_resources[self.id.value] = gantt.Resource(
+        self.gantt_object = self.pdata.all_resources[self.id.value] = gantt.Resource(
             self.name.value, self.fullname.value, color=self.color.value
         )
 
@@ -893,19 +859,12 @@ class PlanningData(AbstractData):
     """Planning data set"""
 
     DEFAULT_NAME = _("All projects")
-    __instance = None
-
-    @staticmethod
-    def get_instance():
-        """Return singleton instance"""
-        return PlanningData.__instance
 
     def __init__(self, name=None, fullname=None):
-        PlanningData.__instance = self
-        super().__init__(name, fullname)
-        self._all_projects = {}
-        self._all_resources = {}
-        self._all_tasks = {}
+        super().__init__(self, name, fullname)
+        self.all_projects = {}
+        self.all_resources = {}
+        self.all_tasks = {}
         self.filename = None
         self.reslist = []
         self.tsklist = []
@@ -932,32 +891,32 @@ class PlanningData(AbstractData):
         charts_tag = "CHARTS"
         tasks_tag = "TASKS"
         for elem in self.element.find(charts_tag).findall(ChartData.TAG):
-            chtdata = ChartData.from_element(elem)
+            chtdata = ChartData.from_element(self, elem)
             self.add_chart(chtdata)
         tasks_elt = self.element.find(tasks_tag)
         for elem in tasks_elt.findall(ResourceData.TAG):
-            resdata = ResourceData.from_element(elem)
+            resdata = ResourceData.from_element(self, elem)
             resid = resdata.id.value
             self.add_resource(resdata)
             for telem in resdata.element:
                 if telem.tag == TaskData.TAG:
-                    data = TaskData.from_element(telem)
+                    data = TaskData.from_element(self, telem)
                     data.set_resource_ids([resid])
                     self.add_task(data)
                 elif telem.tag == LeaveData.TAG:
-                    data = LeaveData.from_element(telem)
+                    data = LeaveData.from_element(self, telem)
                     data.set_resource_id(resid)
                     self.add_leave(data)
         for elem in tasks_elt.findall(TaskData.TAG):
-            data = TaskData.from_element(elem)
+            data = TaskData.from_element(self, elem)
             self.add_task(data)
         for elem in tasks_elt.findall(MilestoneData.TAG):
-            data = MilestoneData.from_element(elem)
+            data = MilestoneData.from_element(self, elem)
             self.add_task(data)
         cdays_elt = self.element.find("CLOSINGDAYS")
         if cdays_elt is not None:
             for elem in cdays_elt.findall(ClosingDaysData.TAG):
-                data = ClosingDaysData.from_element(elem)
+                data = ClosingDaysData.from_element(self, elem)
                 self.add_closing_day(data)
 
     @classmethod
@@ -965,7 +924,7 @@ class PlanningData(AbstractData):
         """Instantiate data set from XML file"""
         with open(fname, "rb") as fdesc:
             xmlcode = fdesc.read().decode("utf-8")
-        instance = cls.from_element(ET.fromstring(xmlcode))
+        instance = cls.from_element(cls(), ET.fromstring(xmlcode))
         instance.set_filename(fname)
         return instance
 

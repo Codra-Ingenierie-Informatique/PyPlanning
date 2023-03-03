@@ -628,7 +628,7 @@ class TaskTreeWidget(BaseTreeWidget):
 
     def new_resource(self):
         """New resource item"""
-        data = ResourceData(EMPTY_NAME)
+        data = ResourceData(self.planning, EMPTY_NAME)
         self.planning.add_resource(data, after_data=self.get_current_data())
         self.__add_resourceitem(data)
         self.set_current_id(data.id.value)
@@ -638,7 +638,7 @@ class TaskTreeWidget(BaseTreeWidget):
     def new_task(self):
         """New task item"""
         item = self.get_current_item()
-        data = TaskData(EMPTY_NAME)
+        data = TaskData(self.planning, EMPTY_NAME)
         current_data = self.get_current_data()
         if isinstance(current_data, ResourceData):
             resids = [current_data.id.value]
@@ -660,7 +660,7 @@ class TaskTreeWidget(BaseTreeWidget):
         """New milestone item"""
         item = self.get_current_item()
         if item is not None:
-            data = MilestoneData(EMPTY_NAME)
+            data = MilestoneData(self.planning, EMPTY_NAME)
             self.planning.add_task(data, after_data=self.get_current_data())
             self.__add_taskitem(data)
             self.set_current_id(data.id.value)
@@ -675,7 +675,7 @@ class TaskTreeWidget(BaseTreeWidget):
                 resnode = item
             else:
                 resnode = item.parent()
-            data = LeaveData()
+            data = LeaveData(self.planning)
             data.set_resource_id(self.get_id_from_item(resnode))
             self.planning.add_leave(data, after_data=self.get_current_data())
             self.__add_leaveitem(data)
@@ -811,7 +811,7 @@ class ChartTreeWidget(BaseTreeWidget):
 
     def new_chart(self):
         """New chart item"""
-        data = ChartData(EMPTY_NAME)
+        data = ChartData(self.planning, EMPTY_NAME)
         self.planning.add_chart(data, after_data=self.get_current_data())
         self.__add_chartitem(data)
         self.set_current_id(data.id.value)
@@ -951,7 +951,7 @@ class TreeWidgets(QW.QSplitter):
     def __restore_snapshot(self):
         """Restore snapshot"""
         snapshot = self.__snapshots[self.__snapshot_index]
-        planning = PlanningData.from_element(ET.fromstring(snapshot))
+        planning = PlanningData.from_element(PlanningData(), ET.fromstring(snapshot))
         planning.set_filename(self.planning.filename)
         self.__snapshots_lock = True
         self.setup(planning)

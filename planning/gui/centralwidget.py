@@ -100,10 +100,11 @@ class PlanningEditor(QStackedWidget):
         if self.xml_mode:
             self.code.setPlainText(text)
         else:
+            planning = PlanningData()
             try:
-                planning = PlanningData.from_element(ET.fromstring(text))
+                planning = PlanningData.from_element(planning, ET.fromstring(text))
             except ET.ParseError:
-                planning = PlanningData()
+                pass
             planning.set_filename(path)
             self.trees.setup(planning)
 
@@ -209,7 +210,7 @@ class PlanningCentralWidget(QSplitter):
         except ET.ParseError:
             return
         try:
-            planning = PlanningData.from_element(ET.fromstring(xmlcode))
+            planning = PlanningData.from_element(PlanningData(), ET.fromstring(xmlcode))
             planning.set_filename(self.path)
             planning.generate_charts()
             self.preview.update_tabs(planning.chart_filenames)
