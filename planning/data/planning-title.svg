@@ -9,7 +9,7 @@
    sodipodi:docname="planning-title.svg"
    width="20"
    height="20"
-   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
    inkscape:export-filename="planning.png"
    inkscape:export-xdpi="1228.8"
    inkscape:export-ydpi="1228.8"
@@ -34,22 +34,24 @@
      fit-margin-bottom="0"
      units="px"
      inkscape:zoom="21.011173"
-     inkscape:cx="24.915316"
-     inkscape:cy="8.7572456"
+     inkscape:cx="15.111008"
+     inkscape:cy="8.8048392"
      inkscape:window-width="1920"
-     inkscape:window-height="1017"
+     inkscape:window-height="1009"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg12"
      inkscape:showpageshadow="2"
      inkscape:deskcolor="#d1d1d1" />
-  <circle
-     style="fill:#ffffff;fill-opacity:1;stroke-width:1.11111"
-     id="path813"
-     cx="10"
-     cy="10"
-     r="10" />
+  <rect
+     style="fill:#e6e6e6;stroke-width:1.04491"
+     id="rect320"
+     width="18.466364"
+     height="5.0925279"
+     x="0.80909336"
+     y="11.470088"
+     ry="0.88339788" />
   <rect
      style="fill:#999999;stroke:#cc3535;stroke-width:0"
      id="rect572"

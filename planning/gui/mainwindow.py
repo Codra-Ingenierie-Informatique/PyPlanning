@@ -397,12 +397,11 @@ Thanks for your patience."""
 
     def check_recent_files(self):
         """Check if recent files still exist"""
-        self.recent_files = [
-            filename for filename in self.recent_files if osp.isfile(filename)
-        ]
+        self.recent_files = [fname for fname in self.recent_files if osp.isfile(fname)]
 
     def add_to_recent_files(self, fname):
         """Add to recent files"""
+        fname = osp.abspath(osp.normpath(fname))
         if fname in self.recent_files:
             self.recent_files.pop(self.recent_files.index(fname))
         self.recent_files.insert(0, fname)
