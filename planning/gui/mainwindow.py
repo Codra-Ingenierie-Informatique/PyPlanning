@@ -24,7 +24,7 @@ from qtpy.compat import getopenfilename, getsavefilename
 
 #  Local imports
 from planning import __version__
-from planning.config import APP_DESC, APP_NAME, DATAPATH, DEBUG, Conf, _
+from planning.config import APP_DESC, APP_NAME, DATAPATH, DEBUG, DEBUG_VAR_STR, Conf, _
 from planning.gui.centralwidget import PlanningCentralWidget
 from planning.gui.logviewer import exec_logviewer_dialog
 from planning.utils import qthelpers as qth
@@ -34,7 +34,8 @@ class PlanningMainWindow(QW.QMainWindow):
     """Planning main window"""
 
     MAX_RECENT_FILES = 10
-    DEFAULT_NAME = _("untitled") + ".xml"
+    EXTENSION = ".xml"
+    DEFAULT_NAME = _("untitled") + EXTENSION
 
     def __init__(self, fname=None):
         """Initialize main window"""
@@ -344,7 +345,7 @@ Thanks for your patience."""
             answer = QW.QMessageBox.warning(
                 self,
                 title,
-                _("Do you want to save XML file before continuing?"),
+                _("Do you want to save %s file before continuing?") % self.EXTENSION,
                 QW.QMessageBox.Yes | QW.QMessageBox.No | QW.QMessageBox.Cancel,
             )
             if answer == QW.QMessageBox.Yes:
@@ -380,7 +381,7 @@ Thanks for your patience."""
             return False
         if fname is None:
             fname, _selected_filter = getopenfilename(
-                self, _("Open"), self.basedir, "*.xml"
+                self, _("Open"), self.basedir, "*" + self.EXTENSION
             )
             if not fname:
                 return False
@@ -433,7 +434,7 @@ Thanks for your patience."""
         if fname is None:
             fname = osp.join(self.basedir, self.DEFAULT_NAME)
         fname, _selected_filter = getsavefilename(
-            self, _("Save as"), fname, filters="*.xml"
+            self, _("Save as"), fname, filters="*" + self.EXTENSION
         )
         if not fname:
             return False
@@ -451,7 +452,7 @@ Thanks for your patience."""
             <br>Python {platform.python_version()},
             Qt {QC.__version__} {_('under')} {platform.system()}
             <p><br><i>{_('How to enable debug mode?')}</i>
-            <br>{_('Set the PLANNINGDEBUG environment variable to 1, 2 or 3')}""",
+            <br>{_('Set the %s environment variable to 1, 2 or 3') % DEBUG_VAR_STR}""",
         )
 
     def show_log_viewer(self):

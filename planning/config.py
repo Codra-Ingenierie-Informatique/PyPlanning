@@ -25,10 +25,11 @@ APP_DESC = _(
 """
 )
 
+DEBUG_VAR_STR = "PLANNINGDEBUG"
 try:
-    DEBUG = int(os.environ.get("PLANNINGDEBUG", ""))
+    DEBUG = int(os.environ.get(DEBUG_VAR_STR, ""))
 except ValueError:
-    DEBUG = 1 if len(os.environ.get("PLANNINGDEBUG", "")) > 0 else 0
+    DEBUG = 1 if len(os.environ.get(DEBUG_VAR_STR, "")) > 0 else 0
 
 MAIN_FONT_FAMILY = "Yu Gothic UI"  # "Bahnschrift Light"
 DATETIME_FORMAT = "%d/%m/%Y - %H:%M:%S"
