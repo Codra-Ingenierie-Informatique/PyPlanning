@@ -55,7 +55,7 @@ class LogViewerWindow(QW.QDialog):
     def __init__(self, fnames, parent=None):
         super().__init__(parent)
         self.setObjectName("logviewer")
-        self.setWindowTitle(_("PyPlanning log files"))
+        self.setWindowTitle(_("%s log files") % APP_NAME)
         self.tabs = QW.QTabWidget(self)
         for fname in fnames:
             if osp.isfile(fname):
