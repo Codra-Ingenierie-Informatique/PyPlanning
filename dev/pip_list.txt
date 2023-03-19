@@ -23,10 +23,11 @@ mdurl                     0.1.2
 more-itertools            9.0.0
 msvc-runtime              14.34.31931
 mypy-extensions           1.0.0
+numpy                     1.24.2
 packaging                 23.0
 pathspec                  0.11.0
 pefile                    2023.2.7
-pip                       23.0
+pip                       23.0.1
 pkginfo                   1.9.6
 platformdirs              3.0.0
 pycodestyle               2.10.0
