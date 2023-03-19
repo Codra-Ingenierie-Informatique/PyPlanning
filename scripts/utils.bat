@@ -53,8 +53,18 @@ for %%a in ("%PYTHON%") do set "p_dir=%%~dpa"
 for %%a in (%p_dir:~0,-1%) do set "WINPYDIRBASE=%%~dpa"
 :nopython
 if defined WINPYDIRBASE (
-    call %WINPYDIRBASE%\scripts\env.bat
-    call :ShowTitle "Using WinPython from %WINPYDIRBASE%"
+    if exist %WINPYDIRBASE%\scripts\activate.bat (
+        call %WINPYDIRBASE%\scripts\activate.bat
+        call :ShowTitle "Using virtual environment from %WINPYDIRBASE%"
+    ) else (
+        if exist %WINPYDIRBASE%\scripts\env.bat (
+            call %WINPYDIRBASE%\scripts\env.bat
+            call :ShowTitle "Using WinPython from %WINPYDIRBASE%"
+        ) else (
+            echo Warning: %WINPYDIRBASE% is not a valid WinPython directory
+            echo ********
+        )
+    )
 ) else (
     echo Warning: WINPYDIRBASE environment variable is not defined, switching to system Python
     echo ********
