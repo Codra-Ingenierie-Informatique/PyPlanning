@@ -78,6 +78,7 @@
     <TASK duration="20" name="CDR" project="F" color="s" />
     <TASK duration="85" name="Coding/testing/Sim FAT" project="F" color="s" />
     <TASK duration="36" name="FAT (Real)" project="F" color="s" />
+    <MILESTONE name="Milestone" project="F" />
   </TASKS>
   <CLOSINGDAYS>
     <CLOSINGDAY start="18/04/22" />
