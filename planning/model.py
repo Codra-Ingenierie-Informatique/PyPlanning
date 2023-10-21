@@ -385,7 +385,7 @@ class AbstractData:
         """Create or update Gantt objects and add them to dictionaries"""
 
 
-class DurationData(AbstractData):
+class AbstractDurationData(AbstractData):
     """Duration data set"""
 
     def __init__(self, pdata, name=None, fullname=None):
@@ -427,7 +427,7 @@ class DurationData(AbstractData):
         return True
 
 
-class ChartData(DurationData):
+class ChartData(AbstractDurationData):
     """Chart data set"""
 
     GANTT_SCALES = {
@@ -546,7 +546,7 @@ class ChartData(DurationData):
             raise ValueError(f"Invalid planning type '{ptype}'")
 
 
-class AbstractTaskData(DurationData):
+class AbstractTaskData(AbstractDurationData):
     """Abstract Task data set"""
 
     def __init__(self, pdata, name=None, fullname=None):
@@ -782,7 +782,7 @@ class MilestoneData(AbstractTaskData):
         super().process_gantt()
 
 
-class AbstractVacationData(DurationData):
+class AbstractVacationData(AbstractDurationData):
     """Abstract class for vacation days"""
 
     DEFAULT_ICON_NAME = "leave.svg"
@@ -802,8 +802,8 @@ class AbstractVacationData(DurationData):
         return True
 
 
-class ClosingDaysData(AbstractVacationData):
-    """Closing days data set"""
+class ClosingDayData(AbstractVacationData):
+    """Closing day data set"""
 
     TAG = "CLOSINGDAY"
     DEFAULT_NAME = _("Closing")
@@ -915,8 +915,8 @@ class PlanningData(AbstractData):
             self.add_task(data)
         cdays_elt = self.element.find("CLOSINGDAYS")
         if cdays_elt is not None:
-            for elem in cdays_elt.findall(ClosingDaysData.TAG):
-                data = ClosingDaysData.from_element(self, elem)
+            for elem in cdays_elt.findall(ClosingDayData.TAG):
+                data = ClosingDayData.from_element(self, elem)
                 self.add_closing_day(data)
 
     @classmethod
@@ -1113,7 +1113,7 @@ class PlanningData(AbstractData):
     def add_closing_day(self, data, after_data=None):
         """Add closing day to planning"""
         index = None
-        if isinstance(after_data, ClosingDaysData):
+        if isinstance(after_data, ClosingDayData):
             index = self.clolist.index(after_data)
         self.__append_or_insert(self.clolist, index, data)
 
