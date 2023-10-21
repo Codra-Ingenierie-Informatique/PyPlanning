@@ -1151,6 +1151,12 @@ class PlanningData(AbstractData):
             if projname is not None:
                 mainproj.add_task(project)
 
+    def update_task_calc_dates(self):
+        """Update task calculated start/end dates"""
+        for data in self.iterate_task_data():
+            if isinstance(data, TaskData):
+                data.update_calc_start_end_dates()
+
     def generate_charts(self, one_line_for_tasks=True):
         """Generate charts"""
         self.process_gantt()
@@ -1161,6 +1167,4 @@ class PlanningData(AbstractData):
             except KeyError as exc:
                 raise KeyError(f"No task found for '{pname}' project") from exc
             data.make_svg(project, one_line_for_tasks)
-        for data in self.iterate_task_data():
-            if isinstance(data, TaskData):
-                data.update_calc_start_end_dates()
+        self.update_task_calc_dates()
