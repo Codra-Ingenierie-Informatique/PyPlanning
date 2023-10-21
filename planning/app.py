@@ -11,13 +11,13 @@ Planning
 import sys
 
 from guidata.configtools import get_image_file_path
+from guidata.qthelpers import qt_app_context
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QPixmap
 from qtpy.QtWidgets import QSplashScreen
 
 #  Local imports
 from planning.gui.mainwindow import PlanningMainWindow
-from planning.utils.qthelpers import qt_app_context
 
 
 def run(fname=None):
