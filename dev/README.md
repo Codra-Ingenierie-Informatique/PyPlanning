@@ -18,5 +18,5 @@ and `tasks.json`):
 
     ```bat
     @REM Development environment
-    set PYTHON_PYPLANNING_DEV=C:\Apps\WPy64-31001-PyPlanning\python-3.10.0.amd64\python.exe
+    set PYPLANNING_PYTHONEXE=C:\Apps\WPy64-31001-PyPlanning\python-3.10.0.amd64\python.exe
     ```

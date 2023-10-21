@@ -15,7 +15,7 @@
                 "cwd": "scripts",
                 "env": {
                     "UNATTENDED": "1",
-                    "PYTHON": "${env:PYTHON_PYPLANNING_DEV}",
+                    "PYTHON": "${env:PYPLANNING_PYTHONEXE}",
                 }
             },
             "group": {
@@ -44,7 +44,7 @@
                 "cwd": "scripts",
                 "env": {
                     "UNATTENDED": "1",
-                    "PYTHON": "${env:PYTHON_PYPLANNING_DEV}",
+                    "PYTHON": "${env:PYPLANNING_PYTHONEXE}",
                 }
             },
             "group": {
@@ -91,7 +91,7 @@
             "options": {
                 "cwd": "scripts",
                 "env": {
-                    "PYTHON": "${env:PYTHON_PYPLANNING_DEV}",
+                    "PYTHON": "${env:PYPLANNING_PYTHONEXE}",
                     "UNATTENDED": "1",
                 }
             },
@@ -120,7 +120,7 @@
             "options": {
                 "cwd": "scripts",
                 "env": {
-                    "PYTHON": "${env:PYTHON_PYPLANNING_DEV}",
+                    "PYTHON": "${env:PYPLANNING_PYTHONEXE}",
                     "UNATTENDED": "1",
                     "NSIS_COPYRIGHT_INFO": "Copyright (c) CODRA 2022",
                 }
@@ -154,7 +154,7 @@
             "options": {
                 "cwd": "scripts",
                 "env": {
-                    "PYTHON": "${env:PYTHON_PYPLANNING_DEV}",
+                    "PYTHON": "${env:PYPLANNING_PYTHONEXE}",
                     "UNATTENDED": "1",
                 }
             },
@@ -192,7 +192,7 @@
                 "cwd": "scripts",
                 "env": {
                     "UNATTENDED": "1",
-                    "PYTHON": "${env:PYTHON_PYPLANNING_DEV}",
+                    "PYTHON": "${env:PYPLANNING_PYTHONEXE}",
                 }
             },
             "group": {
