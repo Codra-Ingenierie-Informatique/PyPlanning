@@ -192,13 +192,7 @@ class PlanningCentralWidget(QSplitter):
         if DEBUG >= 3:
             raise  # pylint: disable=misplaced-bare-raise
         print("")
-        print("+-------------------------------------------------------+")
-        print("| Please do not panic: this is not an error message     |")
-        print("| (otherwise it would be written in red...).            |")
-        print("| This is not a bug.                                    |")
-        print("| This is just logging, for debugging purpose.          |")
-        print("+-------------------------------------------------------+")
-        print("")
+        print("*** This is not a bug. This is just logging, for debugging purpose. ***")
         print(tbtext)
 
     def xml_code_changed(self):
