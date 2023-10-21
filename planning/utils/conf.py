@@ -13,7 +13,7 @@ import os
 import os.path as osp
 
 from guidata.configtools import get_font
-from guidata.userconfig import NoDefault, UserConfig, get_config_dir
+from guidata.userconfig import NoDefault, UserConfig
 
 CONF = UserConfig({})
 
@@ -78,7 +78,7 @@ class ConfigPathOption(Option):
         fname = super().get(default)
         if osp.basename(fname) != fname:
             raise ValueError("Invalid configuration file name {fname}")
-        return osp.join(get_config_dir(), osp.basename(fname))
+        return CONF.get_path(osp.basename(fname))
 
 
 class WorkingDirOption(Option):
