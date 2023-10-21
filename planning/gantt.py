@@ -705,8 +705,11 @@ def _get_maxx(scale, start_date, end_date):
     return maxx
 
 
-def _time_diff(scale, start_date, end_date, milestone=False):
-    """Return time difference, depending on scale"""
+def _time_diff(scale, start_date, end_date, duration, milestone=False):
+    """Return time difference, depending on scale.
+    If duration is True, this computes the duration of the task, else it computes
+    the instant of start of the task which is the time difference between start_date
+    (the beginning of the project) and end_date (the beginning of the task)"""
     if scale == DRAW_WITH_DAILY_SCALE:
         return (end_date - start_date).days
     if scale == DRAW_WITH_WEEKLY_SCALE:
@@ -714,8 +717,12 @@ def _time_diff(scale, start_date, end_date, milestone=False):
         guess = start_date
         while guess.weekday() != 0:
             guess = guess + relativedelta(days=-1)
-        while end_date.weekday() != 6:
-            end_date = end_date + relativedelta(days=+1)
+        if duration:
+            while end_date.weekday() != 0:
+                end_date = end_date + relativedelta(days=-1)
+        else:
+            while end_date.weekday() != 6:
+                end_date = end_date + relativedelta(days=+1)
         while guess + relativedelta(days=+6) < end_date:
             td += 1
             guess += relativedelta(weeks=+1)
@@ -723,6 +730,8 @@ def _time_diff(scale, start_date, end_date, milestone=False):
             return td - 1
         return td
     if scale == DRAW_WITH_MONTHLY_SCALE:
+        if not duration:
+            start_date = start_date.replace(day=1)
         rdelta = relativedelta(end_date, start_date)
         return rdelta.months + rdelta.years * 12
 
@@ -1187,8 +1196,8 @@ class Task(object):
         # cas 1 -s--S==E--e-
         if self.start_date() >= start and self.end_date() <= end:
             # print("cas 1 -s--S==E--e-")
-            x = _time_diff(scale, start, self.start_date()) * 10
-            d = (_time_diff(scale, self.start_date(), self.end_date()) + 1) * 10
+            x = _time_diff(scale, start, self.start_date(), False) * 10
+            d = (_time_diff(scale, self.start_date(), self.end_date(), True) + 1) * 10
             self.drawn_x_begin_coord = x
             self.drawn_x_end_coord = x + d
         # cas 5 -s--e--S==E-
@@ -1203,15 +1212,15 @@ class Task(object):
         elif self.start_date() < start and self.end_date() <= end:
             # print("cas 2 -S==s==E--e-")
             x = 0
-            d = (_time_diff(scale, start, self.end_date()) + 1) * 10
+            d = (_time_diff(scale, start, self.end_date(), True) + 1) * 10
             self.drawn_x_begin_coord = x
             self.drawn_x_end_coord = x + d
             add_begin_mark = True
         # cas 3 -s--S==e==E-
         elif self.start_date() >= start and self.end_date() > end:
             # print("cas 3 -s--S==e==E-")
-            x = _time_diff(scale, start, self.start_date()) * 10
-            d = (_time_diff(scale, self.start_date(), end) + 1) * 10
+            x = _time_diff(scale, start, self.start_date(), False) * 10
+            d = (_time_diff(scale, self.start_date(), end, True) + 1) * 10
             self.drawn_x_begin_coord = x
             self.drawn_x_end_coord = x + d
             add_end_mark = True
@@ -1219,7 +1228,7 @@ class Task(object):
         elif self.start_date() < start and self.end_date() > end:
             # print("cas 4 -S==s==e==E-")
             x = 0
-            d = (_time_diff(scale, start, end) + 1) * 10
+            d = (_time_diff(scale, start, end, True) + 1) * 10
             self.drawn_x_begin_coord = x
             self.drawn_x_end_coord = x + d
             add_end_mark = True
@@ -1799,7 +1808,7 @@ class Milestone(Task):
 
         # cas 1 -s--X--e-
         if self.start_date() >= start and self.end_date() <= end:
-            x = _time_diff(scale, start, self.start_date()) * 10
+            x = _time_diff(scale, start, self.start_date(), False) * 10
             self.drawn_x_begin_coord = x
             self.drawn_x_end_coord = x
         else:
@@ -2566,7 +2575,7 @@ class Project(object):
             cday = start_date
             while cday <= end_date:
                 # Vacations
-                diff = _time_diff(scale, start_date, cday)
+                diff = _time_diff(scale, start_date, cday, False)
                 opacity = 0.65
                 if scale == DRAW_WITH_WEEKLY_SCALE:
                     opacity /= 4.0

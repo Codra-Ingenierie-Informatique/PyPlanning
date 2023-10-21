@@ -3,21 +3,30 @@
 
 import os.path as osp
 
-from guidata import qapplication
+from guidata.qthelpers import qt_app_context
 
 from planning.config import TESTPATH
 from planning.gui.centralwidget import PlanningCentralWidget
 
 
-def test():
+def test_central_widget(fname):
     """Test central widget"""
-    app = qapplication()
     widget = PlanningCentralWidget()
     widget.setWindowTitle("Planning editor")
     widget.show()
-    widget.load_file(osp.join(TESTPATH, "test.xml"))
-    app.exec_()
+    widget.load_file(fname)
+
+
+def test_different_projects():
+    """Test different projects"""
+    example_path = osp.join(TESTPATH, osp.pardir, osp.pardir, "examples")
+    with qt_app_context(exec_loop=True):
+        for fname in (
+            osp.join(TESTPATH, "test.xml"),
+            osp.join(example_path, "project_planning.xml"),
+        ):
+            test_central_widget(fname)
 
 
 if __name__ == "__main__":
-    test()
+    test_different_projects()
