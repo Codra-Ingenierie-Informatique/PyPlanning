@@ -13,7 +13,7 @@ import os
 import os.path as osp
 
 from guidata.configtools import get_font
-from guidata.userconfig import NoDefault, UserConfig
+from guidata.userconfig import NoDefault, UserConfig, get_config_basedir
 
 
 class AppUserConfig(UserConfig):
@@ -21,7 +21,7 @@ class AppUserConfig(UserConfig):
 
     def get_path(self, basename: str) -> str:
         """Return filename path inside configuration directory"""
-        app_config_dir = osp.join(get_config_dir(), f".{self.name}")
+        app_config_dir = osp.join(get_config_basedir(), f".{self.name}")
         if not osp.isdir(app_config_dir):
             os.makedirs(app_config_dir)
         return osp.join(app_config_dir, basename)
