@@ -28,6 +28,7 @@ Fix the following issues:
 - TODO: Performance: process only gantt objects affected by changes
 - TODO: Performance: update only visible chart? (this is it!)
 - TODO: Performance: run chart update in a thread?
+- TODO: New feature: custom chart names (instead of automatic indexed names)
 
 ## Medium-priority tasks
 
