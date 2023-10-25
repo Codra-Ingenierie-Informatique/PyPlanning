@@ -1,5 +1,15 @@
 # PyPlanning Releases #
 
+## Version 1.5.4 (🚧 work in progress 🚧) ##
+
+🛠️ Bug fixes:
+
+* ...
+
+💥 Changes:
+
+* ...
+
 ## Version 1.5.3 ##
 
 🛠️ Bug fixes:
@@ -16,5 +26,5 @@
 
 * Added launcher script (dev)
 * Updated requirements
-* `PlanningData``: fixed design flaw (removed singleton)
+* `PlanningData`: fixed design flaw (removed singleton)
 * Fixed various code quality issues
