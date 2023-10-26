@@ -1,15 +1,5 @@
 # PyPlanning Releases #
 
-## Version 1.5.5 (🚧 work in progress 🚧) ##
-
-🛠️ Bug fixes:
-
-* ...
-
-💥 Changes:
-
-* ...
-
 ## Version 1.5.4 ##
 
 🛠️ Bug fixes:

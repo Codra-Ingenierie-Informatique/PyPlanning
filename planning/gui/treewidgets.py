@@ -96,7 +96,11 @@ class TaskTreeDelegate(QW.QItemDelegate):
         self.editor_opened = False
         editor = self.sender()
         self.commitData.emit(editor)
-        self.closeEditor.emit(editor)
+        try:
+            self.closeEditor.emit(editor)
+        except RuntimeError:
+            # editor object has been deleted
+            pass
 
     def setEditorData(self, editor, index):  # pylint: disable=invalid-name
         """Reimplement Qt method"""
