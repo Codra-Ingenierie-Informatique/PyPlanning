@@ -54,7 +54,11 @@ class PlanningMainWindow(QW.QMainWindow):
             self.console = None
         else:
             self.console = DockableConsole(
-                self, namespace={"win": self}, message="", debug=DEBUG >= 1
+                self,
+                namespace={"win": self},
+                message="",
+                debug=DEBUG >= 1,
+                multithreaded=False,
             )
             dockwidget, location = self.console.create_dockwidget("Console")
             self.addDockWidget(location, dockwidget)
