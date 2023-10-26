@@ -191,9 +191,10 @@ class PlanningCentralWidget(QSplitter):
         self.SIG_MESSAGE.emit(tbtext, 10000)
         if DEBUG >= 3:
             raise  # pylint: disable=misplaced-bare-raise
-        print("")
-        print("*** This is not a bug. This is just logging, for debugging purpose. ***")
-        print(tbtext)
+        if DEBUG >= 1:
+            print("")
+            print("*** This is just logging, for debugging purpose. ***")
+            print(tbtext)
 
     def xml_code_changed(self):
         """XML code has changed"""

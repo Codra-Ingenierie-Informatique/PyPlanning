@@ -4,7 +4,7 @@
 
 🛠️ Bug fixes:
 
-* ...
+* Log all warnings to internal console only if DEBUG is enabled
 
 💥 Changes:
 
