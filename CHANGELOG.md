@@ -8,7 +8,8 @@
 
 💥 Changes:
 
-* ...
+* Added Python package
+* Added [documentation](https://pyplanning.readthedocs.io/)
 
 ## Version 1.5.4 ##
 
