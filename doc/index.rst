@@ -7,6 +7,11 @@ PyPlanning User Guide
 PyPlanning is a library for managing team schedules and quickly creating simple
 project plannings.
 
+PyPlanning was initially developed for internal use at `Codra`_.
+The main goal of this project is to provide a simple and easy-to-use planning tool
+for small teams or small projects, i.e. in cases where using a full-featured project
+management software is overkill.
+
 .. figure:: _static/plotpy-stack-powered.png
     :align: center
 

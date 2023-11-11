@@ -1,8 +1,13 @@
 ![PyPlanning](https://raw.githubusercontent.com/Codra-Ingenierie-Informatique/PyPlanning/master/planning/data/planning.png)
 
-PyPlanning is a small planning tool originally developed by Pierre Raybaut
-([CODRA](https://codra.net/)) to manage team schedules and
-to quickly create simple project plannings.
+[![pypi version](https://img.shields.io/pypi/v/PyPlanning.svg)](https://pypi.org/project/PyPlanning/)
+[![PyPI status](https://img.shields.io/pypi/status/PyPlanning.svg)](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/PyPlanning.svg)](https://pypi.python.org/pypi/PyPlanning/)
+[![download count](https://img.shields.io/conda/dn/conda-forge/PyPlanning.svg)](https://www.anaconda.com/download/)
+
+ℹ️ Created in 2022 by [Pierre Raybaut](https://github.com/PierreRaybaut) and maintained by the [PyPlanning](https://github.com/Codra-Ingenierie-Informatique/PyPlanning) project team.
+
+PyPlanning is a small planning tool initially developed for internal use at [CODRA](https://codra.net/). The main goal of this project is to provide a simple and easy-to-use planning tool for small teams or small projects, i.e. in cases where using a full-featured project management software is overkill.
 
 # Examples
 

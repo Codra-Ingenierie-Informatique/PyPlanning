@@ -8,7 +8,7 @@
 
 💥 Changes:
 
-* Added Python package
+* Added [Python package](https://pypi.org/project/PyPlanning/)
 * Added [documentation](https://pyplanning.readthedocs.io/)
 
 ## Version 1.5.4 ##
