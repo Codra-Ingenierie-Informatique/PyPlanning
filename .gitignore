@@ -6,12 +6,13 @@ doctmp/
 .vs/
 *.pyproj
 *.sln
-test*.svg
-*.lnk
-
-# Temporary files/Generated files
-examples/*.svg
-planning/tests/test-*.xml
+releases/
+*.chm
+.doctrees/
+doc/install_requires.txt
+doc/extras_require-dev.txt
+doc/extras_require-doc.txt
+*.bak
 
 # Created by https://www.gitignore.io/api/python
 
@@ -28,7 +29,7 @@ __pycache__/
 .Python
 env/
 build/
-releases/
+_build/
 develop-eggs/
 dist/
 downloads/
@@ -47,6 +48,7 @@ var/
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
+# *.spec
 
 # Installer logs
 pip-log.txt

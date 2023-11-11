@@ -1,4 +1,4 @@
-![PyPlanning](./planning/data/planning.png)
+![PyPlanning](https://raw.githubusercontent.com/Codra-Ingenierie-Informatique/PyPlanning/master/planning/data/planning.png)
 
 PyPlanning is a small planning tool originally developed by Pierre Raybaut
 ([CODRA](https://codra.net/)) to manage team schedules and
@@ -8,15 +8,15 @@ to quickly create simple project plannings.
 
 ## Team schedule (daily view)
 
-![Team schedule](./examples/team_schedule-daily.png)
+![Team schedule](https://raw.githubusercontent.com/Codra-Ingenierie-Informatique/PyPlanning/master/doc/images/shots/team_schedule-daily.png)
 
 ## Team schedule (tasks view)
 
-![Team schedule / Tasks](./examples/team_schedule-tasks.png)
+![Team schedule / Tasks](https://raw.githubusercontent.com/Codra-Ingenierie-Informatique/PyPlanning/master/doc/images/shots/team_schedule-tasks.png)
 
 ## Simple project planning
 
-![Simple project planning](./examples/project_planning.png)
+![Simple project planning](https://raw.githubusercontent.com/Codra-Ingenierie-Informatique/PyPlanning/master/doc/images/shots/project_planning.png)
 
 # Future plans
 

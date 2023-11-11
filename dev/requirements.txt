@@ -9,3 +9,6 @@ pyinstaller
 python-dateutil
 svgwrite
 twine
+build
+sphinx
+pydata_sphinx_theme
