@@ -20,7 +20,6 @@ from guidata.widgets.codeeditor import CodeEditor
 from qtpy import QtWidgets as QW
 
 from planning.config import DATETIME_FORMAT, Conf, _, get_old_log_fname
-from planning.utils.misc import to_string
 
 
 class ErrorMessageBox(QW.QDialog):
