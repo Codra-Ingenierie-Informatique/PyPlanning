@@ -4,7 +4,7 @@ call %~dp0utils GetScriptPath SCRIPTPATH
 call %FUNC% GetLibName LIBNAME
 cd %SCRIPTPATH%\..\
 call %FUNC% SetPythonPath
-call %FUNC% UseWinPython
+call %FUNC% UsePython
 call %FUNC% GetVersion VERSION
 
 echo ===========================================================================

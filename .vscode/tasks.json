@@ -9,12 +9,14 @@
             "command": "cmd",
             "args": [
                 "/c",
-                "gettext_scan.bat",
+                "gettext.bat",
+                "rescan"
             ],
             "options": {
                 "cwd": "scripts",
                 "env": {
                     "UNATTENDED": "1",
+                    "PYTHONUTF8": "1",
                     "PYTHON": "${env:PYPLANNING_PYTHONEXE}",
                 }
             },

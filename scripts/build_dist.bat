@@ -12,7 +12,6 @@ call %FUNC% GetLibName LIBNAME
 call %FUNC% GetModName MODNAME
 call %FUNC% SetPythonPath
 call %FUNC% UsePython
-cd %SCRIPTPATH%\..
 if exist MANIFEST ( del /q MANIFEST )
 %PYTHON% -m build
 rmdir /s /q %LIBNAME%.egg-info

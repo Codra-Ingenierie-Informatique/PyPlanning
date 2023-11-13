@@ -12,10 +12,8 @@ call %FUNC% GetLibName LIBNAME
 call %FUNC% GetModName MODNAME
 call %FUNC% SetPythonPath
 call %FUNC% UsePython
-call %FUNC% GetVersion CDL_VERSION
 cd %SCRIPTPATH%\..
 %PYTHON% doc\update_requirements.py
-set PATH=C:\Program Files\HTML Help Workshop;C:\Program Files (x86)\HTML Help Workshop;%PATH%
 sphinx-build -b singlehtml doc build\doc
 start build\doc\index.html
 call %FUNC% EndOfScript
