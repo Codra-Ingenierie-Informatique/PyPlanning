@@ -3,10 +3,9 @@
 
 import os.path as osp
 
-from guidata.qthelpers import qt_app_context
-
 from planning.config import TESTPATH
 from planning.gui.centralwidget import PlanningCentralWidget
+from planning.utils.qthelpers import qt_app_context
 
 
 def test_central_widget(fname):

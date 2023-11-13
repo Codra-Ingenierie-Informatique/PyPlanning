@@ -4,9 +4,8 @@
 Log viewer test
 """
 
-from guidata.qthelpers import qt_app_context
-
 from planning.gui.logviewer import exec_logviewer_dialog
+from planning.utils.qthelpers import qt_app_context
 
 SHOW = True  # Show test in GUI-based test launcher
 

@@ -1,5 +1,11 @@
 # PyPlanning Releases #
 
+## Version 1.5.6 ##
+
+🛠️ Bug fixes:
+
+* Reintroduced application logs (were accidentally removed in 1.5.3 following a refactoring)
+
 ## Version 1.5.5 ##
 
 🛠️ Bug fixes:
