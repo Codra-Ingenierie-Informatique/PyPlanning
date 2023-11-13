@@ -5,6 +5,7 @@
 🛠️ Bug fixes:
 
 * Reintroduced application logs (were accidentally removed in 1.5.3 following a refactoring)
+* XML mode: fixed a bug where the application would crash if the user tried to remove a start date from a task
 
 ## Version 1.5.5 ##
 

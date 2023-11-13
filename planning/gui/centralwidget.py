@@ -209,7 +209,7 @@ class PlanningCentralWidget(QSplitter):
             planning.set_filename(self.path)
             planning.generate_charts()
             self.preview.update_tabs(planning.chart_filenames)
-        except (ValueError, KeyError, AssertionError, TypeError):
+        except (ValueError, KeyError, AssertionError, TypeError, AttributeError):
             self._print_do_not_panic()
 
     def tree_changed(self):
