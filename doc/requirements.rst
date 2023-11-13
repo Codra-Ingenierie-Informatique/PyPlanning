@@ -22,9 +22,9 @@ The :mod:`planning` package requires the following Python modules:
     * - svgwrite
       - 
       - A Python library to create SVG drawings.
-    * - dateutil
+    * - python-dateutil
       - 
-      - 
+      - Extensions to the standard Python datetime module
 
 Optional modules for development:
 
