@@ -1,4 +1,4 @@
-<PROJECT name="General" color="#FFFF88">
+<PROJECT name="General">
   <CHARTS>
     <CHART start="30/01/23" stop="05/03/23" today="01/02/23" type="r" scale="d" t0mode="False" />
     <CHART start="01/01/23" stop="30/06/23" today="23/01/23" type="r" scale="w" t0mode="False" />

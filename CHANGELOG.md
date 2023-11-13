@@ -7,6 +7,11 @@
 * Reintroduced application logs (were accidentally removed in 1.5.3 following a refactoring)
 * XML mode: fixed a bug where the application would crash if the user tried to remove a start date from a task
 
+💥 Changes:
+
+* New default colors for tasks and resources
+
+
 ## Version 1.5.5 ##
 
 🛠️ Bug fixes:

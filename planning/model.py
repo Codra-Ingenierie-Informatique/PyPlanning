@@ -42,15 +42,14 @@ class DataItem:
     """Data elementary item"""
 
     COLORS = {
-        "orange": "#fca168",
-        "red": "#f8696b",
-        "blue": "#00a9ff",
+        "orange": "#fab978",
+        "red": "#e47172",
+        "blue": "#53ccff",
         "yellow": "#ffd966",
-        "cyan": "#00FFFF",
-        "silver": "#C0C0C0",
-        "green": "#00FF00",
-        "magenta": "#FF00FF",
-        "fuchsia": "#FF00FF",
+        "cyan": "#c6eeff",
+        "silver": "#9c9ea0",
+        "green": "#b0d184",
+        "magenta": "#7030a0",
     }
 
     def __init__(self, parent, name, datatype, value, choices=None):

@@ -2547,7 +2547,7 @@ class Project(object):
                         fill=r.color,
                         stroke=r.color,
                         stroke_width=1,
-                        opacity=0.65,
+                        opacity=0.95,
                     )
                 )
             ress.add(
