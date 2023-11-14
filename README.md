@@ -29,29 +29,30 @@ PyPlanning is a small planning tool initially developed for internal use at [COD
 
 Fix the following issues:
 
-- FIXME: Treewidget/charts: removing project lead to "" project instead of no value
-- TODO: Performance: process only gantt objects affected by changes
-- TODO: Performance: update only visible chart? (this is it!)
-- TODO: Performance: run chart update in a thread?
-- TODO: New feature: custom chart names (instead of automatic indexed names)
+[ ] FIXME: Treewidget/charts: removing project lead to "" project instead of no value
+[ ] TODO: Performance: process only gantt objects affected by changes
+[ ] TODO: Performance: update only visible chart? (this is it!)
+[ ] TODO: Performance: run chart update in a thread?
+[ ] TODO: New feature: custom chart names (instead of automatic indexed names)
 
 ## Medium-priority tasks
 
 Implement the following features:
 
-- TODO: Task: add "duplicate" action
-- TODO: Task tree widget: add sub-context-menu "Bind to": resources
-- TODO: Chart tree widget: add multiple checkboxes to select projects
-- TODO: Chart tree widget: add QComboBox for editing the "project" field
+[ ] TODO: Vacation: add the possibility to set duration in days
+[ ] TODO: Task: add "duplicate" action
+[ ] TODO: Task tree widget: add sub-context-menu "Bind to": resources
+[ ] TODO: Chart tree widget: add multiple checkboxes to select projects
+[ ] TODO: Chart tree widget: add QComboBox for editing the "project" field
 
 ## Low-priority tasks
 
 Implement the following features:
 
-- TODO: Add "percent_done" support for tasks
-- TODO: Performance: add an option to update on demand?
-- TODO: Replace python-gantt (planning/gantt.py) by an alternative with less restrictive
-  license terms (no GPL!)
+[ ] TODO: Add "percent_done" support for tasks
+[ ] TODO: Performance: add an option to update on demand?
+[ ] TODO: Replace python-gantt (planning/gantt.py) by an alternative with less
+    restrictive license terms (no GPL!)
 
 # License
 
