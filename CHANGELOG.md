@@ -1,5 +1,13 @@
 # PyPlanning Releases #
 
+## Version 1.5.7 ##
+
+💥 Changes:
+
+* New default colors for project tasks (light cyan)
+* New default colors for vacations (silver)
+
+
 ## Version 1.5.6 ##
 
 🛠️ Bug fixes:

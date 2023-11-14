@@ -58,9 +58,9 @@ cm = 35.43307
 
 class COLORS(enum.Enum):
     YEARS = "#9b9b9b"
-    VACATIONS = "#008000"
+    VACATIONS = "#999999"
     MILESTONES = "#FF3030"
-    PROJECTS = "#FFFF90"
+    PROJECTS = "#c6eeff"
     TODAY = "#76e9ff"
     START_END_DATES = "#9b9b9b"
 
