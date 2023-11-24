@@ -14,8 +14,10 @@ management software is overkill.
 
 .. figure:: _static/plotpy-stack-powered.png
     :align: center
+    :width: 300 px
 
-    PyPlanning is powered by `PlotPyStack`_
+    PyPlanning is powered by `PlotPyStack <https://github.com/PlotPyStack>`_,
+    the Python-Qt visualization and scientific graphical user interface stack.
 
 .. _PlotPyStack: https://github.com/PlotPyStack
 
