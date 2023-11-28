@@ -17,6 +17,7 @@ import platform
 from guidata import __version__ as GUIDATA_VERSION_STR
 from guidata.configtools import get_icon
 from guidata.qthelpers import add_actions, create_action, win32_fix_title_bar_background
+from guidata.userconfig import get_config_basedir
 from guidata.widgets.console import DockableConsole
 from qtpy import QtCore as QC
 from qtpy import QtWidgets as QW
@@ -24,7 +25,7 @@ from qtpy.compat import getopenfilename, getsavefilename
 
 #  Local imports
 from planning import __version__
-from planning.config import APP_DESC, APP_NAME, DATAPATH, DEBUG, DEBUG_VAR_STR, Conf, _
+from planning.config import APP_DESC, APP_NAME, DEBUG, DEBUG_VAR_STR, Conf, _
 from planning.gui.centralwidget import PlanningCentralWidget
 from planning.gui.logviewer import exec_logviewer_dialog
 from planning.utils import qthelpers as qth
@@ -373,7 +374,7 @@ Thanks for your patience."""
         fname = self.filename
         if fname is None:
             if self._last_basedir is None:
-                return DATAPATH
+                return get_config_basedir()
         else:
             self._last_basedir = osp.dirname(fname)
         return self._last_basedir
