@@ -31,7 +31,7 @@ OutFile "..\${ID}-${VERSIONPROD}.exe"
 InstallDir "${INSTALLDIR}"
 BrandingText "${PRODNAME}"
 XPStyle on
-RequestExecutionLevel admin
+RequestExecutionLevel user
 
 ; Interface Configuration
 ;------------------------------------------------------------------------------

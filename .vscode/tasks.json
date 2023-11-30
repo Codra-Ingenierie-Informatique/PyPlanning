@@ -176,6 +176,7 @@
             "dependsOrder": "sequence",
             "dependsOn": [
                 "Clean Up",
+                "gettext - Compile",
                 "Create executable",
                 "Create installer",
             ]
