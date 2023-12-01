@@ -5,6 +5,7 @@
 🛠️ Bug fixes:
 
 * When switching from XML mode to Tree mode, check if the Tree view can be updated (i.e. if the XML is valid). If not, do not switch to Tree mode and show a warning message instead.
+* Fixed crash when application was trying to log a message in standard output (stdout) while running with pythonw.exe (instead of python.exe) on Windows: now redirecting logging to internal Qt console instead of stdout
 
 ## Version 1.5.7 ##
 

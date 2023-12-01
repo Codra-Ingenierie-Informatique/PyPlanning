@@ -26,6 +26,7 @@ from qtpy.compat import getopenfilename, getsavefilename
 #  Local imports
 from planning import __version__
 from planning.config import APP_DESC, APP_NAME, DEBUG, DEBUG_VAR_STR, Conf, _
+from planning.gantt import init_log_to_sysout
 from planning.gui.centralwidget import PlanningCentralWidget
 from planning.gui.logviewer import exec_logviewer_dialog
 from planning.utils import qthelpers as qth
@@ -61,6 +62,7 @@ class PlanningMainWindow(QW.QMainWindow):
                 debug=DEBUG >= 1,
                 multithreaded=False,
             )
+            init_log_to_sysout(stream=self.console)
             dockwidget, location = self.console.create_dockwidget("Console")
             self.addDockWidget(location, dockwidget)
             dockwidget.hide()

@@ -230,22 +230,25 @@ def add_vacations(start_date, end_date=None):
 ############################################################################
 
 
-def init_log_to_sysout(level=logging.INFO):
+def init_log_to_sysout(level=logging.INFO, stream=sys.stdout):
     """
     Init global variable __LOG__ used for logging purpose
 
     Keyword arguments:
     level -- logging level (from logging.debug to logging.critical)
+    stream -- stream to use (default sys.stdout)
     """
+    if sys.stdout is None:
+        # pythonw.exe
+        return
     global __LOG__
     logger = logging.getLogger("Gantt")
     logger.setLevel(level)
-    fh = logging.StreamHandler()
+    fh = logging.StreamHandler(stream=stream)
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
     fh.setFormatter(formatter)
     logger.addHandler(fh)
     __LOG__ = logging.getLogger("Gantt")
-    return
 
 
 ############################################################################
