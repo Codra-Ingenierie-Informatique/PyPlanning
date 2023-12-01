@@ -124,7 +124,7 @@
                 "env": {
                     "PYTHON": "${env:PYPLANNING_PYTHONEXE}",
                     "UNATTENDED": "1",
-                    "NSIS_COPYRIGHT_INFO": "Copyright (c) CODRA 2022",
+                    "NSIS_COPYRIGHT_INFO": "Copyright (c) Codra 2022",
                 }
             },
             "args": [

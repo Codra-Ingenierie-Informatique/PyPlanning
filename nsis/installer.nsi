@@ -1,7 +1,7 @@
 ﻿/*
 
-Script d'installation de WinPython-CODRA
-Copyright (C) 2022 CEA / CODRA
+Script d'installation de WinPython-Codra
+Copyright (C) 2022 CEA / Codra
 
 */
 
@@ -81,7 +81,7 @@ LangString uninstprev_failed_str ${LANG_FRENCH} "La désinstallation a échouée
 
 ; Installer Sections
 ;------------------------------------------------------------------------------
-!define PUBLISHER "CODRA"
+!define PUBLISHER "Codra"
 !define UINSTREG "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\${ID}"
 Section "" SecWinPython
     SectionIn RO

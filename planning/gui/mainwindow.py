@@ -470,7 +470,7 @@ Please check the file content."""
             _("About") + APP_NAME,
             f"""<b>{APP_NAME}</b> v{__version__}<br>{APP_DESC}
             <p>{_('Software created by')} Pierre Raybaut
-            <br>Copyright &copy; 2022 CODRA
+            <br>Copyright &copy; 2022 Codra
             <p>guidata {GUIDATA_VERSION_STR}
             <br>Python {platform.python_version()},
             Qt {QC.__version__} {_('under')} {platform.system()}
@@ -489,8 +489,20 @@ Please check the file content."""
             if self.console is not None:
                 try:
                     self.console.close()
+
+                    # ------------------------------------------------------------------
+                    # TODO: Remove the following code when guidata 3.2.3 is released
+                    import logging  # pylint: disable=C0415
+
+                    logger = logging.getLogger("Gantt")
+                    for handler in logger.handlers:
+                        handler.setStream(None)
+                    # ------------------------------------------------------------------
+
                 except RuntimeError:
                     pass
             event.accept()
         else:
+            event.ignore()
+            event.ignore()
             event.ignore()
