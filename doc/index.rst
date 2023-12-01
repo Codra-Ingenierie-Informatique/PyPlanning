@@ -17,7 +17,11 @@ management software is overkill.
     :width: 300 px
 
     PyPlanning is powered by `PlotPyStack <https://github.com/PlotPyStack>`_,
-    the Python-Qt visualization and scientific graphical user interface stack.
+    the scientific Python-Qt visualization and graphical user interface stack.
+
+.. note:: PyPlanning was created by `Codra`_/`Pierre Raybaut`_ in 2023. It is
+          developed and maintained by PyPlanning open-source project team with
+          the support of `Codra`_.
 
 .. _PlotPyStack: https://github.com/PlotPyStack
 
@@ -49,3 +53,4 @@ Copyrights and licensing
 .. _GitHub: https://github.com/Codra-Ingenierie-Informatique/PyPlanning
 .. _Codra: https://codra.net/
 .. _BSD 3-Clause: https://github.com/Codra-Ingenierie-Informatique/DataLab/blob/master/LICENSE
+.. _Pierre Raybaut: https://github.com/PierreRaybaut/

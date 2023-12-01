@@ -5,9 +5,9 @@
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/PyPlanning.svg)](https://pypi.python.org/pypi/PyPlanning/)
 [![download count](https://img.shields.io/conda/dn/conda-forge/PyPlanning.svg)](https://www.anaconda.com/download/)
 
-ℹ️ Created in 2022 by [Pierre Raybaut](https://github.com/PierreRaybaut) and maintained by the [PyPlanning](https://github.com/Codra-Ingenierie-Informatique/PyPlanning) project team.
+ℹ️ Created in 2022 by [Pierre Raybaut](https://github.com/PierreRaybaut), developed and maintained by the [PyPlanning](https://github.com/Codra-Ingenierie-Informatique/PyPlanning) project team with the support of [Codra](https://codra.net/).
 
-PyPlanning is a small planning tool initially developed for internal use at [CODRA](https://codra.net/). The main goal of this project is to provide a simple and easy-to-use planning tool for small teams or small projects, i.e. in cases where using a full-featured project management software is overkill.
+PyPlanning is a small planning tool initially developed for internal use at [Codra](https://codra.net/). The main goal of this project is to provide a simple and easy-to-use planning tool for small teams or small projects, i.e. in cases where using a full-featured project management software is overkill.
 
 # Examples
 
