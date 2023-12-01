@@ -4,7 +4,7 @@
 
 🛠️ Bug fixes:
 
-* ...
+* When switching from XML mode to Tree mode, check if the Tree view can be updated (i.e. if the XML is valid). If not, do not switch to Tree mode and show a warning message instead.
 
 ## Version 1.5.7 ##
 

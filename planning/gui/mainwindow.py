@@ -342,7 +342,24 @@ Thanks for your patience."""
         if self.maybe_save(_("Switching mode")):
             if Conf.main.xml_mode.get(False) != state:
                 Conf.main.xml_mode.set(state)
-                self.central_widget.editor.switch_mode(self.filename)
+                ok = self.central_widget.editor.switch_mode(self.filename)
+                if not ok:
+                    # Switch back
+                    Conf.main.xml_mode.set(not state)
+                    self.xmlmode_act.blockSignals(True)
+                    self.xmlmode_act.setChecked(not state)
+                    self.xmlmode_act.blockSignals(False)
+                    self.central_widget.editor.set_current_mode()
+                    # Show a warning message
+                    QW.QMessageBox.warning(
+                        self,
+                        _("Warning"),
+                        _(
+                            """This file cannot be opened in %s mode.
+Please check the file content."""
+                        )
+                        % (_("XML") if state else _("Tree")),
+                    )
 
     def maybe_save(self, title):
         """Eventually save file before continuing"""

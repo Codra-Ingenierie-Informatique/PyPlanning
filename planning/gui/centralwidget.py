@@ -54,13 +54,15 @@ class PlanningEditor(QStackedWidget):
         self.setCurrentWidget(self.code if self.xml_mode else self.trees)
 
     def switch_mode(self, path):
-        """Switch XML/Tree mode"""
+        """Switch XML/Tree mode
+
+        Returns True if mode has changed, False otherwise"""
         self.set_current_mode()
         if self.xml_mode:
             text = self.trees.planning.to_text()
         else:
             text = self.code.toPlainText()
-        self.set_text_and_path(text, path)
+        return self.set_text_and_path(text, path)
 
     def get_menu_actions(self):
         """Return menu actions"""
@@ -96,7 +98,9 @@ class PlanningEditor(QStackedWidget):
             self.trees.chart_tree.repopulate()
 
     def set_text_and_path(self, text, path):
-        """ "Set text and path"""
+        """Set text and path
+
+        Returns True if planning was successfully updated, False otherwise"""
         if self.xml_mode:
             self.code.setPlainText(text)
         else:
@@ -104,9 +108,10 @@ class PlanningEditor(QStackedWidget):
             try:
                 planning = PlanningData.from_element(planning, ET.fromstring(text))
             except ET.ParseError:
-                pass
+                return False
             planning.set_filename(path)
             self.trees.setup(planning)
+        return True
 
 
 class PlanningPreview(QTabWidget):

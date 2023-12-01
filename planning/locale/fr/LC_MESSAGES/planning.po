@@ -6,13 +6,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-03-07 17:16+0100\n"
+"POT-Creation-Date: 2023-12-01 16:58+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: utf-8\n"
 "Generated-By: pygettext.py 1.5\n"
 
@@ -38,27 +38,27 @@ msgstr "Journaux de bords %s"
 msgid "Log files are currently empty."
 msgstr "Les journaux de bord sont vides."
 
-#: planning\gui\mainwindow.py:38
+#: planning\gui\mainwindow.py:39
 msgid "untitled"
 msgstr "sanstitre"
 
-#: planning\gui\mainwindow.py:91
+#: planning\gui\mainwindow.py:96
 msgid "Welcome to %s!"
 msgstr "Bienvenue dans %s!"
 
-#: planning\gui\mainwindow.py:112
+#: planning\gui\mainwindow.py:117
 msgid "Log files were generated during last session."
 msgstr "Des journaux de bord ont été générés lors de la dernière session."
 
-#: planning\gui\mainwindow.py:114
+#: planning\gui\mainwindow.py:119
 msgid "Do you want to see available log files?"
 msgstr "Souhaitez-vous consulter les journaux de bord disponibles ?"
 
-#: planning\gui\mainwindow.py:180
+#: planning\gui\mainwindow.py:185
 msgid "Error"
 msgstr "Erreur"
 
-#: planning\gui\mainwindow.py:181
+#: planning\gui\mainwindow.py:186
 msgid ""
 "This feature is not yet available.\n"
 "Thanks for your patience."
@@ -66,108 +66,126 @@ msgstr ""
 "Cette fonctionnalité n'est pas encore disponible.\n"
 "Merci pour votre patience."
 
-#: planning\gui\mainwindow.py:204
+#: planning\gui\mainwindow.py:209
 msgid "Advanced XML mode"
 msgstr "Mode avancé XML"
 
-#: planning\gui\mainwindow.py:210
+#: planning\gui\mainwindow.py:215
 msgid "&New"
 msgstr "&Nouveau"
 
-#: planning\gui\mainwindow.py:217
+#: planning\gui\mainwindow.py:222
 msgid "&Open..."
 msgstr "&Ouvrir..."
 
-#: planning\gui\mainwindow.py:224
+#: planning\gui\mainwindow.py:229
 msgid "Open working directory"
 msgstr "Ouvrir le répertoire de travail"
 
-#: planning\gui\mainwindow.py:230
+#: planning\gui\mainwindow.py:235
 msgid "&Save"
 msgstr "&Enregistrer"
 
-#: planning\gui\mainwindow.py:237
+#: planning\gui\mainwindow.py:242
 msgid "Save as..."
 msgstr "Enregistrer &sous..."
 
-#: planning\gui\mainwindow.py:243 planning\gui\mainwindow.py:464
+#: planning\gui\mainwindow.py:248 planning\gui\mainwindow.py:485
 msgid "Quit"
 msgstr "Quitter"
 
-#: planning\gui\mainwindow.py:250
+#: planning\gui\mainwindow.py:255
 msgid "About..."
 msgstr "A propos..."
 
-#: planning\gui\mainwindow.py:261
+#: planning\gui\mainwindow.py:266
 msgid "&File"
 msgstr "&Fichier"
 
-#: planning\gui\mainwindow.py:262
+#: planning\gui\mainwindow.py:267
 msgid "Open recent file"
 msgstr "Ouvrir un fichier récent"
 
-#: planning\gui\mainwindow.py:281
+#: planning\gui\mainwindow.py:286
 msgid "&Edit"
 msgstr "&Edition"
 
-#: planning\gui\mainwindow.py:283
+#: planning\gui\mainwindow.py:288
 msgid "&Tasks"
 msgstr "&Tâche"
 
-#: planning\gui\mainwindow.py:285
+#: planning\gui\mainwindow.py:290
 msgid "&Charts"
 msgstr "&Diagramme"
 
-#: planning\gui\mainwindow.py:291
+#: planning\gui\mainwindow.py:296
 msgid "Show log files..."
 msgstr "Afficher les journaux de bords..."
 
-#: planning\gui\mainwindow.py:318
+#: planning\gui\mainwindow.py:323
 msgid "Main toolbar"
 msgstr "Barre d'outil principale"
 
-#: planning\gui\mainwindow.py:337
+#: planning\gui\mainwindow.py:342
 msgid "Switching mode"
 msgstr "Changement de mode"
 
-#: planning\gui\mainwindow.py:348
+#: planning\gui\mainwindow.py:356
+msgid "Warning"
+msgstr "Attention"
+
+#: planning\gui\mainwindow.py:357
+msgid ""
+"This file cannot be opened in %s mode.\n"
+"Please check the file content."
+msgstr "Ce fichier ne peut être ouvert en mode %s.\nVérifiez son contenu."
+
+#: planning\gui\mainwindow.py:361
+msgid "Tree"
+msgstr "Arbre"
+
+#: planning\gui\mainwindow.py:361
+msgid "XML"
+msgstr "XML"
+
+#: planning\gui\mainwindow.py:370
 msgid "Do you want to save %s file before continuing?"
 msgstr "Souhaitez-vous d'abord enregistrer le fichier %s ?"
 
-#: planning\gui\mainwindow.py:360
+#: planning\gui\mainwindow.py:382
 msgid "New file"
 msgstr "Nouveau fichier"
 
-#: planning\gui\mainwindow.py:380
+#: planning\gui\mainwindow.py:402
 msgid "Open file"
 msgstr "Ouvrir un fichier"
 
-#: planning\gui\mainwindow.py:384
+#: planning\gui\mainwindow.py:406
 msgid "Open"
 msgstr "Ouvrir"
 
-#: planning\gui\mainwindow.py:437
+#: planning\gui\mainwindow.py:458
 msgid "Save as"
 msgstr "Enregistrer sous"
 
-#: planning\gui\mainwindow.py:447
+#: planning\gui\mainwindow.py:468
 msgid "About"
 msgstr "A propos de "
 
-#: planning\gui\mainwindow.py:448
+#: planning\gui\mainwindow.py:469
 msgid "How to enable debug mode?"
 msgstr "Comment activer le mode de débogage ?"
 
-#: planning\gui\mainwindow.py:448
+#: planning\gui\mainwindow.py:469
 msgid "Set the %s environment variable to 1, 2 or 3"
 msgstr ""
 "Définir la variable d'environnement %s et lui affecter la valeur 1, 2 ou 3"
 
-#: planning\gui\mainwindow.py:448
+#: planning\gui\mainwindow.py:469
 msgid "Software created by"
 msgstr "Logiciel réalisé par"
 
-#: planning\gui\mainwindow.py:448
+#: planning\gui\mainwindow.py:469
 msgid "under"
 msgstr "sous"
 
@@ -291,39 +309,39 @@ msgstr "Tout replier"
 msgid "Expand all"
 msgstr "Tout déplier"
 
-#: planning\model.py:149
+#: planning\model.py:148
 msgid "day"
 msgstr "jour"
 
-#: planning\model.py:440
+#: planning\model.py:439
 msgid "Days"
 msgstr "Jours"
 
-#: planning\model.py:441
+#: planning\model.py:440
 msgid "Weeks"
 msgstr "Semaines"
 
-#: planning\model.py:442
+#: planning\model.py:441
 msgid "Months"
 msgstr "Mois"
 
-#: planning\model.py:444
+#: planning\model.py:443
 msgid "Resources"
 msgstr "Ressources"
 
-#: planning\model.py:444
+#: planning\model.py:443
 msgid "Tasks"
 msgstr "Tâches"
 
-#: planning\model.py:809
+#: planning\model.py:808
 msgid "Closing"
 msgstr "Fermeture"
 
-#: planning\model.py:820
+#: planning\model.py:819
 msgid "Leave"
 msgstr "Absence"
 
-#: planning\model.py:861
+#: planning\model.py:860
 msgid "All projects"
 msgstr "Tous les projets"
 
