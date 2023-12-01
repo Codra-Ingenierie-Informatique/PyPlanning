@@ -3,21 +3,15 @@
 
 block_cipher = None
 
-import sys
-sitepackages = os.path.join(sys.prefix, 'Lib', 'site-packages')
-guidata_images = os.path.join(sitepackages, 'guidata', 'images')
-guidata_locale = os.path.join(sitepackages, 'guidata', 'locale', 'fr', 'LC_MESSAGES')
+from PyInstaller.utils.hooks import collect_submodules, collect_data_files
+all_hidden_imports = collect_submodules('planning')
+datas = collect_data_files('planning') + collect_data_files('guidata')
 
 a = Analysis(['planning\\app.py'],
              pathex=[],
              binaries=[],
-             datas=[
-                    (guidata_images, 'guidata\\images'),
-                    (guidata_locale, 'guidata\\locale\\fr\\LC_MESSAGES'),
-                    ('planning\\data', 'planning\\data'),
-                    ('planning\\locale\\fr\\LC_MESSAGES\\planning.mo', 'planning\\locale\\fr\\LC_MESSAGES'),
-                    ],
-             hiddenimports=[],
+             datas=datas,
+             hiddenimports=all_hidden_imports,
              hookspath=[],
              hooksconfig={},
              runtime_hooks=[],
