@@ -29,6 +29,7 @@ PyPlanning is a small planning tool initially developed for internal use at [Cod
 
 Fix the following issues:
 
+[ ] FIXME: Sometimes, task color combox box is not shown in the tree widget (a line edit is shown instead)
 [ ] FIXME: Treewidget/charts: removing project lead to "" project instead of no value
 [ ] TODO: Performance: process only gantt objects affected by changes
 [ ] TODO: Performance: update only visible chart? (this is it!)
@@ -39,7 +40,7 @@ Fix the following issues:
 
 Implement the following features:
 
-[ ] TODO: Vacation: add the possibility to set duration in days
+[ ] TODO: Add support for hidden time frames in charts, for improving readability in case of long tasks
 [ ] TODO: Task: add "duplicate" action
 [ ] TODO: Task tree widget: add sub-context-menu "Bind to": resources
 [ ] TODO: Chart tree widget: add multiple checkboxes to select projects
@@ -49,6 +50,7 @@ Implement the following features:
 
 Implement the following features:
 
+[ ] TODO: Vacation: add the possibility to set duration in days
 [ ] TODO: Add "percent_done" support for tasks
 [ ] TODO: Performance: add an option to update on demand?
 [ ] TODO: Replace python-gantt (planning/gantt.py) by an alternative with less
