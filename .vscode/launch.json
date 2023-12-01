@@ -14,10 +14,10 @@
             "args": [
                 // "examples/project_planning.xml",
                 // "examples/project_planning-detailed.xml",
-                "examples/team_schedule.xml",
+                // "examples/team_schedule.xml",
             ],
             "env": {
-                "PLANNINGDEBUG": "1",
+                // "PLANNINGDEBUG": "1",
                 // "LANG": "en",
                 // "QT_COLOR_MODE": "light",
             },

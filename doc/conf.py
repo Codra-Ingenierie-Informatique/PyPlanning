@@ -12,8 +12,8 @@ import planning  # noqa: E402
 # -- Project information -----------------------------------------------------
 
 project = "PyPlanning"
-author = "Pierre Raybaut"
-copyright = "2023, Codra - " + author
+author = ""
+copyright = "2023, Codra - Pierre Raybaut"
 html_logo = latex_logo = "_static/PyPlanning-title.png"
 release = planning.__version__
 

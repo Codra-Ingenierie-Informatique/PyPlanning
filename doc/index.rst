@@ -40,6 +40,7 @@ External resources:
 
    installation
    examples
+   development
 
 Copyrights and licensing
 ------------------------

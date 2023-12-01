@@ -1,5 +1,5 @@
-Development platform
-====================
+Development
+===========
 
 Python distribution
 -------------------
@@ -14,9 +14,7 @@ Environment variables
 ---------------------
 
 How to use Visual Studio Code launch configurations and tasks (`launch.json`
-and `tasks.json`):
+and `tasks.json`)::
 
-    ```bat
     @REM Development environment
     set PYPLANNING_PYTHONEXE=C:\Apps\WPy64-31001-PyPlanning\python-3.10.0.amd64\python.exe
-    ```
