@@ -34,7 +34,7 @@ class LogViewerWidget(QW.QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.editor = CodeEditor(language="Python")
+        self.editor = CodeEditor()
         self.editor.setReadOnly(True)
         layout = QW.QVBoxLayout()
         self.label = QW.QLabel("")
@@ -68,7 +68,7 @@ class LogViewerWindow(QW.QDialog):
         layout = QW.QVBoxLayout()
         layout.addWidget(self.tabs)
         self.setLayout(layout)
-        self.resize(900, 400)
+        self.resize(1024, 400)
 
     @property
     def is_empty(self):
