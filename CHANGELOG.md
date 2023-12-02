@@ -1,5 +1,12 @@
 # PyPlanning Releases #
 
+## Version 1.5.9 ##
+
+🛠️ Bug fixes:
+
+* Logging only when `PLANNINGDEBUG` environment variable is set to `1`, `2` or `3`
+  (this is considered a bug fix because it was the intended behavior)
+
 ## Version 1.5.8 ##
 
 🛠️ Bug fixes:

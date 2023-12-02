@@ -62,7 +62,8 @@ class PlanningMainWindow(QW.QMainWindow):
                 debug=DEBUG >= 1,
                 multithreaded=False,
             )
-            init_log_to_sysout(stream=self.console)
+            if DEBUG >= 1:
+                init_log_to_sysout(stream=self.console)
             dockwidget, location = self.console.create_dockwidget("Console")
             self.addDockWidget(location, dockwidget)
             dockwidget.hide()
