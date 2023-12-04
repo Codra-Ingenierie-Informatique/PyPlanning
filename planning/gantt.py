@@ -97,7 +97,58 @@ class _my_svgwrite_drawing_wrapper(svgwrite.Drawing):
 
 ############################################################################
 
-__LOG__ = None
+
+class LoggingHelper:
+    """Logging helper"""
+
+    def __init__(self):
+        self._logger = None
+
+    def initialize(self, level=logging.INFO, stream=sys.stdout):
+        """Initialize"""
+        if sys.stdout is None:
+            # pythonw.exe
+            return
+        self._logger = logging.getLogger("Gantt")
+        self._logger.setLevel(level)
+        fh = logging.StreamHandler(stream=stream)
+        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+        fh.setFormatter(formatter)
+        self._logger.addHandler(fh)
+        self._logger = logging.getLogger("Gantt")
+
+    def close(self):
+        """Close"""
+        if self._logger is not None:
+            handlers = self._logger.handlers[:]
+            for handler in handlers:
+                handler.setStream(None)
+                handler.close()
+                self._logger.removeHandler(handler)
+
+    def debug(self, message):
+        """Debug"""
+        if self._logger is not None:
+            self._logger.debug(message)
+
+    def warning(self, message):
+        """Warning"""
+        if self._logger is not None:
+            self._logger.warning(message)
+
+    def error(self, message):
+        """Error"""
+        if self._logger is not None:
+            self._logger.error(message)
+
+    def critical(self, message):
+        """Critical"""
+        if self._logger is not None:
+            self._logger.critical(message)
+
+
+LOG = LoggingHelper()
+
 
 ############################################################################
 
@@ -202,7 +253,7 @@ def add_vacations(start_date, end_date=None):
     start_date -- datetime.date begining of vacation
     end_date -- datetime.date end of vacation of vacation
     """
-    __LOG__.debug(
+    LOG.debug(
         "** add_vacations {0}".format({"start_date": start_date, "end_date": end_date})
     )
 
@@ -218,37 +269,13 @@ def add_vacations(start_date, end_date=None):
 
             start_date += datetime.timedelta(days=1)
 
-    __LOG__.debug(
+    LOG.debug(
         "** add_vacations {0}".format(
             {"start_date": start_date, "end_date": end_date, "vac": VACATIONS}
         )
     )
 
     return
-
-
-############################################################################
-
-
-def init_log_to_sysout(level=logging.INFO, stream=sys.stdout):
-    """
-    Init global variable __LOG__ used for logging purpose
-
-    Keyword arguments:
-    level -- logging level (from logging.debug to logging.critical)
-    stream -- stream to use (default sys.stdout)
-    """
-    if sys.stdout is None:
-        # pythonw.exe
-        return
-    global __LOG__
-    logger = logging.getLogger("Gantt")
-    logger.setLevel(level)
-    fh = logging.StreamHandler(stream=stream)
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-    fh.setFormatter(formatter)
-    logger.addHandler(fh)
-    __LOG__ = logging.getLogger("Gantt")
 
 
 ############################################################################
@@ -300,7 +327,7 @@ class GroupOfResources(object):
         name -- name given to the resource (id)
         fullname -- long name given to the resource
         """
-        __LOG__.debug("** GroupOfResources::__init__ {0}".format({"name": name}))
+        LOG.debug("** GroupOfResources::__init__ {0}".format({"name": name}))
         self.name = name
         self.vacations = []
         if fullname is not None:
@@ -334,7 +361,7 @@ class GroupOfResources(object):
         dfrom -- datetime.date begining of vacation
         dto -- datetime.date end of vacation of vacation
         """
-        __LOG__.debug(
+        LOG.debug(
             "** Resource::add_vacations {0}".format(
                 {"name": self.name, "dfrom": dfrom, "dto": dto}
             )
@@ -349,9 +376,7 @@ class GroupOfResources(object):
         """
         Returns the number of resources
         """
-        __LOG__.debug(
-            "** GroupOfResources::nb_elements ({0})".format({"name": self.name})
-        )
+        LOG.debug("** GroupOfResources::nb_elements ({0})".format({"name": self.name}))
         return len(self.resources)
 
     def is_available(self, date):
@@ -364,7 +389,7 @@ class GroupOfResources(object):
         """
         # Global VACATIONS
         if date in VACATIONS:
-            __LOG__.debug(
+            LOG.debug(
                 "** GroupOfResources::is_available {0} : False (global vacation)".format(
                     {"name": self.name, "date": date}
                 )
@@ -375,7 +400,7 @@ class GroupOfResources(object):
         for h in self.vacations:
             dfrom, dto = h
             if date >= dfrom and date <= dto:
-                __LOG__.debug(
+                LOG.debug(
                     "** GroupOfResources::is_available {0} : False (group vacation)".format(
                         {"name": self.name, "date": date}
                     )
@@ -385,14 +410,14 @@ class GroupOfResources(object):
         # Test if at least one resource is avalaible
         for r in self.resources:
             if r.is_available(date):
-                __LOG__.debug(
+                LOG.debug(
                     "** GroupOfResources::is_available {0} : True {1}".format(
                         {"name": self.name, "date": date}, r.name
                     )
                 )
                 return True
 
-        __LOG__.debug(
+        LOG.debug(
             "** GroupOfResources::is_available {0} : False".format(
                 {"name": self.name, "date": date}
             )
@@ -453,7 +478,7 @@ class GroupOfResources(object):
 
             elif len(affected_days[d]) > self.nb_elements():
                 overcharged_days[d] = affected_days[d]
-                __LOG__.warning(
+                LOG.warning(
                     '** GroupOfResources "{2}" has more than {3} tasks on day {0} / {1}'.format(
                         d, affected_days[d], self.name, self.nb_elements()
                     )
@@ -495,7 +520,7 @@ class Resource(object):
         fullname -- long name given to the resource
         color -- string, html color, default None
         """
-        __LOG__.debug("** Resource::__init__ {0}".format({"name": name}))
+        LOG.debug("** Resource::__init__ {0}".format({"name": name}))
         self.name = name
         if fullname is not None:
             self.fullname = fullname
@@ -518,7 +543,7 @@ class Resource(object):
         dfrom -- datetime.date begining of vacation
         dto -- datetime.date end of vacation of vacation
         """
-        __LOG__.debug(
+        LOG.debug(
             "** Resource::add_vacations {0}".format(
                 {"name": self.name, "dfrom": dfrom, "dto": dto}
             )
@@ -533,7 +558,7 @@ class Resource(object):
         """
         Returns the number of resources, 1 here
         """
-        __LOG__.debug("** Resource::nb_elements ({0})".format({"name": self.name}))
+        LOG.debug("** Resource::nb_elements ({0})".format({"name": self.name}))
         return 1
 
     def is_available(self, date):
@@ -546,7 +571,7 @@ class Resource(object):
         """
         # global VACATIONS
         if date in VACATIONS:
-            __LOG__.debug(
+            LOG.debug(
                 "** Resource::is_available {0} : False (global vacation)".format(
                     {"name": self.name, "date": date}
                 )
@@ -558,7 +583,7 @@ class Resource(object):
             for h in g.vacations:
                 dfrom, dto = h
                 if date >= dfrom and date <= dto:
-                    __LOG__.debug(
+                    LOG.debug(
                         "** Resource::is_available {0} : False (Group {1})".format(
                             {"name": self.name, "date": date}, g.name
                         )
@@ -569,13 +594,13 @@ class Resource(object):
         for h in self.vacations:
             dfrom, dto = h
             if date >= dfrom and date <= dto:
-                __LOG__.debug(
+                LOG.debug(
                     "** Resource::is_available {0} : False".format(
                         {"name": self.name, "date": date}
                     )
                 )
                 return False
-        __LOG__.debug(
+        LOG.debug(
             "** Resource::is_available {0} : True".format(
                 {"name": self.name, "date": date}
             )
@@ -635,7 +660,7 @@ class Resource(object):
         for d in ke:
             if len(affected_days[d]) > 1:
                 overcharged_days[d] = affected_days[d]
-                __LOG__.warning(
+                LOG.warning(
                     '** Resource "{2}" has more than one task on day {0} / {1}'.format(
                         d, affected_days[d], self.name
                     )
@@ -657,14 +682,14 @@ class Resource(object):
         while cday <= to_date:
             if cday.weekday() not in _not_worked_days():
                 if not self.is_available(cday):
-                    __LOG__.debug(
+                    LOG.debug(
                         '** Ressource "{0}" is not available on day {1} (vacation)'.format(
                             self.name, cday
                         )
                     )
                     return []
                 if cday in non_vacant_days:
-                    __LOG__.debug(
+                    LOG.debug(
                         '** Ressource "{0}" is not available on day {1} (other task : {2})'.format(
                             self.name, cday, non_vacant_days[cday]
                         )
@@ -703,7 +728,7 @@ def _get_maxx(scale, start_date, end_date):
     elif scale == DRAW_WITH_QUATERLY_SCALE:
         # how many quarter do we need to draw ?
         message = "DRAW_WITH_QUATERLY_SCALE not implemented yet"
-        __LOG__.critical(message)
+        LOG.critical(message)
         raise ValueError(message)
     return maxx
 
@@ -777,7 +802,7 @@ class Task(object):
         display -- boolean, display this task, default True
         state -- string, state of the task
         """
-        __LOG__.debug(
+        LOG.debug(
             "** Task::__init__ {0}".format(
                 {
                     "name": name,
@@ -811,7 +836,7 @@ class Task(object):
 
         # check limits (2 must be set on 4) or scheduling is defined by duration and dependencies
         if nonecount != 1 and (self.duration is None or depends_of is None):
-            __LOG__.error(
+            LOG.error(
                 '** Task "{1}" must be defined by two of three limits ({0})'.format(
                     {"start": self.start, "stop": self.stop, "duration": self.duration},
                     fullname,
@@ -872,18 +897,18 @@ class Task(object):
         if self._cache_start_date is not None:
             return self._cache_start_date
 
-        __LOG__.debug("** Task::start_date ({0})".format(self.name))
+        LOG.debug("** Task::start_date ({0})".format(self.name))
         if self.start is not None:
             # start date setted, calculate begining
             if self.depends_of is None:
                 # depends of nothing... start date is start
-                # __LOG__.debug('*** Do not depend of other task')
+                # LOG.debug('*** Do not depend of other task')
                 start = self.start
                 while self.non_working_day(start):
                     start = start + datetime.timedelta(days=1)
 
                 if start > self.start:
-                    __LOG__.warning(
+                    LOG.warning(
                         '** Due to vacations, Task "{0}", will not start on date {1} but {2}'.format(
                             self.fullname, self.start, start
                         )
@@ -893,7 +918,7 @@ class Task(object):
                 return self._cache_start_date
             else:
                 # depends of other task, start date could vary
-                # __LOG__.debug('*** Do depend of other tasks')
+                # LOG.debug('*** Do depend of other tasks')
                 start = self.start
                 while self.non_working_day(start):
                     start = start + datetime.timedelta(days=1)
@@ -911,7 +936,7 @@ class Task(object):
                     prev_task_end = prev_task_end + datetime.timedelta(days=1)
 
                 if prev_task_end > self.start:
-                    __LOG__.warning(
+                    LOG.warning(
                         '** Due to dependencies, Task "{0}", will not start on date {1} but {2}'.format(
                             self.fullname, self.start, prev_task_end
                         )
@@ -933,7 +958,7 @@ class Task(object):
                         if t.end_date() > prev_task_end:
                             prev_task_end = t.end_date()
                     # if t.end_date() > prev_task_end:
-                    #     #__LOG__.debug('*** latest one {0} which end on {1}'.format(t.name, t.end_date()))
+                    #     #LOG.debug('*** latest one {0} which end on {1}'.format(t.name, t.end_date()))
                     #     prev_task_end = t.end_date()
                 if prev_task_end > current_day:
                     depend_start_date = prev_task_end
@@ -944,7 +969,7 @@ class Task(object):
                     depend_start_date = start
 
                     if depend_start_date > current_day:
-                        __LOG__.error(
+                        LOG.error(
                             '** Due to dependencies, Task "{0}", could not be finished on time (should start as last on {1} but will start on {2})'.format(
                                 self.fullname, current_day, depend_start_date
                             )
@@ -970,7 +995,7 @@ class Task(object):
                     if t.end_date() > prev_task_end:
                         prev_task_end = t.end_date()
                 # if t.end_date() > prev_task_end:
-                #     __LOG__.debug('*** latest one {0} which end on {1}'.format(t.name, t.end_date()))
+                #     LOG.debug('*** latest one {0} which end on {1}'.format(t.name, t.end_date()))
                 #     prev_task_end = t.end_date()
 
             start = prev_task_end + datetime.timedelta(days=1)
@@ -1007,7 +1032,7 @@ class Task(object):
                         if t.end_date() > prev_task_end:
                             prev_task_end = t.end_date()
                     # if t.end_date() > prev_task_end:
-                    #     __LOG__.debug('*** latest one {0} which end on {1}'.format(t.name, t.end_date()))
+                    #     LOG.debug('*** latest one {0} which end on {1}'.format(t.name, t.end_date()))
                     #     prev_task_end = t.end_date()
 
                 if prev_task_end > current_day:
@@ -1022,7 +1047,7 @@ class Task(object):
                 depend_start_date = start
 
                 if depend_start_date > current_day:
-                    __LOG__.error(
+                    LOG.error(
                         '** Due to dependencies, Task "{0}", could not be finished on time (should start as last on {1} but will start on {2})'.format(
                             self.fullname, current_day, depend_start_date
                         )
@@ -1036,7 +1061,7 @@ class Task(object):
                 self._cache_start_date = current_day
 
         if self._cache_start_date != self.start:
-            __LOG__.warning(
+            LOG.warning(
                 '** starting date for task "{0}" is changed from {1} to {2}'.format(
                     self.fullname, self.start, self._cache_start_date
                 )
@@ -1061,7 +1086,7 @@ class Task(object):
         if self._cache_end_date is not None:
             return self._cache_end_date
 
-        __LOG__.debug("** Task::end_date ({0})".format(self.name))
+        LOG.debug("** Task::end_date ({0})".format(self.name))
 
         if self.duration is None or self.start is None and self.stop is not None:
             real_end = self.stop
@@ -1087,7 +1112,7 @@ class Task(object):
                 self._cache_end_date = self.start_date() + datetime.timedelta(
                     days=real_duration
                 )
-                __LOG__.warning(
+                LOG.warning(
                     '** task "{0}" will not be finished on time : end_date is changed from {1} to {2}'.format(
                         self.fullname, self.stop, self._cache_end_date
                     )
@@ -1096,7 +1121,7 @@ class Task(object):
 
             self._cache_end_date = real_end
             if real_end != self.stop:
-                __LOG__.warning(
+                LOG.warning(
                     '** task "{0}" will not be finished on time : end_date is changed from {1} to {2}'.format(
                         self.fullname, self.stop, self._cache_end_date
                     )
@@ -1150,7 +1175,7 @@ class Task(object):
         title_align_on_left -- boolean, align task title on left
         offset -- X offset from image border to start of drawing zone
         """
-        __LOG__.debug(
+        LOG.debug(
             "** Task::svg ({0})".format(
                 {
                     "name": self.name,
@@ -1164,11 +1189,11 @@ class Task(object):
         )
         if scale == DRAW_WITH_QUATERLY_SCALE:
             message = "DRAW_WITH_QUATERLY_SCALE not implemented yet"
-            __LOG__.critical(message)
+            LOG.critical(message)
             raise ValueError(message)
 
         if not self.display:
-            __LOG__.debug("** Task::svg ({0}) display off".format({"name": self.name}))
+            LOG.debug("** Task::svg ({0}) display off".format({"name": self.name}))
             return (None, 0)
 
         add_modified_begin_mark = False
@@ -1390,7 +1415,7 @@ class Task(object):
         Keyword arguments:
         prj -- Project object to check against
         """
-        __LOG__.debug(
+        LOG.debug(
             "** Task::svg_dependencies ({0})".format({"name": self.name, "prj": prj})
         )
         if self.depends_of is None:
@@ -1577,14 +1602,14 @@ class Task(object):
         """
         Returns the number of task, 1 here
         """
-        __LOG__.debug("** Task::nb_elements ({0})".format({"name": self.name}))
+        LOG.debug("** Task::nb_elements ({0})".format({"name": self.name}))
         return 1
 
     def _reset_coord(self):
         """
         Reset cached elements of task
         """
-        __LOG__.debug("** Task::reset_coord ({0})".format({"name": self.name}))
+        LOG.debug("** Task::reset_coord ({0})".format({"name": self.name}))
         self.drawn_x_begin_coord = None
         self.drawn_x_end_coord = None
         self.drawn_y_coord = None
@@ -1599,7 +1624,7 @@ class Task(object):
         Keyword arguments:
         task -- Task object
         """
-        __LOG__.debug(
+        LOG.debug(
             "** Task::is_in_project ({0})".format({"name": self.name, "task": task})
         )
         if task is self:
@@ -1632,7 +1657,7 @@ class Task(object):
                     conflicts.append(
                         {"resource": r.name, "date": cday, "task": self.name}
                     )
-                    __LOG__.warning(
+                    LOG.warning(
                         '** Caution resource "{0}" is affected on task "{2}" during vacations on day {1}'.format(
                             r.name, cday, self.fullname
                         )
@@ -1688,7 +1713,7 @@ class Milestone(Task):
         color -- string, html color, default None
         display -- boolean, display this milestone, default True
         """
-        __LOG__.debug(
+        LOG.debug(
             "** Milestone::__init__ {0}".format(
                 {"name": name, "start": start, "depends_of": depends_of}
             )
@@ -1732,7 +1757,7 @@ class Milestone(Task):
         Returns the last day of the milestone, either the one which was given at milestone
         creation or the one calculated after checking dependencies
         """
-        __LOG__.debug("** Milestone::end_date ({0})".format(self.name))
+        LOG.debug("** Milestone::end_date ({0})".format(self.name))
         # return self.start_date() - datetime.timedelta(days=1)
         return self.start_date()
 
@@ -1761,7 +1786,7 @@ class Milestone(Task):
         title_align_on_left -- boolean, align milestone title on left
         offset -- X offset from image border to start of drawing zone
         """
-        __LOG__.debug(
+        LOG.debug(
             "** Milestone::svg ({0})".format(
                 {
                     "name": self.name,
@@ -1775,9 +1800,7 @@ class Milestone(Task):
         )
 
         if not self.display:
-            __LOG__.debug(
-                "** Milestone::svg ({0}) display off".format({"name": self.name})
-            )
+            LOG.debug("** Milestone::svg ({0}) display off".format({"name": self.name}))
             return (None, 0)
 
         # add_modified_begin_mark = False
@@ -1806,7 +1829,7 @@ class Milestone(Task):
 
         if scale == DRAW_WITH_QUATERLY_SCALE:
             message = "DRAW_WITH_QUATERLY_SCALE not implemented yet"
-            __LOG__.critical(message)
+            LOG.critical(message)
             raise ValueError(message)
 
         # cas 1 -s--X--e-
@@ -1879,7 +1902,7 @@ class Milestone(Task):
         Keyword arguments:
         prj -- Project object to check against
         """
-        __LOG__.debug(
+        LOG.debug(
             "** Milestone::svg_dependencies ({0})".format(
                 {"name": self.name, "prj": prj}
             )
@@ -2108,7 +2131,7 @@ class Project(object):
             elif scale == DRAW_WITH_QUATERLY_SCALE:
                 # how many quarter do we need to draw ?
                 message = "DRAW_WITH_QUATERLY_SCALE not implemented yet"
-                __LOG__.critical(message)
+                LOG.critical(message)
                 raise ValueError(message)
 
             if is_it_today:
@@ -2318,7 +2341,7 @@ class Project(object):
             elif scale == DRAW_WITH_QUATERLY_SCALE:
                 # how many quarter do we need to draw ?
                 message = "DRAW_WITH_QUATERLY_SCALE not implemented yet"
-                __LOG__.critical(message)
+                LOG.critical(message)
                 raise ValueError(message)
 
         vlines.add(
@@ -2380,7 +2403,7 @@ class Project(object):
         offset -- X offset from image border to start of drawing zone
         """
         if len(self.tasks) == 0:
-            __LOG__.warning("** Empty project : {0}".format(self.name))
+            LOG.warning("** Empty project : {0}".format(self.name))
             return
 
         self._reset_coord()
@@ -2397,7 +2420,7 @@ class Project(object):
 
         if start_date > end_date:
             message = "start date {0} > end_date {1}".format(start_date, end_date)
-            __LOG__.critical(message)
+            LOG.critical(message)
             raise ValueError(message)
 
         ldwg = svgwrite.container.Group()
@@ -2482,7 +2505,7 @@ class Project(object):
             show_conflicts = show_vacations = False
 
         if len(self.tasks) == 0:
-            __LOG__.warning("** Empty project : {0}".format(self.name))
+            LOG.warning("** Empty project : {0}".format(self.name))
             return
 
         self._reset_coord()
@@ -2499,7 +2522,7 @@ class Project(object):
 
         if start_date > end_date:
             message = "start date {0} > end_date {1}".format(start_date, end_date)
-            __LOG__.critical(message)
+            LOG.critical(message)
             raise ValueError(message)
 
         if resources is None:
@@ -2704,7 +2727,7 @@ class Project(object):
         Returns first day of the project
         """
         if len(self.tasks) == 0:
-            __LOG__.warning("** Empty project : {0}".format(self.name))
+            LOG.warning("** Empty project : {0}".format(self.name))
             return datetime.date(9999, 1, 1)
 
         first = self.tasks[0].start_date()
@@ -2718,7 +2741,7 @@ class Project(object):
         Returns last day of the project
         """
         if len(self.tasks) == 0:
-            __LOG__.warning("** Empty project : {0}".format(self.name))
+            LOG.warning("** Empty project : {0}".format(self.name))
             return datetime.date(1970, 1, 1)
 
         last = self.tasks[0].end_date()
@@ -2922,7 +2945,7 @@ class Project(object):
         csv -- string, filename to save to OR file object OR None
         """
         if len(self.tasks) == 0:
-            __LOG__.warning("** Empty project : {0}".format(self.name))
+            LOG.warning("** Empty project : {0}".format(self.name))
             return
 
         if csv is not None:
@@ -2972,7 +2995,7 @@ if __name__ == "__main__":
     doctest.testmod()
 
 else:
-    init_log_to_sysout(level=logging.CRITICAL)
+    LOG.initialize(level=logging.CRITICAL)
 
 
 # <EOF>######################################################################

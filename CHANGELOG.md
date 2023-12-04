@@ -1,5 +1,15 @@
 # PyPlanning Releases #
 
+## Version 1.5.10 ##
+
+🛠️ Bug fixes:
+
+* Logging issues:
+  * Added `LoggingHelper` class to handle properly logging in various contexts
+    (e.g. when running with `pythonw.exe` on Windows, or when debugging)
+  * This fixes the critical bug where the application would not show any chart
+    when running with `pythonw.exe` on Windows
+
 ## Version 1.5.9 ##
 
 🛠️ Bug fixes:
