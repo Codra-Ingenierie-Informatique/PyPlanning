@@ -1,5 +1,17 @@
 # PyPlanning Releases #
 
+## Version 1.5.11 ##
+
+🛠️ Bug fixes:
+
+* Fixed a bug related to adding a task to a resource (order issue):
+  * Selecting a resource and adding a task to it would lead to an unexpected
+    behavior (the task would sometimes appear to be added to another resource)
+  * This was due to the fact that the application was not properly handling
+    the case where the user would select a resource in the tree view, except
+    for the first resource
+  * This is now fixed
+
 ## Version 1.5.10 ##
 
 🛠️ Bug fixes:

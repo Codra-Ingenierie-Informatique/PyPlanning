@@ -1099,7 +1099,16 @@ class PlanningData(AbstractData):
         if isinstance(after_data, TaskData):
             index = self.tsklist.index(after_data)
         elif isinstance(after_data, ResourceData):
-            index = 0
+            # Sum all task indexes for all resources before:
+            resids = []
+            for res in self.reslist:
+                if res is after_data:
+                    break
+                resids.append(res.id.value)
+            index = -1
+            for resid in resids:
+                for _task in self.iterate_task_data(only=[resid]):
+                    index += 1
         self.__append_or_insert(self.tsklist, index, data)
 
     def add_leave(self, data, after_data=None):
