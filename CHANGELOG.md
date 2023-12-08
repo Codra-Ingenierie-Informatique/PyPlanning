@@ -1,5 +1,18 @@
 # PyPlanning Releases #
 
+## Version 1.5.12 ##
+
+🛠️ Bug fixes:
+
+* Fixed an annoying bug where the application would select an unexpected line
+  in the tree view when the user would modify a task's start date, end date or
+  duration:
+  * This was due to the fact that the application was repopulating the tree
+    view after each modification, which would lead to the selection of one of
+    the first lines in the tree view
+  * This is now fixed because the application is now refreshing the existing
+    tree view instead of repopulating it
+
 ## Version 1.5.11 ##
 
 🛠️ Bug fixes:

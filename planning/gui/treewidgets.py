@@ -145,7 +145,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
                 ditem.value = EMPTY_NAME
         item = self.item_from_index(index)
         item.setText(ditem.to_display())
-        self.parent().repopulate()  # XXX: A bit brutal
+        self.parent().refresh()
 
 
 class BaseTreeWidget(QW.QTreeView):
@@ -216,7 +216,7 @@ class BaseTreeWidget(QW.QTreeView):
         self.repopulate()
 
     def repopulate(self):
-        """Refresh task tree"""
+        """Clear and repopulate tree"""
         data_id = self.get_current_id()
         model = self.model()
         model.clear()
@@ -235,6 +235,13 @@ class BaseTreeWidget(QW.QTreeView):
             self.set_current_id(data_id, scroll_to=True)
         self.SIG_MODEL_CHANGED.emit()
         self.setFocus()
+
+    def refresh(self):
+        """Refresh tree (without clearing it)"""
+        self.model().blockSignals(True)
+        self.populate_tree()
+        self.model().blockSignals(False)
+        self.SIG_MODEL_CHANGED.emit()
 
     def create_toolbar(self):
         """Create toolbar"""
@@ -424,9 +431,13 @@ class BaseTreeWidget(QW.QTreeView):
             if ditem is not None:
                 self.update_item_icon(item, ditem)
 
-    def add_item_row(self, data, parent=None, group=False):
-        """Add data item row to tree"""
-        items = []
+    def add_or_update_item_row(self, data, parent=None, group=False):
+        """Add data item row to tree, or update it if already present"""
+        update = data.id.value in self.item_rows
+        if update:
+            items = self.item_rows[data.id.value]
+        else:
+            items = []
         for column, attrs in enumerate(self.ATTRS):
             if not isinstance(attrs, tuple):
                 attrs = (attrs,)
@@ -437,32 +448,41 @@ class BaseTreeWidget(QW.QTreeView):
             else:
                 ditem = ditems[0]
             text = "" if ditem is None else ditem.to_display()
-            item = QG.QStandardItem(text)
-            self.item_data[id(item)] = ditem
-            if column == 0 and group:
-                font = item.font()
-                font.setBold(True)
-                item.setFont(font)
-            if ditem is not None and data.is_read_only(ditem.name):
-                item.setForeground(QG.QBrush(QC.Qt.gray))
-            item.setEditable(ditem is not None and not data.is_read_only(ditem.name))
-            if ditem is not None:
-                if ditem.datatype in (
-                    DTypes.DATE,
-                    DTypes.DAYS,
-                    DTypes.BOOLEAN,
-                    DTypes.COLOR,
-                ):
-                    item.setTextAlignment(QC.Qt.AlignCenter)
-                if ditem.datatype == DTypes.COLOR and ditem.value is not None:
-                    color = ditem.get_html_color(ditem.value)
-                    item.setBackground(QG.QBrush(QG.QColor(color)))
-                self.update_item_icon(item, ditem)
-            items.append(item)
-        self.item_rows[data.id.value] = items
-        if parent is None:
-            parent = self.model()
-        parent.appendRow(items)
+            if update:
+                item = items[column]
+                item.setText(text)
+                if ditem is not None:
+                    self.update_item_icon(item, ditem)
+            else:
+                item = QG.QStandardItem(text)
+                self.item_data[id(item)] = ditem
+                if column == 0 and group:
+                    font = item.font()
+                    font.setBold(True)
+                    item.setFont(font)
+                if ditem is not None and data.is_read_only(ditem.name):
+                    item.setForeground(QG.QBrush(QC.Qt.gray))
+                item.setEditable(
+                    ditem is not None and not data.is_read_only(ditem.name)
+                )
+                if ditem is not None:
+                    if ditem.datatype in (
+                        DTypes.DATE,
+                        DTypes.DAYS,
+                        DTypes.BOOLEAN,
+                        DTypes.COLOR,
+                    ):
+                        item.setTextAlignment(QC.Qt.AlignCenter)
+                    if ditem.datatype == DTypes.COLOR and ditem.value is not None:
+                        color = ditem.get_html_color(ditem.value)
+                        item.setBackground(QG.QBrush(QG.QColor(color)))
+                    self.update_item_icon(item, ditem)
+                items.append(item)
+        if not update:
+            self.item_rows[data.id.value] = items
+            if parent is None:
+                parent = self.model()
+            parent.appendRow(items)
 
     def populate_tree(self):
         """Populate tree"""
@@ -686,26 +706,27 @@ class TaskTreeWidget(BaseTreeWidget):
 
     def __add_resourceitem(self, data):
         """Add resource item to tree"""
-        self.add_item_row(data, group=True)
+        self.add_or_update_item_row(data, group=True)
 
     def __add_taskitem(self, data):
         """Add task/milestone item to tree"""
         if isinstance(data, MilestoneData):
-            self.add_item_row(data)
+            self.add_or_update_item_row(data)
         else:
             for resid in data.iterate_resource_ids():
                 parent_row = self.get_item_row_from_id(resid)[0]
-                self.add_item_row(data, parent_row)
+                self.add_or_update_item_row(data, parent_row)
             if data.no_resource:
-                self.add_item_row(data)
+                self.add_or_update_item_row(data)
 
     def __add_leaveitem(self, data):
         """Add leave item to tree"""
         parent_row = self.get_item_row_from_id(data.get_resource_id())[0]
-        self.add_item_row(data, parent_row)
+        self.add_or_update_item_row(data, parent_row)
 
     def populate_tree(self):
         """Populate tree"""
+        self.SIG_MODEL_CHANGED.emit()
         # add resources
         for data in self.planning.iterate_resource_data():
             self.__add_resourceitem(data)
@@ -819,7 +840,7 @@ class ChartTreeWidget(BaseTreeWidget):
 
     def __add_chartitem(self, data):
         """Add chart item to tree"""
-        self.add_item_row(data)
+        self.add_or_update_item_row(data)
 
     def populate_tree(self):
         """Populate tree"""
