@@ -13,6 +13,11 @@
   * This is now fixed because the application is now refreshing the existing
     tree view instead of repopulating it
 
+💥 Changes:
+
+* Task tree: resource collapse/expand state is now saved in project file,
+  so that the application can restore it when the project is reopened
+
 ## Version 1.5.11 ##
 
 🛠️ Bug fixes:

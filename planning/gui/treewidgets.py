@@ -209,11 +209,22 @@ class BaseTreeWidget(QW.QTreeView):
         self.selectionModel().selectionChanged.connect(self.selection_changed)
 
         self.clicked.connect(self.item_was_clicked)
+        self.collapsed.connect(lambda index: self.item_collapsed_expanded(index, True))
+        self.expanded.connect(lambda index: self.item_collapsed_expanded(index, False))
 
     def setup(self, planning):
         """Setup widget"""
         self.planning = planning
         self.repopulate()
+
+    def item_collapsed_expanded(self, index, collapsed):
+        """Item has been collapsed or expanded"""
+        item = self.model().itemFromIndex(index)
+        data_id = self.get_id_from_item(item)
+        data = self.planning.get_data_from_id(data_id)
+        if isinstance(data, ResourceData) and bool(data.collapsed.value) != collapsed:
+            data.collapsed.value = collapsed
+            self.SIG_MODEL_CHANGED.emit()
 
     def repopulate(self):
         """Clear and repopulate tree"""
@@ -224,6 +235,7 @@ class BaseTreeWidget(QW.QTreeView):
         self.item_rows = {}
         self.populate_tree()
         model.setHorizontalHeaderLabels(self.NAMES)
+        self.blockSignals(True)
         self.expandAll()
         for col in self.COLUMNS_TO_RESIZE:
             self.resizeColumnToContents(col)
@@ -231,6 +243,13 @@ class BaseTreeWidget(QW.QTreeView):
                 column_width = self.columnWidth(col)
                 self.setColumnWidth(col, column_width + self.COLUMN_WIDTH_MARGIN)
         self.expandAll()
+        self.blockSignals(False)
+        # Iterate over resources and collapse nodes with collapsed data item to True:
+        for data in self.planning.iterate_resource_data():
+            if bool(data.collapsed.value):
+                item_row = self.get_item_row_from_id(data.id.value)
+                if item_row is not None:
+                    self.setExpanded(item_row[0].index(), False)
         if data_id is not None:
             self.set_current_id(data_id, scroll_to=True)
         self.SIG_MODEL_CHANGED.emit()

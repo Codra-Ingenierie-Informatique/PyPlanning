@@ -13,7 +13,7 @@
       <LEAVE start="02/05/23" />
       <LEAVE start="24/07/23" stop="04/08/23" />
     </RESOURCE>
-    <RESOURCE name="PRo" fullname="Peter Rodriguez">
+    <RESOURCE name="PRo" fullname="Peter Rodriguez" collapsed="True">
       <TASK start="02/01/23" stop="10/02/23" name="Project A / Task #12" />
       <TASK duration="20" name="Project B / Task #1" color="m" />
       <TASK duration="94" name="Project B / Task #2" color="o" />

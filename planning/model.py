@@ -847,6 +847,20 @@ class ResourceData(AbstractData):
     DEFAULT_ICON_NAME = "resource.svg"
     READ_ONLY_ITEMS = ("project",)
 
+    def __init__(self, pdata, name=None, fullname=None):
+        super().__init__(pdata, name, fullname)
+        self.collapsed = DataItem(self, "collapsed", DTypes.BOOLEAN, None)
+
+    def _init_from_element(self, element):
+        """Init instance from XML element"""
+        super()._init_from_element(element)
+        self.collapsed = self.get_bool("collapsed")
+
+    def get_attrib_names(self):
+        """Return attribute names"""
+        attrib_names = super().get_attrib_names()
+        return attrib_names + ["collapsed"]
+
     def process_gantt(self):
         """Create or update Gantt objects and add them to dictionaries"""
         self.gantt_object = self.pdata.all_resources[self.id.value] = gantt.Resource(
