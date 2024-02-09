@@ -65,6 +65,7 @@ class PlanningMainWindow(QW.QMainWindow):
             if DEBUG >= 1:
                 LOG.initialize(stream=self.console)
             dockwidget, location = self.console.create_dockwidget("Console")
+            dockwidget.toggleViewAction().setShortcut("Ctrl+J")
             self.addDockWidget(location, dockwidget)
             dockwidget.hide()
 

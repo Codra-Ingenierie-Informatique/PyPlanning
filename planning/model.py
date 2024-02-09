@@ -9,6 +9,7 @@ import os.path as osp
 import xml.etree.ElementTree as ET
 from enum import Enum
 from io import StringIO
+from typing import Any, Generator, Optional, TypeVar
 
 from planning import gantt
 from planning.config import MAIN_FONT_FAMILY, _
@@ -19,6 +20,14 @@ locale.setlocale(locale.LC_TIME, "")
 gantt.define_font_attributes(
     fill="black", stroke="black", stroke_width=0, font_family=MAIN_FONT_FAMILY
 )
+
+_T = TypeVar("_T")
+AbstractDataT = TypeVar("AbstractDataT", bound="AbstractData")
+ResourceDataT = TypeVar("ResourceDataT", bound="ResourceData")
+ChartDataT = TypeVar("ChartDataT", bound="ChartData")
+TaskDataT = TypeVar("TaskDataT", bound="TaskData")
+MilestoneDataT = TypeVar("MilestoneDataT", bound="MilestoneData")
+LeaveDataT = TypeVar("LeaveDataT", bound="LeaveData")
 
 
 class DTypes(Enum):
@@ -246,7 +255,7 @@ class AbstractData:
         color = self.DEFAULT_COLOR
         self.name = DataItem(self, "name", DTypes.TEXT, name)
         self.fullname = DataItem(self, "fullname", DTypes.TEXT, fullname)
-        self.color = DataItem(self, "color", DTypes.TEXT, color)
+        self.color = DataItem(self, "color", DTypes.COLOR, color)
         self.project = DataItem(self, "project", DTypes.TEXT, None)
         self.id = DataItem(self, "id", DTypes.TEXT, str(id(self)))
         self.__gantt_object = None
@@ -1026,17 +1035,15 @@ class PlanningData(AbstractData):
                 pnames.append(data.project.value)
         return tuple(set(pnames))
 
-    def iterate_chart_data(self):
+    def iterate_chart_data(self) -> Generator[ChartData, None, None]:
         """Iterate over chart data dictionary items"""
-        for chtdata in self.chtlist:
-            yield chtdata
+        yield from self.chtlist
 
-    def iterate_resource_data(self):
+    def iterate_resource_data(self) -> Generator[ResourceData, None, None]:
         """Iterate over resource data dictionary items"""
-        for resdata in self.reslist:
-            yield resdata
+        yield from self.reslist
 
-    def iterate_task_data(self, only=None):
+    def iterate_task_data(self, only=None) -> Generator[TaskData | MilestoneData, None, None]:
         """Iterate over task data dictionary items"""
         for data in self.tsklist:
             if only is None:
@@ -1054,31 +1061,29 @@ class PlanningData(AbstractData):
                             yield data
                             continue
 
-    def iterate_leave_data(self, only=None):
+    def iterate_leave_data(self, only=None) -> Generator[LeaveData, None, None]:
         """Iterate over leave data dictionary items"""
         for data in self.lvelist:
             if only is None or data.is_associated_to(only):
                 yield data
 
-    def iterate_closing_days_data(self):
+    def iterate_closing_days_data(self) -> Generator[ClosingDayData, None, None]:
         """Iterate over closing days data dictionary items"""
-        for data in self.clolist:
-            yield data
+        yield from self.clolist
 
-    def iterate_all_data(self):
+    def iterate_all_data(self) -> Generator[AbstractData, None, None]:
         """Iterate over all data dictionary items"""
         for dlist in self.__lists:
-            for data in dlist:
-                yield data
+            yield from dlist
 
-    def get_data_from_id(self, data_id):
+    def get_data_from_id(self, data_id) -> Optional[AbstractData]:
         """Return data (chart, resource, task, leave) from id"""
         for data in self.iterate_all_data():
             if data.id.value == data_id:
                 return data
         return None
 
-    def get_resources_from_ids(self, resids):
+    def get_resources_from_ids(self, resids) -> list[ResourceData]:
         """Return resource list from resource data id list"""
         if resids:
             return [
@@ -1089,14 +1094,18 @@ class PlanningData(AbstractData):
         return []
 
     @staticmethod
-    def __append_or_insert(dlist, index, data):
+    def __append_or_insert(
+        dlist: list[AbstractData], index: Optional[int], data: AbstractData
+    ):
         """Append or insert data to list"""
         if index is None:
             dlist.append(data)
         else:
             dlist.insert(index + 1, data)
 
-    def add_resource(self, data, after_data=None):
+    def add_resource(
+        self, data: ResourceData, after_data: Optional[AbstractData] = None
+    ):
         """Add resource to planning"""
         index = None
         if isinstance(after_data, TaskData):
@@ -1107,7 +1116,7 @@ class PlanningData(AbstractData):
             index = self.reslist.index(after_data)
         self.__append_or_insert(self.reslist, index, data)
 
-    def add_task(self, data, after_data=None):
+    def add_task(self, data: TaskData, after_data: Optional[AbstractData] = None):
         """Add task/milestone to planning"""
         index = None
         if isinstance(after_data, TaskData):
@@ -1125,21 +1134,23 @@ class PlanningData(AbstractData):
                     index += 1
         self.__append_or_insert(self.tsklist, index, data)
 
-    def add_leave(self, data, after_data=None):
+    def add_leave(self, data: LeaveData, after_data: Optional[AbstractData] = None):
         """Add resource leave to planning"""
         index = None
         if isinstance(after_data, LeaveData):
             index = self.lvelist.index(after_data)
         self.__append_or_insert(self.lvelist, index, data)
 
-    def add_closing_day(self, data, after_data=None):
+    def add_closing_day(
+        self, data: ClosingDayData, after_data: Optional[AbstractData] = None
+    ):
         """Add closing day to planning"""
         index = None
         if isinstance(after_data, ClosingDayData):
             index = self.clolist.index(after_data)
         self.__append_or_insert(self.clolist, index, data)
 
-    def add_chart(self, data, after_data=None):
+    def add_chart(self, data: ChartData, after_data: Optional[AbstractData] = None):
         """Add chart to planning"""
         index = None
         if isinstance(after_data, ChartData):
