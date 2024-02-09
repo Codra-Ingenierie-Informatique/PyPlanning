@@ -9,7 +9,7 @@ import os.path as osp
 import xml.etree.ElementTree as ET
 from enum import Enum
 from io import StringIO
-from typing import Any, Generator, Optional, TypeVar
+from typing import Any, Generator, Generic, Optional, TypeVar
 
 from planning import gantt
 from planning.config import MAIN_FONT_FAMILY, _
@@ -47,7 +47,7 @@ class NoDefault:
     """No default value"""
 
 
-class DataItem:
+class DataItem(Generic[_T]):
     """Data elementary item"""
 
     COLORS = {
@@ -61,14 +61,31 @@ class DataItem:
         "magenta": "#7030a0",
     }
 
-    def __init__(self, parent, name, datatype, value, choices=None):
+    def __init__(
+        self,
+        parent,
+        name: str,
+        datatype: DTypes,
+        value: Optional[_T],
+        choices: Optional[list] = None,
+    ):
         self.parent = parent
         self.name = name
         self.datatype = datatype
-        self.value = value
+        self._value = value
         self.choices = choices  # tuple of (key, value) tuples
         if datatype == DTypes.CHOICE and choices is None:
             raise ValueError("Choices must be specified")
+
+    @property
+    def value(self) -> _T | None:
+        """Return value"""
+        return self._value
+
+    @value.setter
+    def value(self, value: _T | None):
+        """Set value"""
+        self._value = value
 
     @property
     def choice_keys(self):
@@ -115,7 +132,13 @@ class DataItem:
 
     @classmethod
     def from_element(
-        cls, parent, element, name, datatype, default=NoDefault, choices=None
+        cls,
+        parent,
+        element,
+        name,
+        datatype,
+        default: Optional[_T | type[NoDefault]] = NoDefault,
+        choices=None,
     ):
         """Setup item from XML element"""
         if default is NoDefault:
@@ -179,7 +202,7 @@ class DataItem:
         else:
             self.from_text(widget_value)
 
-    def to_text(self):
+    def to_text(self) -> str:
         """Convert widget value or data model value to text representation"""
         val = self.value
         if val is None:
@@ -205,7 +228,7 @@ class DataItem:
             return str(val)
         raise NotImplementedError(f"Unsupported datatype {self.datatype}")
 
-    def from_text(self, text):
+    def from_text(self, text: str):
         """Set data item value from text"""
         if self.datatype == DTypes.COLOR:
             self.value = self.get_html_color(text)
@@ -253,11 +276,11 @@ class AbstractData:
         if name is None:
             name = self.DEFAULT_NAME
         color = self.DEFAULT_COLOR
-        self.name = DataItem(self, "name", DTypes.TEXT, name)
-        self.fullname = DataItem(self, "fullname", DTypes.TEXT, fullname)
-        self.color = DataItem(self, "color", DTypes.COLOR, color)
-        self.project = DataItem(self, "project", DTypes.TEXT, None)
-        self.id = DataItem(self, "id", DTypes.TEXT, str(id(self)))
+        self.name = DataItem[str](self, "name", DTypes.TEXT, name)
+        self.fullname = DataItem[str](self, "fullname", DTypes.TEXT, fullname)
+        self.color = DataItem[str](self, "color", DTypes.COLOR, color)
+        self.project = DataItem[str](self, "project", DTypes.TEXT, None)
+        self.id = DataItem[str](self, "id", DTypes.TEXT, str(id(self)))
         self.__gantt_object = None
 
     @property
@@ -288,11 +311,11 @@ class AbstractData:
     def _init_from_element(self, element):
         """Init instance from XML element"""
         self.element = element
-        self.name = self.get_str("name", default=self.DEFAULT_NAME)
-        self.fullname = self.get_str("fullname")
-        self.color = self.get_color(default=self.DEFAULT_COLOR)
-        self.project = self.get_str("project")
-        self.id = self.get_str("id", default=str(id(self)))
+        self.name: DataItem[str] = self.get_str("name", default=self.DEFAULT_NAME)
+        self.fullname: DataItem[str] = self.get_str("fullname")
+        self.color: DataItem[str] = self.get_color(default=self.DEFAULT_COLOR)
+        self.project: DataItem[str] = self.get_str("project")
+        self.id: DataItem[str] = self.get_str("id", default=str(id(self)))
 
     @classmethod
     def from_element(cls, pdata, element):
@@ -351,41 +374,49 @@ class AbstractData:
             return self.DEFAULT_ICON_NAME
         return None
 
-    def create_item(self, name, datatype, default=None, choices=None):
+    def create_item(
+        self,
+        name: str,
+        datatype: DTypes,
+        default: Optional[_T | type[NoDefault]] = None,
+        choices: Optional[list] = None,
+    ):
         """Create new data item"""
         return DataItem.from_element(
             self, self.element, name, datatype, default, choices
         )
 
-    def get_str(self, name, default=NoDefault):
+    def get_str(self, name: str, default: Optional[_T | type[NoDefault]] = NoDefault):
         """Get value from XML element and set its datatype"""
         return self.create_item(name, DTypes.TEXT, default=default)
 
-    def get_color(self, default=NoDefault):
+    def get_color(self, default: Optional[_T | type[NoDefault]] = NoDefault):
         """Get color value (html code) from XML attribute"""
         return self.create_item("color", DTypes.COLOR, default=default)
 
-    def get_date(self, name, default=NoDefault):
+    def get_date(self, name, default: Optional[_T | type[NoDefault]] = NoDefault):
         """Get datetime value from XML attribute"""
         return self.create_item(name, DTypes.DATE, default=default)
 
-    def get_days(self, name, default=NoDefault):
+    def get_days(self, name, default: Optional[_T | type[NoDefault]] = NoDefault):
         """Get days number value from XML attribute"""
         return self.create_item(name, DTypes.DAYS, default=default)
 
-    def get_int(self, name, default=NoDefault):
+    def get_int(self, name, default: Optional[_T | type[NoDefault]] = NoDefault):
         """Get integer value from XML attribute"""
         return self.create_item(name, DTypes.INTEGER, default=default)
 
-    def get_list(self, name, default=NoDefault):
+    def get_list(self, name, default: Optional[_T | type[NoDefault]] = NoDefault):
         """Get list value from XML attribute"""
         return self.create_item(name, DTypes.LIST, default=default)
 
-    def get_choices(self, name, default=NoDefault, choices=None):
+    def get_choices(
+        self, name, default: Optional[_T | type[NoDefault]] = NoDefault, choices=None
+    ):
         """Get choices value from XML attribute"""
         return self.create_item(name, DTypes.CHOICE, default=default, choices=choices)
 
-    def get_bool(self, name, default=NoDefault):
+    def get_bool(self, name, default: Optional[_T | type[NoDefault]] = NoDefault):
         """Get boolean value from XML attribute"""
         return self.create_item(name, DTypes.BOOLEAN, default=default)
 
@@ -1043,7 +1074,9 @@ class PlanningData(AbstractData):
         """Iterate over resource data dictionary items"""
         yield from self.reslist
 
-    def iterate_task_data(self, only=None) -> Generator[TaskData | MilestoneData, None, None]:
+    def iterate_task_data(
+        self, only=None
+    ) -> Generator[TaskData | MilestoneData, None, None]:
         """Iterate over task data dictionary items"""
         for data in self.tsklist:
             if only is None:

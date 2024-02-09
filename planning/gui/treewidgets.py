@@ -248,7 +248,7 @@ class BaseTreeWidget(QW.QTreeView):
         model = self.model()
         model.clear()
         self.item_data = {}
-        self.item_rows = {}
+        self.item_rows: dict[str, list[QG.QStandardItem]] = {}
         self.populate_tree()
         model.setHorizontalHeaderLabels(self.NAMES)
         self.blockSignals(True)
@@ -468,7 +468,9 @@ class BaseTreeWidget(QW.QTreeView):
     def add_or_update_item_row(self, data: AbstractData, parent=None, group=False):
         """Add data item row to tree, or update it if already present"""
         update = data.id.value in self.item_rows
-        items = self.item_rows[data.id.value] if update else []
+        items: list[QG.QStandardItem] = (
+            self.item_rows[data.id.value or ""] if update else []
+        )
         for column, attrs in enumerate(self.ATTRS):
             if not isinstance(attrs, tuple):
                 attrs = (attrs,)
@@ -483,7 +485,7 @@ class BaseTreeWidget(QW.QTreeView):
             else:
                 ditem = ditems[0]
 
-            text = "" if ditem is None else ditem.to_display()
+            text: str = "" if ditem is None else ditem.to_display()
             if update:
                 item = items[column]
                 item.setText(text)
@@ -523,6 +525,7 @@ class BaseTreeWidget(QW.QTreeView):
             self.item_rows[data.id.value] = items
             if parent is None:
                 parent = self.model()
+            print(items)
             parent.appendRow(items)
 
     def populate_tree(self):
