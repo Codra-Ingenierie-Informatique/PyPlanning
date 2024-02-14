@@ -559,7 +559,6 @@ class ChartData(AbstractDurationData):
     def set_chart_filename(self, filename: str, index: int):
         """Set chart index, and then chart name to default xml_filename+index if no
         name is set"""
-        print("Set chart file name")
         bname = osp.splitext(osp.basename(filename))[0] + ".svg"
         fname = osp.join(osp.dirname(filename), bname)
         self.fullname.value = fname
@@ -1280,5 +1279,3 @@ class PlanningData(AbstractData):
             raise KeyError(f"No task found for '{pname}' project") from exc
         chart.make_svg(project, one_line_for_tasks)
         self.update_task_calc_dates()
-
-        print(f"Refreshed chart {index}")
