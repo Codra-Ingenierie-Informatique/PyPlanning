@@ -7,9 +7,11 @@ import datetime
 import locale
 import os.path as osp
 import xml.etree.ElementTree as ET
+from collections import Counter
+from copy import deepcopy
 from enum import Enum
 from io import StringIO
-from typing import Any, Generator, Generic, Optional, TypeVar
+from typing import Any, Generator, Generic, Optional, Self, Sequence, TypeVar, Union
 
 from planning import gantt
 from planning.config import MAIN_FONT_FAMILY, _
@@ -28,6 +30,14 @@ ChartDataT = TypeVar("ChartDataT", bound="ChartData")
 TaskDataT = TypeVar("TaskDataT", bound="TaskData")
 MilestoneDataT = TypeVar("MilestoneDataT", bound="MilestoneData")
 LeaveDataT = TypeVar("LeaveDataT", bound="LeaveData")
+AnyData = Union[
+    "AbstractData",
+    "ResourceData",
+    "ChartData",
+    "TaskData",
+    "MilestoneData",
+    "LeaveData",
+]
 
 
 class DTypes(Enum):
@@ -283,6 +293,12 @@ class AbstractData:
         self.id = DataItem[str](self, "id", DTypes.TEXT, str(id(self)))
         self.__gantt_object = None
 
+    def duplicate(self):
+        """Duplicate data set"""
+        new_item = deepcopy(self)
+        new_item.id.value = str(id(new_item))
+        return new_item
+
     @property
     def gantt_object(self):
         """Return associated gantt object"""
@@ -304,7 +320,7 @@ class AbstractData:
         """Return True if data project item is valid"""
         return self.project is not None and bool(self.project.value)
 
-    def is_read_only(self, name):
+    def is_read_only(self, name: str):
         """Return True if item name is read-only"""
         return name in self.READ_ONLY_ITEMS
 
@@ -483,7 +499,8 @@ class ChartData(AbstractDurationData):
     TYPES = (("r", _("Resources")), ("t", _("Tasks")))
     TAG = "CHART"
     DEFAULT_ICON_NAME = "chart.svg"
-    READ_ONLY_ITEMS = ("name", "fullname", "color")
+    # READ_ONLY_ITEMS = ("name", "fullname", "color")
+    READ_ONLY_ITEMS = ("fullname", "color")
 
     def __init__(self, name=None, fullname=None):
         super().__init__(name, fullname)
@@ -531,11 +548,21 @@ class ChartData(AbstractDurationData):
             hour=0, minute=0, second=0, microsecond=0
         )
 
-    def set_chart_filename(self, xml_filename, index):
-        """Set chart index, and then chart name"""
-        bname = osp.splitext(osp.basename(xml_filename))[0] + "%02d.svg"
-        fname = osp.join(osp.dirname(xml_filename), bname)
-        self.fullname.value = fname % index
+    # def set_chart_filename(self, xml_filename: str, index: int):
+    #     """Set chart index, and then chart name to default xml_filename+index if no
+    #      name is set"""
+    #     bname = osp.splitext(osp.basename(xml_filename))[0] + "%02d.svg"
+    #     fname = osp.join(osp.dirname(xml_filename), bname)
+    #     self.fullname.value = fname % index
+    #     self.name.value = osp.basename(self.fullname.value)
+
+    def set_chart_filename(self, filename: str, index: int):
+        """Set chart index, and then chart name to default xml_filename+index if no
+        name is set"""
+        print("Set chart file name")
+        bname = osp.splitext(osp.basename(filename))[0] + ".svg"
+        fname = osp.join(osp.dirname(filename), bname)
+        self.fullname.value = fname
         self.name.value = osp.basename(self.fullname.value)
 
     def make_svg(
@@ -753,8 +780,7 @@ class TaskData(AbstractTaskData):
 
     def iterate_resource_ids(self):
         """Iterate over resource ids"""
-        for resid in self.__resids:
-            yield resid
+        yield from self.__resids
 
     def is_assigned_to(self, resid):
         """Return True if data is associated to resource id"""
@@ -772,10 +798,7 @@ class TaskData(AbstractTaskData):
             for resource_id, resource in self.pdata.all_resources.items()
             if resource_id in self.__resids
         ]
-        if self.percent_done.value is None:
-            percent_done = 0
-        else:
-            percent_done = self.percent_done.value
+        percent_done = 0 if self.percent_done.value is None else self.percent_done.value
         self.gantt_object = gantt.Task(
             self.name.value,
             start=self.start.value,
@@ -919,26 +942,32 @@ class PlanningData(AbstractData):
         self.all_resources = {}
         self.all_tasks = {}
         self.filename = None
-        self.reslist = []
-        self.tsklist = []
-        self.lvelist = []
-        self.clolist = []
-        self.chtlist = []
-        self.__lists = [
+        self.reslist: list[ResourceData] = []
+        self.tsklist: list[AbstractTaskData] = []
+        self.lvelist: list[LeaveData] = []
+        self.clolist: list[ClosingDayData] = []
+        self.chtlist: list[ChartData] = []
+        self.__lists: tuple[
+            list[ResourceData],
+            list[AbstractTaskData],
+            list[LeaveData],
+            list[ClosingDayData],
+            list[ChartData],
+        ] = (
             self.reslist,
             self.tsklist,
             self.lvelist,
             self.clolist,
             self.chtlist,
-        ]
+        )
         gantt.VACATIONS = []
 
-    def set_filename(self, filename):
+    def set_filename(self, filename: str):
         """Set planning data XML filename"""
         self.filename = filename
-        self.__update_chart_names()
+        self.update_chart_names()
 
-    def _init_from_element(self, element):
+    def _init_from_element(self, element: ET.Element):
         """Init instance from XML element"""
         super()._init_from_element(element)
         charts_tag = "CHARTS"
@@ -973,7 +1002,7 @@ class PlanningData(AbstractData):
                 self.add_closing_day(data)
 
     @classmethod
-    def from_filename(cls, fname):
+    def from_filename(cls, fname: str):
         """Instantiate data set from XML file"""
         with open(fname, "rb") as fdesc:
             xmlcode = fdesc.read().decode("utf-8")
@@ -1011,7 +1040,7 @@ class PlanningData(AbstractData):
         strio.close()
         return text
 
-    def to_filename(self, fname):
+    def to_filename(self, fname: str):
         """Serialize model to XML file"""
         self.set_filename(fname)
         tree = ET.ElementTree(self.to_element())
@@ -1189,24 +1218,27 @@ class PlanningData(AbstractData):
         if isinstance(after_data, ChartData):
             index = self.chtlist.index(after_data)
         self.__append_or_insert(self.chtlist, index, data)
-        self.__update_chart_names()
+        self.update_chart_names()
 
-    def __update_chart_names(self):
+    def update_chart_names(self):
         """Update chart names"""
-        if self.filename is not None:
-            for index, data in enumerate(self.iterate_chart_data()):
-                data.set_chart_filename(self.filename, index)
+        if self.filename is None:
+            return
+
+        for index, data in enumerate(self.iterate_chart_data()):
+            filename = osp.join(osp.dirname(self.filename), str(data.name.value))
+            data.set_chart_filename(filename, index)
 
     @property
-    def chart_filenames(self):
+    def chart_filenames(self) -> list[str]:
         """Return chart filenames"""
-        return [data.fullname.value for data in self.iterate_chart_data()]
+        return [str(data.fullname.value) for data in self.iterate_chart_data()]
 
     def process_gantt(self):
         """Create or update Gantt objects and add them to dictionaries"""
-        self.all_projects = {}
-        self.all_resources = {}
-        self.all_tasks = {}
+        self.all_projects.clear()
+        self.all_resources.clear()
+        self.all_tasks.clear()
         mainproj = gantt.Project(name=self.name.value, color=self.color.value)
         self.all_projects[None] = mainproj
         for data in self.iterate_all_data():
@@ -1234,3 +1266,19 @@ class PlanningData(AbstractData):
                 raise KeyError(f"No task found for '{pname}' project") from exc
             data.make_svg(project, one_line_for_tasks)
         self.update_task_calc_dates()
+
+    def generate_current_chart(self, index: int, one_line_for_tasks=True):
+        """Refresh current chart"""
+        if len(self.chtlist) == 0:
+            return
+        self.process_gantt()
+        chart = self.chtlist[index]
+        pname = chart.project.value
+        try:
+            project = self.all_projects[pname]
+        except KeyError as exc:
+            raise KeyError(f"No task found for '{pname}' project") from exc
+        chart.make_svg(project, one_line_for_tasks)
+        self.update_task_calc_dates()
+
+        print(f"Refreshed chart {index}")

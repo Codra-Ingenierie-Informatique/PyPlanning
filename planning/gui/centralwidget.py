@@ -23,14 +23,14 @@ from planning.model import PlanningData
 class PlanningEditor(QStackedWidget):
     """Planning editor widget"""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: "PlanningCentralWidget"):
         super().__init__(parent)
         self.code = CodeEditor(self, language="html")
         self.code.setLineWrapMode(CodeEditor.NoWrap)
         self.addWidget(self.code)
         self.trees = TreeWidgets(self)
         self.addWidget(self.trees)
-        self.signals = [self.code.textChanged, self.trees.SIG_MODEL_CHANGED]
+        self.signals = [self.code.SIG_EDIT_STOPPED, self.trees.SIG_MODEL_CHANGED]
         self.slots = [parent.xml_code_changed, parent.tree_changed]
         self.currentChanged.connect(self.current_changed)
         self.current_changed()
@@ -41,7 +41,7 @@ class PlanningEditor(QStackedWidget):
         """Return True if XML mode is enabled"""
         return Conf.main.xml_mode.get(False)
 
-    def current_changed(self, index=None):
+    def current_changed(self, index: int | None = None):
         """Current widget has changed"""
         if index is None:
             index = self.currentIndex()
@@ -120,17 +120,17 @@ class PlanningPreview(QTabWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.__path = None
-        self.views = None
+        self.views: dict[str, SVGViewer] = {}
         self.clear_all_tabs()
 
     def clear_all_tabs(self):
         """Clear all tabs"""
         self.__path = None
-        self.views = {}
+        self.views.clear()
         for index in reversed(range(self.count())):
             self.removeTab(index)
 
-    def update_tabs(self, fnames):
+    def update_tabs(self, fnames: list[str]):
         """Update tabs"""
         old_current = self.tabText(self.currentIndex())
         bnames = [osp.basename(fname) for fname in fnames]
@@ -143,16 +143,27 @@ class PlanningPreview(QTabWidget):
                     self.views.pop(to_remove)
                     if self.__path is not None:
                         os.remove(osp.join(self.__path, to_remove))
-        for fname, bname in zip(fnames, bnames):
+        for i, (fname, bname) in enumerate(zip(fnames, bnames)):
             if bname in self.views:
                 viewer = self.views[bname]
             else:
                 self.views[bname] = viewer = SVGViewer()
-                index = self.addTab(viewer, get_icon("chart.svg"), bname)
+                index = self.insertTab(i, viewer, get_icon("chart.svg"), bname)
                 self.setTabToolTip(index, fname)
             viewer.load(fname)
             if bname == old_current:
                 self.setCurrentWidget(viewer)
+
+    def update_tab(self, index: int, fname: str):
+        if self.count() == 0:
+            return
+        new_bname = osp.basename(fname)
+        prev_bname = self.tabText(index)
+        viewer = self.views.pop(prev_bname)
+        viewer.load(fname)
+        self.views[new_bname] = viewer
+        self.setTabText(index, new_bname)
+        self.setTabToolTip(index, fname)
 
 
 class PlanningCentralWidget(QSplitter):
@@ -182,7 +193,7 @@ class PlanningCentralWidget(QSplitter):
         self.setStretchFactor(1, 1)
 
     @property
-    def planning(self):
+    def planning(self) -> PlanningData:
         """Return PlanningData instance"""
         return self.editor.trees.planning
 
@@ -212,8 +223,7 @@ class PlanningCentralWidget(QSplitter):
         try:
             planning = PlanningData.from_element(PlanningData(), ET.fromstring(xmlcode))
             planning.set_filename(self.path)
-            planning.generate_charts()
-            self.preview.update_tabs(planning.chart_filenames)
+            self.update_planning_charts()
         except (ValueError, KeyError, AssertionError, TypeError, AttributeError):
             self._print_do_not_panic()
 
@@ -221,10 +231,24 @@ class PlanningCentralWidget(QSplitter):
         """Tree widget has changed"""
         self.SIG_MODIFIED.emit()
         try:
-            self.planning.generate_charts()
-            self.preview.update_tabs(self.planning.chart_filenames)
+            self.update_planning_charts()
+
         except (ValueError, KeyError, AssertionError, TypeError, AttributeError):
             self._print_do_not_panic()
+
+    def update_planning_charts(self):
+        """Update charts"""
+        if (planning := self.planning) is None:
+            return
+        planning.update_chart_names()
+        chart_count = len(planning.chtlist)
+        if self.preview.count() != chart_count:
+            planning.generate_charts()
+            self.preview.update_tabs(planning.chart_filenames)
+        elif chart_count != 0:
+            index = self.preview.currentIndex()
+            planning.generate_current_chart(index)
+            self.preview.update_tab(index, planning.chart_filenames[index])
 
     def new_file(self):
         """New file"""
@@ -236,19 +260,19 @@ class PlanningCentralWidget(QSplitter):
         width = self.size().width() // 2
         self.setSizes([width, width])
 
-    def load_file(self, path):
+    def load_file(self, path: str):
         """Load file"""
         self.path = path
         self.preview.clear_all_tabs()
         self.editor.load_file(path)
         self.__adjust_sizes()
 
-    def save_file(self, path):
+    def save_file(self, path: str):
         """Save file"""
         self.path = path
         self.editor.save_file(path)
 
-    def set_text_and_path(self, text, path):
+    def set_text_and_path(self, text: str, path: str):
         """Set text and path"""
         self.path = path
         self.editor.set_text_and_path(text, path)

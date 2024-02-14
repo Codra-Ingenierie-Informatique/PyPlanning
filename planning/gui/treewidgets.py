@@ -7,7 +7,7 @@
 
 import datetime
 import xml.etree.ElementTree as ET
-from typing import Optional, TypeVar
+from typing import Any, Callable, Optional, TypeVar
 
 from guidata import qthelpers
 from guidata.configtools import get_icon
@@ -46,7 +46,7 @@ EMPTY_NAME = _("Untitled")
 class TaskTreeDelegate(QW.QItemDelegate):
     """Task Tree Item Delegate"""
 
-    def __init__(self, parent, margin):
+    def __init__(self, parent: "BaseTreeWidget", margin):
         QW.QItemDelegate.__init__(self, parent)
         self.margin = margin
         self.editor_opened = False
@@ -63,7 +63,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
         """Return standard model item from index"""
         return index.model().itemFromIndex(index)
 
-    def dataitem_from_index(self, index):
+    def dataitem_from_index(self, index: QC.QModelIndex) -> DataItem:
         """Return data item for index"""
         return self.parent().item_data[id(self.item_from_index(index))]
 
@@ -113,10 +113,13 @@ class TaskTreeDelegate(QW.QItemDelegate):
         self.commitData.emit(editor)
         self.closeEditor.emit(editor)
 
-    def setEditorData(self, editor, index):  # pylint: disable=invalid-name
+    def setEditorData(
+        self, editor: ItemEditor, index: QC.QModelIndex
+    ):  # pylint: disable=invalid-name
         """Reimplement Qt method"""
         ditem = self.dataitem_from_index(index)
         value = ditem.to_widget_value()
+
         if ditem.datatype == DTypes.DAYS:
             editor.setValue(value)
         elif ditem.datatype == DTypes.DATE:
@@ -134,9 +137,11 @@ class TaskTreeDelegate(QW.QItemDelegate):
     def setModelData(self, editor: ItemEditor, mdl, index: QC.QModelIndex):
         """Reimplement Qt method"""
         ditem = self.dataitem_from_index(index)
+        validator = self.parent().VALIDATORS.get(ditem.name)
+
+        value: Any
         if ditem.datatype == DTypes.DAYS:
-            value = editor.value()
-            ditem.value = value if value else None
+            value = editor.value() or None
         elif ditem.datatype == DTypes.DATE:
             qdate = editor.date()
             value = datetime.datetime(qdate.year(), qdate.month(), qdate.day())
@@ -147,17 +152,25 @@ class TaskTreeDelegate(QW.QItemDelegate):
                 and data.stop.value is not None
             ):
                 data.stop.value += value - data.start.value
-            ditem.value = value
         elif ditem.datatype == DTypes.CHOICE:
-            ditem.set_choice_value(editor.currentText())
+            value = editor.currentText()
         elif ditem.datatype == DTypes.COLOR:
-            ditem.value = editor.currentText()[0]
+            value = editor.currentText()[0]
         elif ditem.datatype == DTypes.BOOLEAN:
-            ditem.value = editor.isChecked()
+            value = editor.isChecked()
         else:
-            ditem.value = editor.text()
+            value = editor.text()
             if ditem.name == "name" and len(ditem.value) == 0:
-                ditem.value = EMPTY_NAME
+                value = EMPTY_NAME
+
+        if validator is not None and not validator(value):
+            return
+
+        if ditem.datatype == DTypes.CHOICE:
+            ditem.set_choice_value(value)
+        else:
+            ditem.value = value
+
         item = self.item_from_index(index)
         item.setText(ditem.to_display())
         self.parent().refresh()
@@ -173,11 +186,14 @@ class BaseTreeWidget(QW.QTreeView):
     COLUMNS_TO_EDIT_ON_CLICK = ()
     ATTRS: tuple[str | tuple[str, ...], ...] = ()
 
+    # Validators are used to check if the value from an ItemEditor is valid
+    VALIDATORS: dict[str, Callable[[Any], bool]] = {}
+
     def __init__(self, parent=None, debug=False):
         QW.QTreeView.__init__(self, parent)
         self.debug = debug
         self.planning: Optional[PlanningData] = None
-        self.item_data = {}
+        self.item_data: dict[int, DataItem] = {}
         self.item_rows = {}
 
         self.setWindowTitle(self.TITLE)
@@ -218,6 +234,7 @@ class BaseTreeWidget(QW.QTreeView):
         self.remove_action = None
         self.up_action = None
         self.down_action = None
+        self.reload_action = None
         self.always_enabled_actions = []
         self.specific_actions = self.setup_specific_actions()
         self.toolbar = self.create_toolbar()
@@ -233,7 +250,7 @@ class BaseTreeWidget(QW.QTreeView):
         self.planning = planning
         self.repopulate()
 
-    def item_collapsed_expanded(self, index, collapsed):
+    def item_collapsed_expanded(self, index: QC.QModelIndex, collapsed: bool):
         """Item has been collapsed or expanded"""
         item = self.model().itemFromIndex(index)
         data_id = self.get_id_from_item(item)
@@ -312,12 +329,20 @@ class BaseTreeWidget(QW.QTreeView):
             icon=get_icon("move_down.svg"),
             triggered=lambda delta=1: self.move(delta),
         )
+        self.reload_action = create_action(
+            self,
+            title=_("Update tree"),
+            icon=get_icon("update.svg"),
+            triggered=self.repopulate,
+        )
         return [
             self.edit_action,
             self.remove_action,
             None,
             self.up_action,
             self.down_action,
+            None,
+            self.reload_action,
         ]
 
     def set_specific_actions_state(self, state):
@@ -474,6 +499,7 @@ class BaseTreeWidget(QW.QTreeView):
         for column, attrs in enumerate(self.ATTRS):
             if not isinstance(attrs, tuple):
                 attrs = (attrs,)
+
             ditems: list[DataItem | None] = [
                 getattr(data, attr, None) for attr in attrs
             ]
@@ -486,6 +512,7 @@ class BaseTreeWidget(QW.QTreeView):
                 ditem = ditems[0]
 
             text: str = "" if ditem is None else ditem.to_display()
+
             if update:
                 item = items[column]
                 item.setText(text)
@@ -525,7 +552,6 @@ class BaseTreeWidget(QW.QTreeView):
             self.item_rows[data.id.value] = items
             if parent is None:
                 parent = self.model()
-            print(items)
             parent.appendRow(items)
 
     def populate_tree(self):
@@ -589,12 +615,13 @@ class TaskTreeWidget(BaseTreeWidget):
     COLUMNS_TO_EDIT_ON_CLICK = ()
 
     def __init__(self, parent=None, debug=False):
+        self.reload_action = None
         self.new_resource_action = None
         self.new_task_action = None
+        self.duplicate_task_action = None
         self.new_milestone_action = None
         self.new_leave_action = None
         self.task_mode_action = None
-        self.remove_start_action = None
         BaseTreeWidget.__init__(self, parent, debug)
 
     def setup_specific_actions(self):
@@ -610,6 +637,12 @@ class TaskTreeWidget(BaseTreeWidget):
             _("New task"),
             icon=get_icon("new_task.svg"),
             triggered=self.new_task,
+        )
+        self.duplicate_task_action = create_action(
+            self,
+            _("Duplicate task"),
+            icon=get_icon("new_task.svg"),
+            triggered=self.duplicate_task,
         )
         self.new_milestone_action = create_action(
             self,
@@ -632,11 +665,13 @@ class TaskTreeWidget(BaseTreeWidget):
         self.always_enabled_actions += [
             self.new_resource_action,
             self.new_task_action,
+            self.duplicate_task_action,
             self.new_milestone_action,
         ]
         return [
             self.new_resource_action,
             self.new_task_action,
+            self.duplicate_task_action,
             self.new_milestone_action,
             self.new_leave_action,
             None,
@@ -651,6 +686,9 @@ class TaskTreeWidget(BaseTreeWidget):
                 isinstance(data, (ResourceData, LeaveData))
                 or (isinstance(data, TaskData) and not data.no_resource)
             )
+
+            is_task = isinstance(data, AbstractTaskData)
+            self.duplicate_task_action.setEnabled(is_task)
 
     def get_actions_from_indexes(self, indexes):
         """Get actions from indexes"""
@@ -719,6 +757,17 @@ class TaskTreeWidget(BaseTreeWidget):
         self.set_current_id(data.id.value)
         self.repopulate()
         self.edit(self.currentIndex())
+
+    def duplicate_task(self):
+        """New task item"""
+        current_data: AbstractData | None = self.get_current_data()
+        if isinstance(current_data, AbstractTaskData):
+            data = current_data.duplicate()
+            self.planning.add_task(data, after_data=current_data)
+            self.__add_taskitem(data)
+            self.set_current_id(data_id=data.id.value)
+            self.repopulate()
+            self.edit(self.currentIndex())
 
     def new_milestone(self):
         """New milestone item"""
@@ -839,6 +888,7 @@ class ChartTreeWidget(BaseTreeWidget):
         self.set_today_action = None
         BaseTreeWidget.__init__(self, parent, debug)
         self.setSelectionMode(QW.QTreeView.ExtendedSelection)
+        self.VALIDATORS["name"] = self.validate_chart_name
 
     def setup_specific_actions(self):
         """Setup context menu common actions"""
@@ -886,9 +936,23 @@ class ChartTreeWidget(BaseTreeWidget):
         """Add chart item to tree"""
         self.add_or_update_item_row(data)
 
+    def validate_chart_name(self, new_name: str):
+        """Check duplicate name"""
+
+        if self.planning is None:
+            return False
+
+        for data in self.planning.iterate_chart_data():
+            if data.name.value == new_name:
+                print(data.name.value, new_name)
+                return False
+        return True
+
     def populate_tree(self):
         """Populate tree"""
         # add charts
+        if self.planning is None:
+            return
         for data in self.planning.iterate_chart_data():
             self.__add_chartitem(data)
 
