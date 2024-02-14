@@ -548,14 +548,6 @@ class ChartData(AbstractDurationData):
             hour=0, minute=0, second=0, microsecond=0
         )
 
-    # def set_chart_filename(self, xml_filename: str, index: int):
-    #     """Set chart index, and then chart name to default xml_filename+index if no
-    #      name is set"""
-    #     bname = osp.splitext(osp.basename(xml_filename))[0] + "%02d.svg"
-    #     fname = osp.join(osp.dirname(xml_filename), bname)
-    #     self.fullname.value = fname % index
-    #     self.name.value = osp.basename(self.fullname.value)
-
     def set_chart_filename(self, filename: str, index: int):
         """Set chart index, and then chart name to default xml_filename+index if no
         name is set"""
