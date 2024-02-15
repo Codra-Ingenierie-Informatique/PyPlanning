@@ -7,6 +7,7 @@
 import os
 import os.path as osp
 import traceback
+from typing import Optional
 import xml.etree.ElementTree as ET
 
 from guidata.configtools import get_icon
@@ -223,7 +224,7 @@ class PlanningCentralWidget(QSplitter):
         try:
             planning = PlanningData.from_element(PlanningData(), ET.fromstring(xmlcode))
             planning.set_filename(self.path)
-            self.update_planning_charts()
+            self.update_planning_charts(planning)
         except (ValueError, KeyError, AssertionError, TypeError, AttributeError):
             self._print_do_not_panic()
 
@@ -236,9 +237,9 @@ class PlanningCentralWidget(QSplitter):
         except (ValueError, KeyError, AssertionError, TypeError, AttributeError):
             self._print_do_not_panic()
 
-    def update_planning_charts(self):
+    def update_planning_charts(self, planning: Optional[PlanningData]=None):
         """Update charts"""
-        if (planning := self.planning) is None:
+        if planning is None and (planning := self.planning) is None:
             return
         planning.update_chart_names()
         chart_count = len(planning.chtlist)

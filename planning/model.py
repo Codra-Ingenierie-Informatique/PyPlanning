@@ -554,7 +554,7 @@ class ChartData(AbstractDurationData):
         bname = osp.splitext(osp.basename(filename))[0] + ".svg"
         fname = osp.join(osp.dirname(filename), bname)
         self.fullname.value = fname
-        self.name.value = osp.basename(self.fullname.value)
+        self.name.value = osp.basename(bname)
 
     def make_svg(
         self,
@@ -1217,7 +1217,8 @@ class PlanningData(AbstractData):
             return
 
         for index, data in enumerate(self.iterate_chart_data()):
-            filename = osp.join(osp.dirname(self.filename), str(data.name.value))
+            bname = data.name.value or osp.basename(self.filename).rsplit(".")[0] + f"_{index:02d}.svg"
+            filename = osp.join(osp.dirname(self.filename), bname)
             data.set_chart_filename(filename, index)
 
     @property
