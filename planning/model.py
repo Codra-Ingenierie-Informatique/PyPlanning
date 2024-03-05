@@ -758,7 +758,7 @@ class TaskData(AbstractTaskData):
 
     TAG = "TASK"
     DEFAULT_ICON_NAME = "task.svg"
-    READ_ONLY_ITEMS = ("start_calc", "stop_calc")
+    READ_ONLY_ITEMS = ("start_calc", "stop_calc", "proxy_id")
 
     def __init__(self, pdata, name=None, fullname=None):
         super().__init__(pdata, name, fullname)
@@ -905,7 +905,7 @@ class MilestoneData(AbstractTaskData):
 
     TAG = "MILESTONE"
     DEFAULT_ICON_NAME = "milestone.svg"
-    READ_ONLY_ITEMS = ("duration", "stop")
+    READ_ONLY_ITEMS = ("duration", "stop", "proxy_id")
 
     def is_valid(self, item_name):
         """Check data item values, eventually depending on planning data"""

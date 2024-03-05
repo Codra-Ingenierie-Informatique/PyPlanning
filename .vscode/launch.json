@@ -10,7 +10,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/planning/app.py",
             "console": "integratedTerminal",
-            "python": "${config:python.defaultInterpreterPath}",
+            "envFile": "${workspaceFolder}/.env",
+            // "python": "${config:python.defaultInterpreterPath}",
             "args": [
                 // "examples/project_planning.xml",
                 // "examples/project_planning-detailed.xml",
@@ -28,7 +29,8 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "python": "${config:python.defaultInterpreterPath}",
+            "envFile": "${workspaceFolder}/.env",
+            // "python": "${config:python.defaultInterpreterPath}",
             "env": {
                 "PLANNINGDEBUG": "1",
             },
