@@ -1336,7 +1336,7 @@ class Task(object):
                 )
             )
 
-        if self.percent_done is not None and self.percent_done > 0:
+        if self.percent_done is not None and 100 >= self.percent_done >= 0:
             # Bar shade
             svg.add(
                 svgwrite.shapes.Rect(

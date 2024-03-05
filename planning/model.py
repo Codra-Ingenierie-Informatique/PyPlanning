@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """PyPlanning data model"""
 
 # pylint: disable=invalid-name  # Allows short reference names like x, y, ...
@@ -7,11 +6,10 @@ import datetime
 import locale
 import os.path as osp
 import xml.etree.ElementTree as ET
-from collections import Counter
 from copy import deepcopy
 from enum import Enum
 from io import StringIO
-from typing import Any, Generator, Generic, Optional, Self, Sequence, TypeVar, Union
+from typing import Any, Callable, Generator, Generic, Optional, Self, TypeVar, Union
 
 from planning import gantt
 from planning.config import MAIN_FONT_FAMILY, _
@@ -37,6 +35,7 @@ AnyData = Union[
     "TaskData",
     "MilestoneData",
     "LeaveData",
+    "AbstractTaskData",
 ]
 
 
@@ -73,17 +72,17 @@ class DataItem(Generic[_T]):
 
     def __init__(
         self,
-        parent,
+        parent: AbstractDataT,
         name: str,
         datatype: DTypes,
         value: Optional[_T],
-        choices: Optional[list] = None,
+        choices: Optional[list[tuple[Any, Any]]] = None,
     ):
-        self.parent = parent
+        self.parent: AbstractDataT = parent
         self.name = name
         self.datatype = datatype
         self._value = value
-        self.choices = choices  # tuple of (key, value) tuples
+        self.choices = choices or []  # tuple of (key, value) tuples
         if datatype == DTypes.CHOICE and choices is None:
             raise ValueError("Choices must be specified")
 
@@ -175,14 +174,23 @@ class DataItem(Generic[_T]):
                 return ""
             if self.datatype == DTypes.BOOLEAN:
                 return False
+            if self.datatype == DTypes.INTEGER:
+                if self.value is None:
+                    return ""
+                return self.value
             if self.datatype == DTypes.COLOR:
                 if self.value is None:
                     return None
                 for cname in self.COLORS:
                     if cname.startswith(self.value):
                         return self.value
+            if self.datatype == DTypes.LIST:
+                return ""
             raise NotImplementedError
-        return self.value
+
+        if self.datatype == DTypes.LIST:
+            return ", ".join(self.value)
+        return str(self.value)
 
     def to_display(self):
         """Convert widget value or data model value to display value"""
@@ -222,7 +230,7 @@ class DataItem(Generic[_T]):
         if self.datatype in (DTypes.INTEGER, DTypes.DAYS):
             return str(val)
         if self.datatype == DTypes.LIST:
-            return ",".join(val)
+            return ", ".join(val)
         if self.datatype == DTypes.CHOICE:
             if val not in self.choice_keys:
                 raise ValueError(f"No key {val} in choices")
@@ -245,12 +253,15 @@ class DataItem(Generic[_T]):
         elif self.datatype == DTypes.TEXT:
             self.value = None if len(text) == 0 else text
         elif self.datatype == DTypes.INTEGER:
-            self.value = int(text)
+            self.value = None if text == "" else int(text)
         elif self.datatype == DTypes.LIST:
             if text == "":
                 self.value = []
             else:
-                self.value = text.split(",")
+                values = text.split(",")
+                values_f = [v for val in values if (v := val.strip())]
+                self.value = values_f
+
         elif self.datatype == DTypes.CHOICE:
             if text not in self.choice_keys:
                 raise ValueError(f"No key {text} in choices")
@@ -279,8 +290,9 @@ class AbstractData:
     DEFAULT_NAME = None
     DEFAULT_COLOR = None
     READ_ONLY_ITEMS = ()
+    NO_COPY: tuple[str, ...] = ("pdata",)
 
-    def __init__(self, pdata, name=None, fullname=None):
+    def __init__(self, pdata: "PlanningData", name=None, fullname=None):
         self.pdata = pdata
         self.element = None
         if name is None:
@@ -290,14 +302,30 @@ class AbstractData:
         self.fullname = DataItem[str](self, "fullname", DTypes.TEXT, fullname)
         self.color = DataItem[str](self, "color", DTypes.COLOR, color)
         self.project = DataItem[str](self, "project", DTypes.TEXT, None)
-        self.id = DataItem[str](self, "id", DTypes.TEXT, str(id(self)))
+        self.id = DataItem[str](self, "id", DTypes.TEXT, self.default_id)
         self.__gantt_object = None
+
+    @property
+    def default_id(self) -> str:
+        return f"default-{id(self)}"
 
     def duplicate(self):
         """Duplicate data set"""
         new_item = deepcopy(self)
-        new_item.id.value = str(id(new_item))
+        new_item.pdata = self.pdata
+        new_item.id.value = new_item.default_id
         return new_item
+
+    def __deepcopy__(self, memo):
+        """Deepcopy method"""
+        cls = self.__class__
+        obj = cls.__new__(cls)
+        memo[id(self)] = obj
+        for k, v in self.__dict__.items():
+            if k in self.NO_COPY:
+                v = dict()
+            setattr(obj, k, deepcopy(v, memo))
+        return obj
 
     @property
     def gantt_object(self):
@@ -313,7 +341,7 @@ class AbstractData:
     def has_named_id(self):
         """Return True if data set has a named ID (as opposed to an internal
         ID which is automatically generated and not suited for display"""
-        return self.id.value != str(id(self))
+        return self.id.value != self.default_id
 
     @property
     def has_project(self):
@@ -331,7 +359,7 @@ class AbstractData:
         self.fullname: DataItem[str] = self.get_str("fullname")
         self.color: DataItem[str] = self.get_color(default=self.DEFAULT_COLOR)
         self.project: DataItem[str] = self.get_str("project")
-        self.id: DataItem[str] = self.get_str("id", default=str(id(self)))
+        self.id: DataItem[str] = self.get_str("id", default=self.default_id)
 
     @classmethod
     def from_element(cls, pdata, element):
@@ -608,20 +636,49 @@ class AbstractTaskData(AbstractDurationData):
 
     def __init__(self, pdata, name=None, fullname=None):
         super().__init__(pdata, name, fullname)
-        self.depends_of = DataItem(self, "depends_of", DTypes.LIST, None)
+        self.depends_of = DataItem[list[str]](self, "depends_of", DTypes.LIST, None)
+        self.percent_done = DataItem[int](self, "percent_done", DTypes.INTEGER, 0)
+        self.proxy_id = DataItem[str](self, "proxy_id", DTypes.TEXT, None)
+        self.depends_on_proxy_id = DataItem[list[str]](
+            self,
+            "depends_on_proxy_id",
+            DTypes.LIST,
+            None,
+        )
+
+    def duplicate(self):
+        new_item = super().duplicate()
+        return new_item
 
     def _init_from_element(self, element):
         """Init instance from XML element"""
         super()._init_from_element(element)
-        self.depends_of = self.get_list("depends_of")
+        self.depends_of: DataItem[list[str]] = self.get_list("depends_of")
+        self.percent_done: DataItem[int] = self.get_int("percent_done")
+        self.depends_on_proxy_id = DataItem[list[str]](
+            self, "depends_on_proxy_id", DTypes.LIST, None
+        )
+        # self.depends_on_proxy_id = DataItem[list[DataItem[int]]](
+        #     self, "proxy_id", DTypes.LIST, []
+        # )
+        # pdata = self.pdata
+        # depends_of = self.depends_of.value
+        # print("Depends of: ", depends_of)
+        # if depends_of is None:
+        #     self.depends_on_proxy_id.value = []
+        #     return
+        # for task_id in depends_of:
+        #     task_data = pdata.all_tasks.get(task_id, None)
+        #     if task_data is not None:
+        #         self.depends_on_proxy_id.value.append(task_data.proxy_id.value)
 
     def get_attrib_names(self):
         """Return attribute names"""
-        return super().get_attrib_names() + ["depends_of"]
+        return super().get_attrib_names() + ["depends_of", "percent_done"]
 
     def process_gantt(self):
         """Create or update Gantt objects and add them to dictionaries"""
-        task = self.gantt_object
+        task: gantt.Task = self.gantt_object
         if self.pdata.all_tasks:
             # Hopefully, dictionaries are officially ordered since Python 3.7:
             prevtask = self.pdata.all_tasks[list(self.pdata.all_tasks.keys())[-1]]
@@ -654,6 +711,39 @@ class AbstractTaskData(AbstractDurationData):
                     if tskdata_id in self.depends_of.value
                 ]
             )
+
+    def update_depends_of_from_indexes(self):
+        if self.depends_on_proxy_id.value is not None:
+            wrong_values = []
+            new_values = []
+            for value in self.depends_on_proxy_id.value:
+                task = self.pdata.idx_to_tsk.get(value, None)
+                if task is None:
+                    wrong_values.append(value)
+                    continue
+                if not task.has_named_id:
+                    old_id = task.id.value
+                    new_id = f"auto_id-{task.default_id.split('-', 1)[1]}"
+                    self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
+                    task.id.value = new_id
+                new_values.append(task.id.value)
+            self.depends_of.value = new_values
+            if wrong_values:
+                for value in wrong_values:
+                    self.depends_on_proxy_id.value.remove(value)
+
+    def update_depends_of_from_ids(self):
+        if self.depends_of.value is not None:
+            self.depends_on_proxy_id.value = []
+            for t_id in self.depends_of.value:
+                data: AbstractTaskData | None = self.pdata.get_data_from_id(t_id)
+                if data is not None:
+                    self.depends_on_proxy_id.value.append(data.proxy_id.value)
+                    if not data.has_named_id:
+                        old_id = data.id.value
+                        new_id = f"auto_id-{data.default_id.split('-', 1)[1]}"
+                        self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
+                        data.id.value = new_id
 
 
 class TaskModes(Enum):
@@ -931,10 +1021,11 @@ class PlanningData(AbstractData):
         super().__init__(self, name, fullname)
         self.all_projects = {}
         self.all_resources = {}
-        self.all_tasks = {}
+        self.all_tasks: dict[str, gantt.Task] = {}
         self.filename = None
         self.reslist: list[ResourceData] = []
         self.tsklist: list[AbstractTaskData] = []
+        self.idx_to_tsk: dict[str, AbstractTaskData] = {}
         self.lvelist: list[LeaveData] = []
         self.clolist: list[ClosingDayData] = []
         self.chtlist: list[ChartData] = []
@@ -991,6 +1082,8 @@ class PlanningData(AbstractData):
             for elem in cdays_elt.findall(ClosingDayData.TAG):
                 data = ClosingDayData.from_element(self, elem)
                 self.add_closing_day(data)
+        for data in self.iterate_task_data():
+            data.update_depends_of_from_ids()
 
     @classmethod
     def from_filename(cls, fname: str):
@@ -1053,7 +1146,10 @@ class PlanningData(AbstractData):
         data = self.get_data_from_id(data_id)
         for dlist in self.__lists:
             if data in dlist:
-                dlist.pop(dlist.index(data))
+                index = dlist.index(data)
+                dlist.pop(index)
+                if isinstance(data, AbstractTaskData):
+                    self.update_task_idx(index)
                 break
         else:
             raise ValueError("Data not found in model")
@@ -1148,7 +1244,7 @@ class PlanningData(AbstractData):
 
     @staticmethod
     def __append_or_insert(
-        dlist: list[AbstractData], index: Optional[int], data: AbstractData
+        dlist: list[AbstractDataT], index: Optional[int], data: AbstractDataT
     ):
         """Append or insert data to list"""
         if index is None:
@@ -1169,7 +1265,9 @@ class PlanningData(AbstractData):
             index = self.reslist.index(after_data)
         self.__append_or_insert(self.reslist, index, data)
 
-    def add_task(self, data: TaskData, after_data: Optional[AbstractData] = None):
+    def add_task(
+        self, data: AbstractTaskData, after_data: Optional[AbstractData] = None
+    ):
         """Add task/milestone to planning"""
         index = None
         if isinstance(after_data, TaskData):
@@ -1186,6 +1284,20 @@ class PlanningData(AbstractData):
                 for _task in self.iterate_task_data(only=[resid]):
                     index += 1
         self.__append_or_insert(self.tsklist, index, data)
+        self.update_task_idx(index)
+
+    def update_task_idx(self, index: Optional[int] = None):
+        if index is None:
+            data = self.tsklist[-1]
+            data.proxy_id.value = str(len(self.tsklist))
+            self.idx_to_tsk[data.proxy_id.value] = data
+        else:
+            for i, data in enumerate(self.tsklist[index:], start=index + 1):
+                str_idx = str(i)
+                data.proxy_id.value = str(str_idx)
+                self.idx_to_tsk[str_idx] = data
+        for data in self.iterate_task_data():
+            data.update_depends_of_from_ids()
 
     def add_leave(self, data: LeaveData, after_data: Optional[AbstractData] = None):
         """Add resource leave to planning"""
@@ -1217,7 +1329,10 @@ class PlanningData(AbstractData):
             return
 
         for index, data in enumerate(self.iterate_chart_data()):
-            bname = data.name.value or osp.basename(self.filename).rsplit(".")[0] + f"_{index:02d}.svg"
+            bname = (
+                data.name.value
+                or osp.basename(self.filename).rsplit(".")[0] + f"_{index:02d}.svg"
+            )
             filename = osp.join(osp.dirname(self.filename), bname)
             data.set_chart_filename(filename, index)
 

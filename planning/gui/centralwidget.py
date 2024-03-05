@@ -7,8 +7,8 @@
 import os
 import os.path as osp
 import traceback
-from typing import Optional
 import xml.etree.ElementTree as ET
+from typing import Optional
 
 from guidata.configtools import get_icon
 from guidata.widgets.codeeditor import CodeEditor
@@ -186,6 +186,7 @@ class PlanningCentralWidget(QSplitter):
         self.editor.trees.chart_tree.SIG_CHART_CHANGED.connect(
             self.preview.setCurrentIndex
         )
+        self.preview.currentChanged.connect(self.current_tab_changed)
         self.addWidget(self.preview)
 
         self.setCollapsible(0, False)
@@ -197,6 +198,11 @@ class PlanningCentralWidget(QSplitter):
     def planning(self) -> PlanningData:
         """Return PlanningData instance"""
         return self.editor.trees.planning
+
+    @planning.setter
+    def planning(self, planning: PlanningData):
+        """Return PlanningData instance"""
+        self.editor.trees.planning = planning
 
     def get_toolbars(self):
         """Return toolbars"""
@@ -237,10 +243,15 @@ class PlanningCentralWidget(QSplitter):
         except (ValueError, KeyError, AssertionError, TypeError, AttributeError):
             self._print_do_not_panic()
 
-    def update_planning_charts(self, planning: Optional[PlanningData]=None):
+    def current_tab_changed(self, index: int):
+        """Current tab has changed"""
+        self.update_planning_charts(self.planning)
+
+    def update_planning_charts(self, planning: Optional[PlanningData] = None):
         """Update charts"""
         if planning is None and (planning := self.planning) is None:
             return
+        self.planning = planning
         planning.update_chart_names()
         chart_count = len(planning.chtlist)
         if self.preview.count() != chart_count:

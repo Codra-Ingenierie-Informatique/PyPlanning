@@ -19,7 +19,9 @@ from qtpy import QtWidgets as QW
 from planning.config import MAIN_FONT_FAMILY, Conf, _
 from planning.model import (
     AbstractData,
+    AbstractDataT,
     AbstractTaskData,
+    AnyData,
     ChartData,
     DataItem,
     DTypes,
@@ -59,7 +61,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
         return size
 
     @staticmethod
-    def item_from_index(index: QC.QModelIndex) -> DataItem:
+    def item_from_index(index: QC.QModelIndex) -> QC.QModelIndex:
         """Return standard model item from index"""
         return index.model().itemFromIndex(index)
 
@@ -119,7 +121,6 @@ class TaskTreeDelegate(QW.QItemDelegate):
         """Reimplement Qt method"""
         ditem = self.dataitem_from_index(index)
         value = ditem.to_widget_value()
-
         if ditem.datatype == DTypes.DAYS:
             editor.setValue(value)
         elif ditem.datatype == DTypes.DATE:
@@ -138,6 +139,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
         """Reimplement Qt method"""
         ditem = self.dataitem_from_index(index)
         validator = self.parent().VALIDATORS.get(ditem.name)
+        callback = self.parent().CALLBACKS.get(ditem.name)
 
         value: Any
         if ditem.datatype == DTypes.DAYS:
@@ -158,6 +160,11 @@ class TaskTreeDelegate(QW.QItemDelegate):
             value = editor.currentText()[0]
         elif ditem.datatype == DTypes.BOOLEAN:
             value = editor.isChecked()
+        elif ditem.datatype == DTypes.INTEGER:
+            txt = editor.text()
+            value = None if txt == "" else int(editor.text())
+        elif ditem.datatype == DTypes.LIST:
+            value = editor.text().split(",")
         else:
             value = editor.text()
             if ditem.name == "name" and len(ditem.value) == 0:
@@ -170,6 +177,9 @@ class TaskTreeDelegate(QW.QItemDelegate):
             ditem.set_choice_value(value)
         else:
             ditem.value = value
+
+        if callback is not None:
+            callback(ditem)
 
         item = self.item_from_index(index)
         item.setText(ditem.to_display())
@@ -188,6 +198,8 @@ class BaseTreeWidget(QW.QTreeView):
 
     # Validators are used to check if the value from an ItemEditor is valid
     VALIDATORS: dict[str, Callable[[Any], bool]] = {}
+
+    CALLBACKS: dict[str, Callable[[DataItem[Any]], None]] = {}  # noqa: F821
 
     def __init__(self, parent=None, debug=False):
         QW.QTreeView.__init__(self, parent)
@@ -332,7 +344,7 @@ class BaseTreeWidget(QW.QTreeView):
         self.reload_action = create_action(
             self,
             title=_("Update tree"),
-            icon=get_icon("update.svg"),
+            icon=get_icon("libre-gui-refresh.svg"),
             triggered=self.repopulate,
         )
         return [
@@ -594,24 +606,39 @@ class TaskTreeWidget(BaseTreeWidget):
     """Tasks Browser Tree Widget"""
 
     TITLE = _("Task tree")
-    NAMES = (_("Name"), _("Start"), _("Duration"), _("End"), _("Color"), _("Project"))
+    NAMES = (
+        _("Name"),
+        _("Start"),
+        _("Duration"),
+        _("End"),
+        "%",
+        _("Color"),
+        _("Project"),
+        _("Id"),
+        _("Depends on"),
+    )
     ATTRS = (
         ("fullname", "name"),
         ("start", "start_calc"),
         "duration",
         ("stop", "stop_calc"),
+        "percent_done",
         "color",
         "project",
+        "proxy_id",
+        "depends_on_proxy_id",
     )
     TYPES = (
         DTypes.TEXT,
         DTypes.DATE,
         DTypes.DAYS,
         DTypes.DATE,
+        DTypes.INTEGER,
         DTypes.COLOR,
         DTypes.TEXT,
+        DTypes.LIST,
     )
-    COLUMNS_TO_RESIZE = (0, 1, 3, 4)
+    COLUMNS_TO_RESIZE = (0, 1, 3, 4, 5, 6)
     COLUMNS_TO_EDIT_ON_CLICK = ()
 
     def __init__(self, parent=None, debug=False):
@@ -623,6 +650,19 @@ class TaskTreeWidget(BaseTreeWidget):
         self.new_leave_action = None
         self.task_mode_action = None
         BaseTreeWidget.__init__(self, parent, debug)
+
+        self.VALIDATORS["percent_done"] = (
+            lambda value: value is None or 0 <= value <= 100
+        )
+        self.VALIDATORS["name"] = lambda new_name: new_name != ""
+
+        self.CALLBACKS["depends_on_proxy_id"] = self._update_ids_on_change
+
+    def _update_ids_on_change(self, ditem: DataItem[str]):
+        parent = ditem.parent
+        if not isinstance(parent, AbstractTaskData):
+            return
+        parent.update_depends_of_from_indexes()
 
     def setup_specific_actions(self):
         """Setup context menu specific actions"""
@@ -785,7 +825,6 @@ class TaskTreeWidget(BaseTreeWidget):
         item = self.get_current_item()
         if item is not None:
             resnode = item if item.parent() is None else item.parent()
-            print(f"resnode: {resnode}")
             data = LeaveData(self.planning)
             data.set_resource_id(self.get_id_from_item(resnode))
             self.planning.add_leave(data, after_data=self.get_current_data())
@@ -944,7 +983,6 @@ class ChartTreeWidget(BaseTreeWidget):
 
         for data in self.planning.iterate_chart_data():
             if data.name.value == new_name:
-                print(data.name.value, new_name)
                 return False
         return True
 
