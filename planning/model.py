@@ -718,7 +718,7 @@ class AbstractTaskData(AbstractDurationData):
             new_values = []
             for value in self.depends_on_proxy_id.value:
                 task = self.pdata.idx_to_tsk.get(value, None)
-                if task is None:
+                if task is None or task is self:
                     wrong_values.append(value)
                     continue
                 if not task.has_named_id:
@@ -726,8 +726,7 @@ class AbstractTaskData(AbstractDurationData):
                     new_id = f"auto_id-{task.default_id.split('-', 1)[1]}"
                     self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
                     task.id.value = new_id
-                new_values.append(task.id.value)
-            self.depends_of.value = new_values
+                self.depends_of.value = new_values
             if wrong_values:
                 for value in wrong_values:
                     self.depends_on_proxy_id.value.remove(value)
@@ -737,6 +736,8 @@ class AbstractTaskData(AbstractDurationData):
             self.depends_on_proxy_id.value = []
             for t_id in self.depends_of.value:
                 data: AbstractTaskData | None = self.pdata.get_data_from_id(t_id)
+                if data is self:
+                    continue
                 if data is not None:
                     self.depends_on_proxy_id.value.append(data.proxy_id.value)
                     if not data.has_named_id:
