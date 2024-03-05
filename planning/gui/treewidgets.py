@@ -165,6 +165,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
             value = None if txt == "" else int(editor.text())
         elif ditem.datatype == DTypes.LIST:
             value = editor.text().split(",")
+            value = [v for val in value if (v := val.strip())]
         else:
             value = editor.text()
             if ditem.name == "name" and len(ditem.value) == 0:
@@ -613,9 +614,9 @@ class TaskTreeWidget(BaseTreeWidget):
         _("End"),
         "%",
         _("Color"),
-        _("Project"),
         _("Id"),
         _("Depends on"),
+        _("Project"),
     )
     ATTRS = (
         ("fullname", "name"),
@@ -624,9 +625,9 @@ class TaskTreeWidget(BaseTreeWidget):
         ("stop", "stop_calc"),
         "percent_done",
         "color",
-        "project",
         "proxy_id",
         "depends_on_proxy_id",
+        "project",
     )
     TYPES = (
         DTypes.TEXT,
@@ -638,7 +639,7 @@ class TaskTreeWidget(BaseTreeWidget):
         DTypes.TEXT,
         DTypes.LIST,
     )
-    COLUMNS_TO_RESIZE = (0, 1, 3, 4, 5, 6)
+    COLUMNS_TO_RESIZE = (0, 1, 3, 4, 5, 6, 7)
     COLUMNS_TO_EDIT_ON_CLICK = ()
 
     def __init__(self, parent=None, debug=False):
@@ -662,7 +663,7 @@ class TaskTreeWidget(BaseTreeWidget):
         parent = ditem.parent
         if not isinstance(parent, AbstractTaskData):
             return
-        parent.update_depends_of_from_indexes()
+        parent.update_depends_of_from_proxy_id()
 
     def setup_specific_actions(self):
         """Setup context menu specific actions"""
