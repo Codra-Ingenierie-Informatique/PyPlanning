@@ -716,7 +716,6 @@ class AbstractTaskData(AbstractDurationData):
         if self.depends_on_proxy_id.value is not None:
             wrong_values = []
             new_values = []
-            print("Initial depends of: ", self.depends_of.value)
             for value in self.depends_on_proxy_id.value:
                 task = self.pdata.idx_to_tsk.get(value, None)
                 if task is None:
@@ -732,7 +731,6 @@ class AbstractTaskData(AbstractDurationData):
             if wrong_values:
                 for value in wrong_values:
                     self.depends_on_proxy_id.value.remove(value)
-            print("Final depends of: ", self.depends_of.value)
 
     def update_depends_of_from_ids(self):
         if self.depends_of.value is not None:
