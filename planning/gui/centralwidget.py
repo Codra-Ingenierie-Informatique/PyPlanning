@@ -156,6 +156,12 @@ class PlanningPreview(QTabWidget):
                 self.setCurrentWidget(viewer)
 
     def update_tab(self, index: int, fname: str):
+        """Updates a single SVG preview tab.
+
+        Args:
+            index: tab index to update
+            fname: filame to rename the tab
+        """
         if self.count() == 0:
             return
         new_bname = osp.basename(fname)
@@ -244,11 +250,21 @@ class PlanningCentralWidget(QSplitter):
             self._print_do_not_panic()
 
     def current_tab_changed(self, index: int):
-        """Current tab has changed"""
+        """Updates plannings charts
+
+        Args:
+            index: index of the current tab. Not used, it's a slot for Qt).
+        """
         self.update_planning_charts(self.planning)
 
     def update_planning_charts(self, planning: Optional[PlanningData] = None):
-        """Update charts"""
+        """Update charts. Generates all of them if there are new ones,
+        or just the current one if it already exists.
+
+        Args:
+            planning: PlanningData instance to update. If None, the current
+                planning is used.
+        """
         if planning is None and (planning := self.planning) is None:
             return
         self.planning = planning

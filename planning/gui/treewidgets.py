@@ -6,6 +6,7 @@
 
 
 import datetime
+import re
 import xml.etree.ElementTree as ET
 from typing import Any, Callable, Optional, TypeVar
 
@@ -200,7 +201,9 @@ class BaseTreeWidget(QW.QTreeView):
     # Validators are used to check if the value from an ItemEditor is valid
     VALIDATORS: dict[str, Callable[[Any], bool]] = {}
 
-    CALLBACKS: dict[str, Callable[[DataItem[Any]], None]] = {}  # noqa: F821
+    # These functions are called when the value of a DataItem is changed. Can be used
+    # to perform specific actions.
+    CALLBACKS: dict[str, Callable[[DataItem[Any]], None]] = {}
 
     def __init__(self, parent=None, debug=False):
         QW.QTreeView.__init__(self, parent)
@@ -625,8 +628,8 @@ class TaskTreeWidget(BaseTreeWidget):
         ("stop", "stop_calc"),
         "percent_done",
         "color",
-        "proxy_id",
-        "depends_on_proxy_id",
+        "task_number",
+        "depends_on_task_number",
         "project",
     )
     TYPES = (
@@ -655,15 +658,20 @@ class TaskTreeWidget(BaseTreeWidget):
         self.VALIDATORS["percent_done"] = (
             lambda value: value is None or 0 <= value <= 100
         )
+
+        # Correct a bug where an empty name is accepted. Then if the user sets a new
+        # name, it wouldn't be set in the "name" dataitem, but in fullname. The result
+        # is taht the name propety cannot be edited anymore and all the previews
+        # disappear.
         self.VALIDATORS["name"] = lambda new_name: new_name != ""
 
-        self.CALLBACKS["depends_on_proxy_id"] = self._update_ids_on_change
+        self.CALLBACKS["depends_on_task_number"] = self._update_ids_on_change
 
     def _update_ids_on_change(self, ditem: DataItem[str]):
         parent = ditem.parent
         if not isinstance(parent, AbstractTaskData):
             return
-        parent.update_depends_of_from_proxy_id()
+        parent.update_depends_of_from_task_number()
 
     def setup_specific_actions(self):
         """Setup context menu specific actions"""
@@ -800,7 +808,7 @@ class TaskTreeWidget(BaseTreeWidget):
         self.edit(self.currentIndex())
 
     def duplicate_task(self):
-        """New task item"""
+        """Duplicates the selected task."""
         current_data: AbstractData | None = self.get_current_data()
         if isinstance(current_data, AbstractTaskData):
             data = current_data.duplicate()
@@ -977,7 +985,8 @@ class ChartTreeWidget(BaseTreeWidget):
         self.add_or_update_item_row(data)
 
     def validate_chart_name(self, new_name: str):
-        """Check duplicate name"""
+        """Check duplicate name and if name is valid for a chart name (Only letters and
+        numbes, dash, underscore and dot allowed)."""
 
         if self.planning is None:
             return False
@@ -985,7 +994,8 @@ class ChartTreeWidget(BaseTreeWidget):
         for data in self.planning.iterate_chart_data():
             if data.name.value == new_name:
                 return False
-        return True
+        validation_regex = re.compile(r"^[a-zA-Z0-9_-.]+$")
+        return bool(validation_regex.match(new_name))
 
     def populate_tree(self):
         """Populate tree"""

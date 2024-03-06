@@ -81,20 +81,10 @@ class DataItem(Generic[_T]):
         self.parent: AbstractDataT = parent
         self.name = name
         self.datatype = datatype
-        self._value = value
+        self.value = value
         self.choices = choices or []  # tuple of (key, value) tuples
         if datatype == DTypes.CHOICE and choices is None:
             raise ValueError("Choices must be specified")
-
-    @property
-    def value(self) -> _T | None:
-        """Return value"""
-        return self._value
-
-    @value.setter
-    def value(self, value: _T | None):
-        """Set value"""
-        self._value = value
 
     @property
     def choice_keys(self):
@@ -527,7 +517,6 @@ class ChartData(AbstractDurationData):
     TYPES = (("r", _("Resources")), ("t", _("Tasks")))
     TAG = "CHART"
     DEFAULT_ICON_NAME = "chart.svg"
-    # READ_ONLY_ITEMS = ("name", "fullname", "color")
     READ_ONLY_ITEMS = ("fullname", "color")
 
     def __init__(self, name=None, fullname=None):
@@ -578,7 +567,12 @@ class ChartData(AbstractDurationData):
 
     def set_chart_filename(self, filename: str, index: int):
         """Set chart index, and then chart name to default xml_filename+index if no
-        name is set"""
+        name is set.
+
+        Args:
+            filename (str): The filename of the chart
+            index (int): The index of the chart. Not used for now.
+        """
         bname = osp.splitext(osp.basename(filename))[0] + ".svg"
         fname = osp.join(osp.dirname(filename), bname)
         self.fullname.value = fname
@@ -638,10 +632,10 @@ class AbstractTaskData(AbstractDurationData):
         super().__init__(pdata, name, fullname)
         self.depends_of = DataItem[list[str]](self, "depends_of", DTypes.LIST, None)
         self.percent_done = DataItem[int](self, "percent_done", DTypes.INTEGER, 0)
-        self.proxy_id = DataItem[str](self, "proxy_id", DTypes.TEXT, None)
-        self.depends_on_proxy_id = DataItem[list[str]](
+        self.task_number = DataItem[str](self, "task_number", DTypes.TEXT, None)
+        self.depends_on_task_number = DataItem[list[str]](
             self,
-            "depends_on_proxy_id",
+            "depends_on_task_number",
             DTypes.LIST,
             None,
         )
@@ -655,22 +649,9 @@ class AbstractTaskData(AbstractDurationData):
         super()._init_from_element(element)
         self.depends_of: DataItem[list[str]] = self.get_list("depends_of")
         self.percent_done: DataItem[int] = self.get_int("percent_done")
-        self.depends_on_proxy_id = DataItem[list[str]](
-            self, "depends_on_proxy_id", DTypes.LIST, None
+        self.depends_on_task_number = DataItem[list[str]](
+            self, "depends_on_task_number", DTypes.LIST, None
         )
-        # self.depends_on_proxy_id = DataItem[list[DataItem[int]]](
-        #     self, "proxy_id", DTypes.LIST, []
-        # )
-        # pdata = self.pdata
-        # depends_of = self.depends_of.value
-        # print("Depends of: ", depends_of)
-        # if depends_of is None:
-        #     self.depends_on_proxy_id.value = []
-        #     return
-        # for task_id in depends_of:
-        #     task_data = pdata.all_tasks.get(task_id, None)
-        #     if task_data is not None:
-        #         self.depends_on_proxy_id.value.append(task_data.proxy_id.value)
 
     def get_attrib_names(self):
         """Return attribute names"""
@@ -712,12 +693,12 @@ class AbstractTaskData(AbstractDurationData):
                 ]
             )
 
-    def update_depends_of_from_proxy_id(self):
-        if self.depends_on_proxy_id.value is not None:
+    def update_depends_of_from_task_number(self):
+        if self.depends_on_task_number.value is not None:
             wrong_values = []
             new_values = []
-            for value in self.depends_on_proxy_id.value:
-                task = self.pdata.idx_to_tsk.get(value, None)
+            for value in self.depends_on_task_number.value:
+                task = self.pdata.tsk_num_to_tsk.get(value, None)
                 if task is None or task is self:
                     wrong_values.append(value)
                     continue
@@ -730,17 +711,17 @@ class AbstractTaskData(AbstractDurationData):
             self.depends_of.value = new_values
             if wrong_values:
                 for value in wrong_values:
-                    self.depends_on_proxy_id.value.remove(value)
+                    self.depends_on_task_number.value.remove(value)
 
     def update_depends_of_from_ids(self):
         if self.depends_of.value is not None:
-            self.depends_on_proxy_id.value = []
+            self.depends_on_task_number.value = []
             for t_id in self.depends_of.value:
                 data: AbstractTaskData | None = self.pdata.get_data_from_id(t_id)
                 if data is self:
                     continue
                 if data is not None:
-                    self.depends_on_proxy_id.value.append(data.proxy_id.value)
+                    self.depends_on_task_number.value.append(data.task_number.value)
                     if not data.has_named_id:
                         old_id = data.id.value
                         new_id = f"auto_id-{data.default_id.split('-', 1)[1]}"
@@ -760,7 +741,7 @@ class TaskData(AbstractTaskData):
 
     TAG = "TASK"
     DEFAULT_ICON_NAME = "task.svg"
-    READ_ONLY_ITEMS = ("start_calc", "stop_calc", "proxy_id")
+    READ_ONLY_ITEMS = ("start_calc", "stop_calc", "task_number")
 
     def __init__(self, pdata, name=None, fullname=None):
         super().__init__(pdata, name, fullname)
@@ -907,7 +888,7 @@ class MilestoneData(AbstractTaskData):
 
     TAG = "MILESTONE"
     DEFAULT_ICON_NAME = "milestone.svg"
-    READ_ONLY_ITEMS = ("duration", "stop", "proxy_id")
+    READ_ONLY_ITEMS = ("duration", "stop", "task_number")
 
     def is_valid(self, item_name):
         """Check data item values, eventually depending on planning data"""
@@ -1027,7 +1008,7 @@ class PlanningData(AbstractData):
         self.filename = None
         self.reslist: list[ResourceData] = []
         self.tsklist: list[AbstractTaskData] = []
-        self.idx_to_tsk: dict[str, AbstractTaskData] = {}
+        self.tsk_num_to_tsk: dict[str, AbstractTaskData] = {}
         self.lvelist: list[LeaveData] = []
         self.clolist: list[ClosingDayData] = []
         self.chtlist: list[ChartData] = []
@@ -1151,7 +1132,7 @@ class PlanningData(AbstractData):
                 index = dlist.index(data)
                 dlist.pop(index)
                 if isinstance(data, AbstractTaskData):
-                    self.update_task_idx(index)
+                    self.update_task_number(index)
                 break
         else:
             raise ValueError("Data not found in model")
@@ -1286,18 +1267,25 @@ class PlanningData(AbstractData):
                 for _task in self.iterate_task_data(only=[resid]):
                     index += 1
         self.__append_or_insert(self.tsklist, index, data)
-        self.update_task_idx(index)
+        self.update_task_number(index)
 
-    def update_task_idx(self, index: Optional[int] = None):
+    def update_task_number(self, index: Optional[int] = None):
+        """Update of the first task to update. If None, only the last one is updated,
+        else all tasks from index are updated. Also updates all the
+        "depends_on_task_number" dataitems with the new task numbers.
+
+        Args:
+            index: index of the task to update. Defaults to None.
+        """
         if index is None:
             data = self.tsklist[-1]
-            data.proxy_id.value = str(len(self.tsklist))
-            self.idx_to_tsk[data.proxy_id.value] = data
+            data.task_number.value = str(len(self.tsklist))
+            self.tsk_num_to_tsk[data.task_number.value] = data
         else:
             for i, data in enumerate(self.tsklist[index:], start=index + 1):
                 str_idx = str(i)
-                data.proxy_id.value = str(str_idx)
-                self.idx_to_tsk[str_idx] = data
+                data.task_number.value = str(str_idx)
+                self.tsk_num_to_tsk[str_idx] = data
         for data in self.iterate_task_data():
             data.update_depends_of_from_ids()
 
@@ -1377,7 +1365,12 @@ class PlanningData(AbstractData):
         self.update_task_calc_dates()
 
     def generate_current_chart(self, index: int, one_line_for_tasks=True):
-        """Refresh current chart"""
+        """Refresh current chart.
+
+        Args:
+            index: The index of the chart to refresh.
+            one_line_for_tasks: If True, draw tasks on one line.
+        """
         if len(self.chtlist) == 0:
             return
         self.process_gantt()
