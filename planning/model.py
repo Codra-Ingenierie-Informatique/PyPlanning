@@ -180,6 +180,10 @@ class DataItem(Generic[_T]):
 
         if self.datatype == DTypes.LIST:
             return ", ".join(self.value)
+        if self.datatype == DTypes.DATE:
+            return self.value
+        if self.datatype == DTypes.DAYS:
+            return self.value
         return str(self.value)
 
     def to_display(self):

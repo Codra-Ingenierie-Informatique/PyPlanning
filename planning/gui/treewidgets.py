@@ -125,6 +125,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
         if ditem.datatype == DTypes.DAYS:
             editor.setValue(value)
         elif ditem.datatype == DTypes.DATE:
+            print("VALUE FROM SET DATE", type(value))
             editor.setDate(value)
         elif ditem.datatype == DTypes.CHOICE:
             editor.setCurrentText(ditem.get_choice_value())
