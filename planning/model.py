@@ -726,7 +726,8 @@ class AbstractTaskData(AbstractDurationData):
                     new_id = f"auto_id-{task.default_id.split('-', 1)[1]}"
                     self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
                     task.id.value = new_id
-                self.depends_of.value = new_values
+                new_values.append(task.id.value)
+            self.depends_of.value = new_values
             if wrong_values:
                 for value in wrong_values:
                     self.depends_on_proxy_id.value.remove(value)
