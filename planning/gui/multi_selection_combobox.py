@@ -103,7 +103,7 @@ class CheckableComboBox(QComboBox, Generic[T]):
         else:
             item.setData(data)
         item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsUserCheckable)
-        item.setData(Qt.CheckState.Unchecked, Qt.CheckState.CheckStateRole)
+        item.setData(Qt.CheckState.Unchecked, Qt.ItemDataRole.CheckStateRole)
         self.model().appendRow(item)
 
     def addItems(self, texts, datalist: Optional[Iterable[T]] = None):
