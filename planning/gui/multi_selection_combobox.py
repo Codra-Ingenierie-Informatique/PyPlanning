@@ -1,6 +1,6 @@
 from typing import Generic, Iterable, Optional, TypeVar, overload
 
-from qtpy.QtCore import QEvent, Qt
+from qtpy.QtCore import QEvent, QObject, Qt, QTimerEvent
 from qtpy.QtGui import QFontMetrics, QStandardItem
 from qtpy.QtWidgets import QComboBox, QStyledItemDelegate
 
@@ -10,7 +10,7 @@ T = TypeVar("T")
 class CheckableComboBox(QComboBox, Generic[T]):
 
     # Subclass Delegate to increase item height
-    class Delegate(QStyledItemDelegate):
+    class CheckableComboDelegate(QStyledItemDelegate):
         def sizeHint(self, option, index):
             size = super().sizeHint(option, index)
             size.setHeight(20)
@@ -22,13 +22,9 @@ class CheckableComboBox(QComboBox, Generic[T]):
         # Make the combo editable to set a custom text, but readonly
         self.setEditable(True)
         self.lineEdit().setReadOnly(True)
-        # Make the lineedit the same color as QPushButton
-        # palette = qApp.palette()
-        # palette.setBrush(QPalette.Base, palette.button())
-        # self.lineEdit().setPalette(palette)
 
         # Use custom delegate
-        self.setItemDelegate(CheckableComboBox.Delegate())
+        self.setItemDelegate(CheckableComboBox.CheckableComboDelegate())
 
         # Update the text when an item is toggled
         self.model().dataChanged.connect(self.updateText)
@@ -40,15 +36,15 @@ class CheckableComboBox(QComboBox, Generic[T]):
         # Prevent popup from closing when clicking on an item
         self.view().viewport().installEventFilter(self)
 
-    def resizeEvent(self, e):
+    def resizeEvent(self, e: QEvent):
         # Recompute text to elide as needed
         self.updateText()
         super().resizeEvent(e)
 
-    def eventFilter(self, obj, event):
+    def eventFilter(self, obj: QObject, event: QEvent):
 
         if obj == self.lineEdit():
-            if event.type() == QEvent.MouseButtonRelease:
+            if event.type() == QEvent.Type.MouseButtonRelease:
                 if self.closeOnLineEditClick:
                     self.hidePopup()
                 else:
@@ -56,14 +52,17 @@ class CheckableComboBox(QComboBox, Generic[T]):
                 return True
             return False
 
-        if obj == self.view().viewport() and event.type() == QEvent.MouseButtonRelease:
+        if (
+            obj == self.view().viewport()
+            and event.type() == QEvent.Type.MouseButtonRelease
+        ):
             index = self.view().indexAt(event.pos())
             item = self.model().item(index.row())
 
-            if item.checkState() == Qt.Checked:
-                item.setCheckState(Qt.Unchecked)
+            if item.checkState() == Qt.CheckState.Checked:
+                item.setCheckState(Qt.CheckState.Unchecked)
             else:
-                item.setCheckState(Qt.Checked)
+                item.setCheckState(Qt.CheckState.Checked)
             return True
         return False
 
@@ -79,7 +78,7 @@ class CheckableComboBox(QComboBox, Generic[T]):
         # Refresh the display text when closing
         self.updateText()
 
-    def timerEvent(self, event):
+    def timerEvent(self, event: QTimerEvent):
         # After timeout, kill timer, and reenable click on line edit
         self.killTimer(event.timerId())
         self.closeOnLineEditClick = False
@@ -103,8 +102,8 @@ class CheckableComboBox(QComboBox, Generic[T]):
             item.setData(text)
         else:
             item.setData(data)
-        item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsUserCheckable)
-        item.setData(Qt.Unchecked, Qt.CheckStateRole)
+        item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsUserCheckable)
+        item.setData(Qt.CheckState.Unchecked, Qt.CheckState.CheckStateRole)
         self.model().appendRow(item)
 
     def addItems(self, texts, datalist: Optional[Iterable[T]] = None):
@@ -116,14 +115,15 @@ class CheckableComboBox(QComboBox, Generic[T]):
         # Return the list of selected items data
         res = []
         for i in range(self.model().rowCount()):
-            if self.model().item(i).checkState() == Qt.Checked:
+            if self.model().item(i).checkState() == Qt.CheckState.Checked:
                 res.append(self.model().item(i).data())
         return res
 
     def selectItems(self, datalist: Optional[Iterable[T]]):
+        """Select items in the combobox based on their data."""
         if not datalist:
             return
         dataset = set(datalist)
         for i in range(self.model().rowCount()):
             if self.model().item(i).data() in dataset:
-                self.model().item(i).setCheckState(Qt.Checked)
+                self.model().item(i).setCheckState(Qt.CheckState.Checked)
