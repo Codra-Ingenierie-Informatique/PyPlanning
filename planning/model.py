@@ -83,8 +83,10 @@ class DataItem(Generic[_T]):
         self.name = name
         self.datatype = datatype
         self.__value = value
-        self.choices = choices or []  # tuple of (key, value) tuples
-        if datatype == DTypes.CHOICE and choices is None:
+        self.choices: list[tuple[Any, _T]] = (
+            choices or []
+        )  # tuple of (key, value) tuples
+        if datatype in (DTypes.CHOICE, DTypes.MULTIPLE_CHOICE) and choices is None:
             raise ValueError("Choices must be specified")
 
     @property
@@ -111,7 +113,7 @@ class DataItem(Generic[_T]):
             return [value for _key, value in self.choices]
         return []
 
-    def get_choice_value(self):
+    def get_choice_value(self) -> _T:
         """Return choice value"""
         if self.value is None:
             return self.choices[0][1]
@@ -119,6 +121,15 @@ class DataItem(Generic[_T]):
             if key == self.value:
                 return value
         raise ValueError(f"No key {self.value} in choices")
+
+    def get_choices_values(self) -> list[_T]:
+        """Return choices value"""
+        if self.value is None:
+            return [self.choices[0][1]]
+        choices = [value for key, value in self.choices if key in self.value]
+        if not choices and self.value:
+            raise ValueError(f"No key {self.value} in choices")
+        return choices
 
     def set_choice_value(self, value):
         """Set item value by choice value"""
@@ -185,6 +196,8 @@ class DataItem(Generic[_T]):
                         return self.value
             if self.datatype == DTypes.LIST:
                 return ""
+            if self.datatype == DTypes.MULTIPLE_CHOICE:
+                return []
             raise NotImplementedError
 
         if self.datatype == DTypes.INTEGER:
@@ -245,6 +258,8 @@ class DataItem(Generic[_T]):
             return val.strftime("%d/%m/%y")
         if self.datatype == DTypes.BOOLEAN:
             return str(val)
+        if self.datatype == DTypes.MULTIPLE_CHOICE:
+            return ", ".join(self.value)
         raise NotImplementedError(f"Unsupported datatype {self.datatype}")
 
     def from_text(self, text: str):
@@ -279,6 +294,9 @@ class DataItem(Generic[_T]):
                 self.value = datetime.datetime.strptime(text, "%d/%m/%y")
         elif self.datatype == DTypes.BOOLEAN:
             self.value = text.lower() in ("", "true")
+        elif self.datatype == DTypes.MULTIPLE_CHOICE:
+            print(f"MULTIPLE_CHOICE text: {text}")
+            return
         else:
             raise NotImplementedError(f"Unsupported datatype {self.datatype}")
 
@@ -647,8 +665,9 @@ class AbstractTaskData(AbstractDurationData):
         self.depends_on_task_number = DataItem[list[str]](
             self,
             "depends_on_task_number",
-            DTypes.LIST,
-            None,
+            DTypes.MULTIPLE_CHOICE,
+            value=None,
+            choices=[(self.task_number.value, self.name.value)],
         )
 
     def duplicate(self):
@@ -661,7 +680,11 @@ class AbstractTaskData(AbstractDurationData):
         self.depends_of: DataItem[list[str]] = self.get_list("depends_of")
         self.percent_done: DataItem[int] = self.get_int("percent_done")
         self.depends_on_task_number = DataItem[list[str]](
-            self, "depends_on_task_number", DTypes.LIST, None
+            self,
+            "depends_on_task_number",
+            DTypes.MULTIPLE_CHOICE,
+            value=None,
+            choices=[(self.task_number.value, self.name.value)],
         )
 
     def get_attrib_names(self):
@@ -705,47 +728,55 @@ class AbstractTaskData(AbstractDurationData):
             )
 
     def update_depends_of_from_task_number(self):
-        if self.depends_on_task_number.value is not None:
-            wrong_values = []
-            new_values = []
-            for value in self.depends_on_task_number.value:
-                other_task = self.pdata.tsk_num_to_tsk.get(value, None)
-                if (
-                    other_task is None
-                    or other_task is self
-                    or (
-                        other_task.depends_on_task_number.value is not None
-                        and self.task_number.value
-                        in other_task.depends_on_task_number.value
-                    )
-                ):
-                    wrong_values.append(value)
-                    continue
-                if not other_task.has_named_id:
-                    old_id = other_task.id.value
-                    new_id = f"auto_id-{other_task.default_id.split('-', 1)[1]}"
-                    self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
-                    other_task.id.value = new_id
-                new_values.append(other_task.id.value)
-            self.depends_of.value = new_values
-            if wrong_values:
-                for value in wrong_values:
-                    self.depends_on_task_number.value.remove(value)
+        if self.depends_on_task_number.value is None:
+            return
+
+        wrong_values = []
+        new_values = []
+        for value in self.depends_on_task_number.value:
+            other_task = self.pdata.tsk_num_to_tsk.get(value, None)
+            if (
+                other_task is None
+                or other_task is self
+                or (
+                    other_task.depends_on_task_number.value is not None
+                    and self.task_number.value
+                    in other_task.depends_on_task_number.value
+                )
+            ):
+                wrong_values.append(value)
+                continue
+            if not other_task.has_named_id:
+                old_id = other_task.id.value
+                new_id = f"auto_id-{other_task.default_id.split('-', 1)[1]}"
+                self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
+                other_task.id.value = new_id
+            new_values.append(other_task.id.value)
+        self.depends_of.value = new_values
+        if wrong_values:
+            for value in wrong_values:
+                self.depends_on_task_number.value.remove(value)
 
     def update_depends_of_from_ids(self):
-        if self.depends_of.value is not None:
-            self.depends_on_task_number.value = []
-            for t_id in self.depends_of.value:
-                data: AbstractTaskData | None = self.pdata.get_data_from_id(t_id)
-                if data is self:
-                    continue
-                if data is not None:
-                    self.depends_on_task_number.value.append(data.task_number.value)
-                    if not data.has_named_id:
-                        old_id = data.id.value
-                        new_id = f"auto_id-{data.default_id.split('-', 1)[1]}"
-                        self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
-                        data.id.value = new_id
+        if self.depends_of.value is None:
+            return
+        self.depends_on_task_number.value = []
+        for t_id in self.depends_of.value:
+            data: AbstractTaskData | None = self.pdata.get_data_from_id(t_id)
+            if data is self:
+                continue
+            if data is not None:
+                self.depends_on_task_number.value.append(data.task_number.value)
+                if not data.has_named_id:
+                    old_id = data.id.value
+                    new_id = f"auto_id-{data.default_id.split('-', 1)[1]}"
+                    self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
+                    data.id.value = new_id
+
+    def update_task_choices(self):
+        """Update task choices"""
+        if self.pdata is not None:
+            self.depends_on_task_number.choices = self.pdata.task_choices  # type: ignore
 
 
 class TaskModes(Enum):
@@ -1028,6 +1059,7 @@ class PlanningData(AbstractData):
         self.reslist: list[ResourceData] = []
         self.tsklist: list[AbstractTaskData] = []
         self.tsk_num_to_tsk: dict[str, AbstractTaskData] = {}
+        self._tsk_choices: list[tuple[str, str]] = []
         self.lvelist: list[LeaveData] = []
         self.clolist: list[ClosingDayData] = []
         self.chtlist: list[ChartData] = []
@@ -1085,6 +1117,7 @@ class PlanningData(AbstractData):
                 data = ClosingDayData.from_element(self, elem)
                 self.add_closing_day(data)
         for data in self.iterate_task_data():
+            data.update_task_choices()
             data.update_depends_of_from_ids()
 
     @classmethod
@@ -1288,6 +1321,15 @@ class PlanningData(AbstractData):
         self.__append_or_insert(self.tsklist, index, data)
         self.update_task_number(index)
 
+    @property
+    def task_choices(self) -> list[tuple[str, str]]:
+        if len(self._tsk_choices) != len(self.tsklist):
+            self._tsk_choices = [
+                (str(data.task_number.value), str(data.name.value))
+                for data in self.iterate_task_data()
+            ]
+        return self._tsk_choices
+
     def update_task_number(self, index: Optional[int] = None):
         """Update of the first task to update. If None, only the last one is updated,
         else all tasks from index are updated. Also updates all the
@@ -1306,6 +1348,7 @@ class PlanningData(AbstractData):
                 data.task_number.value = str(str_idx)
                 self.tsk_num_to_tsk[str_idx] = data
         for data in self.iterate_task_data():
+            data.update_task_choices()
             data.update_depends_of_from_ids()
 
     def add_leave(self, data: LeaveData, after_data: Optional[AbstractData] = None):

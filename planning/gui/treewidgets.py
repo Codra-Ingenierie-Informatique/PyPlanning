@@ -18,6 +18,7 @@ from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
 
 from planning.config import MAIN_FONT_FAMILY, Conf, _
+from planning.gui.multi_selection_combobox import CheckableComboBox
 from planning.model import (
     AbstractData,
     AbstractDataT,
@@ -104,6 +105,11 @@ class TaskTreeDelegate(QW.QItemDelegate):
             editor.addItems(DataItem.COLORS.keys())
             editor.activated.connect(lambda index: self.commitAndCloseEditor())
             return editor
+        elif ditem.datatype == DTypes.MULTIPLE_CHOICE:
+            editor = CheckableComboBox(parent)
+            editor.addItems(ditem.choice_values, ditem.choice_keys)
+            editor.activated.connect(lambda index: self.commitAndCloseEditor())
+            return editor
 
         editor = QW.QLineEdit(parent)
         editor.editingFinished.connect(self.commitAndCloseEditor)
@@ -132,6 +138,8 @@ class TaskTreeDelegate(QW.QItemDelegate):
             editor.setChecked(value)
         elif ditem.datatype == DTypes.COLOR:
             editor.setCurrentText(value)
+        elif ditem.datatype == DTypes.MULTIPLE_CHOICE:
+            editor.selectItems(ditem.value)
         else:
             editor.setText(value)
 
@@ -167,6 +175,8 @@ class TaskTreeDelegate(QW.QItemDelegate):
         elif ditem.datatype == DTypes.LIST:
             value = editor.text().split(",")
             value = [v for val in value if (v := val.strip())]
+        elif ditem.datatype == DTypes.MULTIPLE_CHOICE:
+            value = editor.currentData()
         else:
             value = editor.text()
             if ditem.name == "name" and len(ditem.value) == 0:
