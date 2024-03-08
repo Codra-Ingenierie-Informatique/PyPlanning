@@ -209,7 +209,7 @@ class BaseTreeWidget(QW.QTreeView):
         QW.QTreeView.__init__(self, parent)
         self.debug = debug
         self.planning: Optional[PlanningData] = None
-        self.item_data: dict[int, DataItem] = {}
+        self.item_data: dict[int, QW.TreeWidgetItem] = {}
         self.item_rows = {}
 
         self.setWindowTitle(self.TITLE)
@@ -668,10 +668,8 @@ class TaskTreeWidget(BaseTreeWidget):
         self.CALLBACKS["depends_on_task_number"] = self._update_ids_on_change
 
     def _update_ids_on_change(self, ditem: DataItem[str]):
-        parent = ditem.parent
-        if not isinstance(parent, AbstractTaskData):
-            return
-        parent.update_depends_of_from_task_number()
+        if isinstance(ditem.parent, AbstractTaskData):
+            ditem.parent.update_depends_of_from_task_number()
 
     def setup_specific_actions(self):
         """Setup context menu specific actions"""
@@ -937,6 +935,7 @@ class ChartTreeWidget(BaseTreeWidget):
         BaseTreeWidget.__init__(self, parent, debug)
         self.setSelectionMode(QW.QTreeView.ExtendedSelection)
         self.VALIDATORS["name"] = self.validate_chart_name
+        self.VALIDATORS["project"] = lambda project: project != ""
 
     def setup_specific_actions(self):
         """Setup context menu common actions"""

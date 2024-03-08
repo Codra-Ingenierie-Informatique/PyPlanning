@@ -49,6 +49,7 @@ class DTypes(Enum):
     INTEGER = 4
     LIST = 5
     CHOICE = 6
+    MULTIPLE_CHOICE = 7
     BOOLEAN = "🗸"
 
 
@@ -81,10 +82,20 @@ class DataItem(Generic[_T]):
         self.parent: AbstractDataT = parent
         self.name = name
         self.datatype = datatype
-        self.value = value
+        self.__value = value
         self.choices = choices or []  # tuple of (key, value) tuples
         if datatype == DTypes.CHOICE and choices is None:
             raise ValueError("Choices must be specified")
+
+    @property
+    def value(self) -> Optional[_T]:
+        """Return value"""
+        return self.__value
+
+    @value.setter
+    def value(self, value: Optional[_T]):
+        """Set value"""
+        self.__value = value
 
     @property
     def choice_keys(self):
@@ -165,9 +176,7 @@ class DataItem(Generic[_T]):
             if self.datatype == DTypes.BOOLEAN:
                 return False
             if self.datatype == DTypes.INTEGER:
-                if self.value is None:
-                    return ""
-                return self.value
+                return ""
             if self.datatype == DTypes.COLOR:
                 if self.value is None:
                     return None
@@ -178,13 +187,11 @@ class DataItem(Generic[_T]):
                 return ""
             raise NotImplementedError
 
+        if self.datatype == DTypes.INTEGER:
+            return str(self.value)
         if self.datatype == DTypes.LIST:
             return ", ".join(self.value)
-        if self.datatype == DTypes.DATE:
-            return self.value
-        if self.datatype == DTypes.DAYS:
-            return self.value
-        return str(self.value)
+        return self.value
 
     def to_display(self):
         """Convert widget value or data model value to display value"""
@@ -702,16 +709,24 @@ class AbstractTaskData(AbstractDurationData):
             wrong_values = []
             new_values = []
             for value in self.depends_on_task_number.value:
-                task = self.pdata.tsk_num_to_tsk.get(value, None)
-                if task is None or task is self:
+                other_task = self.pdata.tsk_num_to_tsk.get(value, None)
+                if (
+                    other_task is None
+                    or other_task is self
+                    or (
+                        other_task.depends_on_task_number.value is not None
+                        and self.task_number.value
+                        in other_task.depends_on_task_number.value
+                    )
+                ):
                     wrong_values.append(value)
                     continue
-                if not task.has_named_id:
-                    old_id = task.id.value
-                    new_id = f"auto_id-{task.default_id.split('-', 1)[1]}"
+                if not other_task.has_named_id:
+                    old_id = other_task.id.value
+                    new_id = f"auto_id-{other_task.default_id.split('-', 1)[1]}"
                     self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
-                    task.id.value = new_id
-                new_values.append(task.id.value)
+                    other_task.id.value = new_id
+                new_values.append(other_task.id.value)
             self.depends_of.value = new_values
             if wrong_values:
                 for value in wrong_values:
