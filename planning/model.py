@@ -295,7 +295,6 @@ class DataItem(Generic[_T]):
         elif self.datatype == DTypes.BOOLEAN:
             self.value = text.lower() in ("", "true")
         elif self.datatype == DTypes.MULTIPLE_CHOICE:
-            print(f"MULTIPLE_CHOICE text: {text}")
             return
         else:
             raise NotImplementedError(f"Unsupported datatype {self.datatype}")
