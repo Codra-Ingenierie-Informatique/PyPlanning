@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 from copy import deepcopy
 from enum import Enum
 from io import StringIO
-from typing import Any, Callable, Generator, Generic, Optional, Self, TypeVar, Union
+from typing import Any, Generator, Generic, Optional, TypeVar, Union
 
 from planning import gantt
 from planning.config import MAIN_FONT_FAMILY, _
@@ -565,6 +565,7 @@ class ChartData(AbstractDurationData):
         self.projects = DataItem[list[str]](
             self, "projects", DTypes.MULTIPLE_CHOICE, None, []
         )
+        self.is_default_name = not bool(self.name.value)
 
     def _init_from_element(self, element):
         """Init instance from XML element"""
@@ -577,6 +578,7 @@ class ChartData(AbstractDurationData):
         self.projects = self.get_multi_choices(
             "projects", [], self.pdata.project_choices
         )
+        self.is_default_name = not bool(self.name.value)
 
     def get_attrib_names(self):
         """Return attribute names"""
@@ -612,7 +614,7 @@ class ChartData(AbstractDurationData):
             hour=0, minute=0, second=0, microsecond=0
         )
 
-    def set_chart_filename(self, filename: str, index: int):
+    def set_chart_filename(self, xml_filename: str, index: int):
         """Set chart index, and then chart name to default xml_filename+index if no
         name is set.
 
@@ -620,10 +622,16 @@ class ChartData(AbstractDurationData):
             filename (str): The filename of the chart
             index (int): The index of the chart. Not used for now.
         """
-        bname = osp.splitext(osp.basename(filename))[0] + ".svg"
-        fname = osp.join(osp.dirname(filename), bname)
-        self.fullname.value = fname
-        self.name.value = osp.basename(bname)
+        xml_prefix = osp.splitext(osp.basename(xml_filename))[0]
+        if self.is_default_name:
+            bname = xml_prefix + f"_{index:02d}.svg"
+        else:
+            bname = str(self.name.value)
+
+        filepath = osp.join(osp.dirname(xml_filename), bname)
+
+        self.name.value = bname
+        self.fullname.value = filepath
 
     def make_svg(
         self,
@@ -1427,13 +1435,9 @@ class PlanningData(AbstractData):
         if self.filename is None:
             return
 
+        xml_filename = self.filename
         for index, data in enumerate(self.iterate_chart_data()):
-            bname = (
-                data.name.value
-                or osp.basename(self.filename).rsplit(".")[0] + f"_{index:02d}.svg"
-            )
-            filename = osp.join(osp.dirname(self.filename), bname)
-            data.set_chart_filename(filename, index)
+            data.set_chart_filename(xml_filename, index)
 
     @property
     def chart_filenames(self) -> list[str]:

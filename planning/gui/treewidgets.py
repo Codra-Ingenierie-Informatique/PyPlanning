@@ -6,6 +6,7 @@
 
 
 import datetime
+import os
 import re
 import xml.etree.ElementTree as ET
 from typing import Any, Callable, Optional, TypeVar
@@ -957,6 +958,16 @@ class ChartTreeWidget(BaseTreeWidget):
         BaseTreeWidget.__init__(self, parent, debug)
         self.setSelectionMode(QW.QTreeView.ExtendedSelection)
         self.VALIDATORS["name"] = self.validate_chart_name
+        self.CALLBACKS["name"] = self.check_default_svg_name
+
+    def check_default_svg_name(self, ditem: DataItem[str]):
+        parent = ditem.parent
+        if self.planning is None or not isinstance(parent, ChartData):
+            return
+        xml_prefix, _ext = os.path.basename(str(self.planning.filename)).rsplit(".", 1)
+        default_name_re = re.compile(rf"^{xml_prefix}_\d{{2}}(\.svg)?")
+        is_default_name = bool(default_name_re.match(str(ditem.value)))
+        parent.is_default_name = is_default_name
 
     def setup_specific_actions(self):
         """Setup context menu common actions"""
