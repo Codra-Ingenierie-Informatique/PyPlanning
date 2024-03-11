@@ -583,6 +583,8 @@ class ChartData(AbstractDurationData):
     def get_attrib_names(self):
         """Return attribute names"""
         attrib_names = super().get_attrib_names()
+        if self.is_default_name:
+            attrib_names.remove("name")
         return attrib_names + ["today", "type", "scale", "offset", "t0mode", "projects"]
 
     def is_valid(self, item_name: str):
@@ -627,6 +629,8 @@ class ChartData(AbstractDurationData):
             bname = xml_prefix + f"_{index:02d}.svg"
         else:
             bname = str(self.name.value)
+        if not bname.endswith(".svg"):
+            bname += ".svg"
 
         filepath = osp.join(osp.dirname(xml_filename), bname)
 
