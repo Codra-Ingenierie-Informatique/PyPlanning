@@ -35,7 +35,14 @@ from planning.model import (
     TaskModes,
 )
 
-ItemEditor = QW.QComboBox | QW.QCheckBox | QW.QSpinBox | QW.QDateEdit | QW.QLineEdit
+ItemEditor = (
+    QW.QComboBox
+    | QW.QCheckBox
+    | QW.QSpinBox
+    | QW.QDateEdit
+    | QW.QLineEdit
+    | CheckableComboBox
+)
 ItemEditorT = TypeVar(
     "ItemEditorT",
     bound=ItemEditor,
@@ -73,7 +80,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
 
     # pylint: disable=unused-argument,invalid-name
     def createEditor(
-        self, parent: QW.QWidget | None, opt, index: QC.QModelIndex
+        self, parent: QW.QWidget, option: QW.QStyleOptionViewItem, index: QC.QModelIndex
     ) -> ItemEditor:
         """Reimplement Qt method"""
         self.editor_opened = True
@@ -106,9 +113,13 @@ class TaskTreeDelegate(QW.QItemDelegate):
             editor.activated.connect(lambda index: self.commitAndCloseEditor())
             return editor
         elif ditem.datatype == DTypes.MULTIPLE_CHOICE:
-            editor = CheckableComboBox(parent)
+            editor = CheckableComboBox(parent=parent)
             editor.addItems(ditem.choice_values, ditem.choice_keys)
-            editor.activated.connect(lambda index: self.commitAndCloseEditor())
+            editor.setMinimumWidth(self.parent().columnWidth(index.column()))
+            editor.setSizeAdjustPolicy(QW.QComboBox.AdjustToContents)
+            editor.lineEdit().editingFinished.connect(
+                lambda: self.commitAndCloseEditor()
+            )
             return editor
 
         editor = QW.QLineEdit(parent)
@@ -179,9 +190,10 @@ class TaskTreeDelegate(QW.QItemDelegate):
             value = editor.currentData()
         else:
             value = editor.text()
-            if ditem.name == "name" and len(ditem.value) == 0:
+            if ditem.name == "name" and len(value) == 0:
                 value = EMPTY_NAME
-
+            elif value == "":
+                value = None
         if validator is not None and not validator(value):
             return
 
@@ -653,7 +665,7 @@ class TaskTreeWidget(BaseTreeWidget):
         DTypes.LIST,
     )
     COLUMNS_TO_RESIZE = (0, 1, 3, 4, 5, 6, 7)
-    COLUMNS_TO_EDIT_ON_CLICK = ()
+    COLUMNS_TO_EDIT_ON_CLICK = (7,)
 
     def __init__(self, parent=None, debug=False):
         self.reload_action = None
@@ -923,11 +935,11 @@ class ChartTreeWidget(BaseTreeWidget):
         _("Type"),
         _("Scale"),
         _("T0 mode"),
-        _("Project"),
+        _("Projects"),
     )
-    ATTRS = ("name", "start", "today", "stop", "type", "scale", "t0mode", "project")
+    ATTRS = ("name", "start", "today", "stop", "type", "scale", "t0mode", "projects")
     COLUMNS_TO_RESIZE = (0, 1, 2, 3, 6)
-    COLUMNS_TO_EDIT_ON_CLICK = (4, 5, 6)
+    COLUMNS_TO_EDIT_ON_CLICK = (4, 5, 6, 7)
     TYPES = (
         DTypes.TEXT,
         DTypes.DATE,
@@ -945,7 +957,6 @@ class ChartTreeWidget(BaseTreeWidget):
         BaseTreeWidget.__init__(self, parent, debug)
         self.setSelectionMode(QW.QTreeView.ExtendedSelection)
         self.VALIDATORS["name"] = self.validate_chart_name
-        self.VALIDATORS["project"] = lambda project: project != ""
 
     def setup_specific_actions(self):
         """Setup context menu common actions"""
@@ -1055,6 +1066,8 @@ class TreeWidgets(QW.QSplitter):
         self.setCollapsible(1, False)
         self.setStretchFactor(0, 1)
         self.setStretchFactor(1, 4)
+
+        self.task_tree.CALLBACKS["project"] = lambda ditem: self.chart_tree.repopulate()
 
     def tree_pressed(self):
         """A mouse button was pressed on tree view"""

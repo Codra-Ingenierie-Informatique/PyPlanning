@@ -1,4 +1,4 @@
-from typing import Generic, Iterable, Optional, TypeVar, overload
+from typing import Generic, Iterable, Optional, TypeVar
 
 from qtpy.QtCore import QEvent, QObject, Qt, QTimerEvent
 from qtpy.QtGui import QFontMetrics, QStandardItem

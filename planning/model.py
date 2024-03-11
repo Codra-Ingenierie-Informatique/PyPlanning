@@ -478,6 +478,14 @@ class AbstractData:
         """Get choices value from XML attribute"""
         return self.create_item(name, DTypes.CHOICE, default=default, choices=choices)
 
+    def get_multi_choices(
+        self, name, default: Optional[_T | type[NoDefault]] = NoDefault, choices=None
+    ):
+        """Get choices value from XML attribute"""
+        return self.create_item(
+            name, DTypes.MULTIPLE_CHOICE, default=default, choices=choices
+        )
+
     def get_bool(self, name, default: Optional[_T | type[NoDefault]] = NoDefault):
         """Get boolean value from XML attribute"""
         return self.create_item(name, DTypes.BOOLEAN, default=default)
@@ -554,6 +562,9 @@ class ChartData(AbstractDurationData):
         self.today = DataItem(self, "today", DTypes.DATE, None)
         self.offset = DataItem(self, "offset", DTypes.INTEGER, None)
         self.t0mode = DataItem(self, "t0mode", DTypes.BOOLEAN, None)
+        self.projects = DataItem[list[str]](
+            self, "projects", DTypes.MULTIPLE_CHOICE, None, []
+        )
 
     def _init_from_element(self, element):
         """Init instance from XML element"""
@@ -563,13 +574,16 @@ class ChartData(AbstractDurationData):
         self.today = self.get_date("today")
         self.offset = self.get_int("offset")
         self.t0mode = self.get_bool("t0mode")
+        self.projects = self.get_multi_choices(
+            "projects", [], self.pdata.project_choices
+        )
 
     def get_attrib_names(self):
         """Return attribute names"""
         attrib_names = super().get_attrib_names()
-        return attrib_names + ["today", "type", "scale", "offset", "t0mode"]
+        return attrib_names + ["today", "type", "scale", "offset", "t0mode", "projects"]
 
-    def is_valid(self, item_name):
+    def is_valid(self, item_name: str):
         """Check data item values, eventually depending on planning data"""
         if not super().is_valid(item_name):
             return False
@@ -581,6 +595,11 @@ class ChartData(AbstractDurationData):
             return False
         if item_name == "project" and self.has_project:
             return self.project.value in self.pdata.get_task_project_names()
+        if item_name == "projects" and self.projects.value:
+            pnames = set(self.pdata.get_task_project_names())
+            return self.projects.value is None or all(
+                pname in pnames for pname in self.projects.value
+            )
         if item_name in ("start", "stop"):
             if not self.has_start or not self.has_stop:
                 return True
@@ -651,6 +670,20 @@ class ChartData(AbstractDurationData):
             )
         else:
             raise ValueError(f"Invalid planning type '{ptype}'")
+
+    def update_project_choices(self):
+        """Update task choices"""
+        if self.pdata is None:
+            return
+        available_choices = self.pdata.project_choices
+        self.projects.choices = available_choices
+
+        if self.projects.value is None:
+            return
+        project_keys = self.projects.choice_keys
+        for project in self.projects.value:
+            if project not in project_keys:
+                self.projects.value.remove(project)
 
 
 class AbstractTaskData(AbstractDurationData):
@@ -906,6 +939,8 @@ class TaskData(AbstractTaskData):
 
     def process_gantt(self):
         """Create or update Gantt objects and add them to dictionaries"""
+        # for data in self.pdata.iterate_chart_data():
+        #     data.update_project_choices()
         resource_list = [
             resource
             for resource_id, resource in self.pdata.all_resources.items()
@@ -1051,14 +1086,15 @@ class PlanningData(AbstractData):
 
     def __init__(self, name=None, fullname=None):
         super().__init__(self, name, fullname)
-        self.all_projects = {}
-        self.all_resources = {}
+        self.all_projects: dict[Optional[str], gantt.Project] = {}
+        self.all_resources: dict[str, gantt.Resource] = {}
         self.all_tasks: dict[str, gantt.Task] = {}
         self.filename = None
         self.reslist: list[ResourceData] = []
         self.tsklist: list[AbstractTaskData] = []
         self.tsk_num_to_tsk: dict[str, AbstractTaskData] = {}
         self._tsk_choices: list[tuple[str, str]] = []
+        self._projects_choices: list[tuple[str, str]] = []
         self.lvelist: list[LeaveData] = []
         self.clolist: list[ClosingDayData] = []
         self.chtlist: list[ChartData] = []
@@ -1118,6 +1154,8 @@ class PlanningData(AbstractData):
         for data in self.iterate_task_data():
             data.update_task_choices()
             data.update_depends_of_from_ids()
+        for data in self.iterate_chart_data():
+            data.update_project_choices()
 
     @classmethod
     def from_filename(cls, fname: str):
@@ -1329,8 +1367,18 @@ class PlanningData(AbstractData):
             ]
         return self._tsk_choices
 
+    @property
+    def project_choices(self) -> list[tuple[str, str]]:
+        if (len(self.all_projects) - 1) != len(self._projects_choices):
+            self._projects_choices = [
+                (key, proj.name)
+                for key, proj in self.all_projects.items()
+                if key is not None
+            ]
+        return self._projects_choices
+
     def update_task_number(self, index: Optional[int] = None):
-        """Update of the first task to update. If None, only the last one is updated,
+        """Update task number. If None, only the last one is updated,
         else all tasks from index are updated. Also updates all the
         "depends_on_task_number" dataitems with the new task numbers.
 
@@ -1406,6 +1454,8 @@ class PlanningData(AbstractData):
         for projname, project in self.all_projects.items():
             if projname is not None:
                 mainproj.add_task(project)
+        for data in self.iterate_chart_data():
+            data.update_project_choices()
 
     def update_task_calc_dates(self):
         """Update task calculated start/end dates"""
@@ -1416,13 +1466,24 @@ class PlanningData(AbstractData):
     def generate_charts(self, one_line_for_tasks=True):
         """Generate charts"""
         self.process_gantt()
-        for data in self.iterate_chart_data():
-            pname = data.project.value
-            try:
-                project = self.all_projects[pname]
-            except KeyError as exc:
-                raise KeyError(f"No task found for '{pname}' project") from exc
-            data.make_svg(project, one_line_for_tasks)
+        for chart in self.iterate_chart_data():
+            pnames = chart.projects.value
+            wrong_pnames = []
+            if not pnames:
+                project = self.all_projects[None]
+            else:
+                project = gantt.Project(name="Combined", color=self.color.value)
+                for pname in pnames:
+                    proj = self.all_projects.get(pname, None)
+                    if proj is None:
+                        wrong_pnames.append(pname)
+                        continue
+                    for task in proj.get_tasks():
+                        project.add_task(task)
+            chart.make_svg(project, one_line_for_tasks)
+            if wrong_pnames and chart.projects.value is not None:
+                for pname in wrong_pnames:
+                    chart.projects.value.remove(pname)
         self.update_task_calc_dates()
 
     def generate_current_chart(self, index: int, one_line_for_tasks=True):
@@ -1436,10 +1497,22 @@ class PlanningData(AbstractData):
             return
         self.process_gantt()
         chart = self.chtlist[index]
-        pname = chart.project.value
-        try:
-            project = self.all_projects[pname]
-        except KeyError as exc:
-            raise KeyError(f"No task found for '{pname}' project") from exc
+        pnames = chart.projects.value
+        wrong_pnames = []
+        if not pnames:
+            project = self.all_projects[None]
+        else:
+            project = gantt.Project(name="Combined", color=self.color.value)
+            for pname in pnames:
+                proj = self.all_projects.get(pname, None)
+                if proj is None:
+                    wrong_pnames.append(pname)
+                    continue
+                for task in proj.get_tasks():
+                    project.add_task(task)
+
         chart.make_svg(project, one_line_for_tasks)
+        if wrong_pnames and chart.projects.value is not None:
+            for pname in wrong_pnames:
+                chart.projects.value.remove(pname)
         self.update_task_calc_dates()
