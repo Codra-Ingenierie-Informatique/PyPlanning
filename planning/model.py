@@ -571,11 +571,13 @@ class ChartData(AbstractDurationData):
     def set_is_default_name(self) -> bool:
         """Check if name is default"""
         if self.pdata is None or self.pdata.filename is None:
-            self.is_default_name = True
-            return True
+            self.is_default_name = False
+            return False
         xml_prefix, _ext = osp.basename(str(self.pdata.filename)).rsplit(".", 1)
         default_name_re = re.compile(rf"^{xml_prefix}_\d{{2}}(\.svg)?")
-        is_default_name = bool(default_name_re.match(str(self.name.value)))
+        is_default_name = self.name.value is None or bool(
+            default_name_re.match(str(self.name.value))
+        )
         self.is_default_name = is_default_name
         return is_default_name
 
@@ -637,12 +639,12 @@ class ChartData(AbstractDurationData):
             index (int): The index of the chart. Not used for now.
         """
         xml_prefix = osp.splitext(osp.basename(xml_filename))[0]
-        if self.is_default_name:
+        if self.is_default_name or self.name.value is None:
             bname = xml_prefix + f"_{index:02d}.svg"
         else:
             bname = str(self.name.value)
-        if not bname.endswith(".svg"):
-            bname += ".svg"
+            if not bname.endswith(".svg"):
+                bname += ".svg"
 
         filepath = osp.join(osp.dirname(xml_filename), bname)
 
@@ -1180,8 +1182,8 @@ class PlanningData(AbstractData):
         for data in self.iterate_task_data():
             data.update_task_choices()
             data.update_depends_of_from_ids()
-        for data in self.iterate_chart_data():
-            data.update_project_choices()
+        for chart in self.iterate_chart_data():
+            chart.update_project_choices()
 
     @classmethod
     def from_filename(cls, fname: str):

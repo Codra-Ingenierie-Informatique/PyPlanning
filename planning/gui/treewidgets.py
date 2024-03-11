@@ -1047,7 +1047,7 @@ class TreeWidgets(QW.QSplitter):
         self.__snapshot_index = None
         self.__snapshots = []
         self.__snapshots_lock = False
-        self.planning = None
+        self.planning: Optional[PlanningData] = None
 
         self.chart_tree = ChartTreeWidget(self, debug=debug)
         self.task_tree = TaskTreeWidget(self, debug=debug)
