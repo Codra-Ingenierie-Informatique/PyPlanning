@@ -964,10 +964,7 @@ class ChartTreeWidget(BaseTreeWidget):
         parent = ditem.parent
         if self.planning is None or not isinstance(parent, ChartData):
             return
-        xml_prefix, _ext = os.path.basename(str(self.planning.filename)).rsplit(".", 1)
-        default_name_re = re.compile(rf"^{xml_prefix}_\d{{2}}(\.svg)?")
-        is_default_name = bool(default_name_re.match(str(ditem.value)))
-        parent.is_default_name = is_default_name
+        parent.set_is_default_name()
 
     def setup_specific_actions(self):
         """Setup context menu common actions"""
