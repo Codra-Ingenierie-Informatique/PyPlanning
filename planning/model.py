@@ -5,6 +5,7 @@
 import datetime
 import locale
 import os.path as osp
+import re
 import xml.etree.ElementTree as ET
 from copy import deepcopy
 from enum import Enum
@@ -565,7 +566,18 @@ class ChartData(AbstractDurationData):
         self.projects = DataItem[list[str]](
             self, "projects", DTypes.MULTIPLE_CHOICE, None, []
         )
-        self.is_default_name = not bool(self.name.value)
+        self.is_default_name = self.set_is_default_name()
+
+    def set_is_default_name(self) -> bool:
+        """Check if name is default"""
+        if self.pdata is None or self.pdata.filename is None:
+            self.is_default_name = True
+            return True
+        xml_prefix, _ext = osp.basename(str(self.pdata.filename)).rsplit(".", 1)
+        default_name_re = re.compile(rf"^{xml_prefix}_\d{{2}}(\.svg)?")
+        is_default_name = bool(default_name_re.match(str(self.name.value)))
+        self.is_default_name = is_default_name
+        return is_default_name
 
     def _init_from_element(self, element):
         """Init instance from XML element"""
@@ -578,7 +590,7 @@ class ChartData(AbstractDurationData):
         self.projects = self.get_multi_choices(
             "projects", [], self.pdata.project_choices
         )
-        self.is_default_name = not bool(self.name.value)
+        self.set_is_default_name()
 
     def get_attrib_names(self):
         """Return attribute names"""
@@ -1129,6 +1141,8 @@ class PlanningData(AbstractData):
         """Set planning data XML filename"""
         self.filename = filename
         self.update_chart_names()
+        for chart in self.iterate_chart_data():
+            chart.set_is_default_name()
 
     def _init_from_element(self, element: ET.Element):
         """Init instance from XML element"""

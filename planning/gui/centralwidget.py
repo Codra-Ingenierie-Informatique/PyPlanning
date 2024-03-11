@@ -91,6 +91,8 @@ class PlanningEditor(QStackedWidget):
     def save_file(self, path):
         """Save data to file"""
         if self.xml_mode:
+            if self.trees.planning is not None:
+                self.code.setPlainText(self.trees.planning.to_text())
             text = self.code.toPlainText()
             with open(path, "wb") as fdesc:
                 fdesc.write(text.encode("utf-8"))
