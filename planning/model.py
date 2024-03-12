@@ -569,12 +569,16 @@ class ChartData(AbstractDurationData):
         self.is_default_name = self.set_is_default_name()
 
     def set_is_default_name(self) -> bool:
-        """Check if name is default"""
+        """Check if name is default and sets the "is_default_name" attribute
+
+        Returns:
+            bool: True if name is default, False otherwise
+        """
         if self.pdata is None or self.pdata.filename is None:
             self.is_default_name = False
             return False
         xml_prefix, _ext = osp.basename(str(self.pdata.filename)).rsplit(".", 1)
-        default_name_re = re.compile(rf"^{xml_prefix}_\d{{2}}(\.svg)?")
+        default_name_re = re.compile(rf"^{xml_prefix}(_?\d{{2}})?(\.svg)?")
         is_default_name = self.name.value is None or bool(
             default_name_re.match(str(self.name.value))
         )
@@ -1456,7 +1460,7 @@ class PlanningData(AbstractData):
             return
 
         xml_filename = self.filename
-        for index, data in enumerate(self.iterate_chart_data()):
+        for index, data in enumerate(self.iterate_chart_data(), start=1):
             data.set_chart_filename(xml_filename, index)
 
     @property
