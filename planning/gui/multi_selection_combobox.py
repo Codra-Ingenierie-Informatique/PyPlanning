@@ -7,14 +7,14 @@ from qtpy.QtWidgets import QComboBox, QStyledItemDelegate
 T = TypeVar("T")
 
 
-class CheckableComboBox(QComboBox, Generic[T]):
+class _CheckableComboDelegate(QStyledItemDelegate):
+    def sizeHint(self, option, index):
+        size = super().sizeHint(option, index)
+        size.setHeight(20)
+        return size
 
-    # Subclass Delegate to increase item height
-    class CheckableComboDelegate(QStyledItemDelegate):
-        def sizeHint(self, option, index):
-            size = super().sizeHint(option, index)
-            size.setHeight(20)
-            return size
+
+class CheckableComboBox(QComboBox, Generic[T]):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -24,7 +24,7 @@ class CheckableComboBox(QComboBox, Generic[T]):
         self.lineEdit().setReadOnly(True)
 
         # Use custom delegate
-        self.setItemDelegate(CheckableComboBox.CheckableComboDelegate())
+        self.setItemDelegate(_CheckableComboDelegate())
 
         # Update the text when an item is toggled
         self.model().dataChanged.connect(self.updateText)
