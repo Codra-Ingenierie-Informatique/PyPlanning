@@ -723,7 +723,7 @@ class AbstractTaskData(AbstractDurationData):
 
     def __init__(self, pdata, name=None, fullname=None):
         super().__init__(pdata, name, fullname)
-        self.depends_of = DataItem[list[str]](self, "depends_of", DTypes.LIST, None)
+        self.depends_on = DataItem[list[str]](self, "depends_on", DTypes.LIST, None)
         self.percent_done = DataItem[int](self, "percent_done", DTypes.INTEGER, 0)
         self.task_number = DataItem[str](self, "task_number", DTypes.TEXT, None)
         self.depends_on_task_number = DataItem[list[str]](
@@ -741,7 +741,7 @@ class AbstractTaskData(AbstractDurationData):
     def _init_from_element(self, element):
         """Init instance from XML element"""
         super()._init_from_element(element)
-        self.depends_of: DataItem[list[str]] = self.get_list("depends_of")
+        self.depends_on: DataItem[list[str]] = self.get_list("depends_on")
         self.percent_done: DataItem[int] = self.get_int("percent_done")
         self.depends_on_task_number = DataItem[list[str]](
             self,
@@ -753,7 +753,7 @@ class AbstractTaskData(AbstractDurationData):
 
     def get_attrib_names(self):
         """Return attribute names"""
-        return super().get_attrib_names() + ["depends_of", "percent_done"]
+        return super().get_attrib_names() + ["depends_on", "percent_done"]
 
     def process_gantt(self):
         """Create or update Gantt objects and add them to dictionaries"""
@@ -769,29 +769,29 @@ class AbstractTaskData(AbstractDurationData):
                 else:
                     delta = datetime.timedelta(days=prevtask.duration)
                     task.start = prevtask.start + delta
-                if task.depends_of is None:
-                    task.depends_of = []
-                if prevtask not in task.depends_of:
-                    task.depends_of.append(prevtask)
+                if task.depends_on is None:
+                    task.depends_on = []
+                if prevtask not in task.depends_on:
+                    task.depends_on.append(prevtask)
         projname = self.project.value
         if projname not in self.pdata.all_projects:
             self.pdata.all_projects[projname] = gantt.Project(name=projname)
         self.pdata.all_projects[projname].add_task(task)
         self.pdata.all_tasks[self.id.value] = task
 
-    def update_depends_of(self):
-        """Update depends_of attribute of Gantt task"""
+    def update_depends_on(self):
+        """Update depends_on attribute of Gantt task"""
         task = self.pdata.all_tasks[self.id.value]
-        if self.depends_of.value is not None:
+        if self.depends_on.value is not None:
             task.add_depends(
                 [
                     task
                     for tskdata_id, task in self.pdata.all_tasks.items()
-                    if tskdata_id in self.depends_of.value
+                    if tskdata_id in self.depends_on.value
                 ]
             )
 
-    def update_depends_of_from_task_number(self):
+    def update_depends_on_from_task_number(self):
         if self.depends_on_task_number.value is None:
             return
 
@@ -816,16 +816,16 @@ class AbstractTaskData(AbstractDurationData):
                 self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
                 other_task.id.value = new_id
             new_values.append(other_task.id.value)
-        self.depends_of.value = new_values
+        self.depends_on.value = new_values
         if wrong_values:
             for value in wrong_values:
                 self.depends_on_task_number.value.remove(value)
 
-    def update_depends_of_from_ids(self):
-        if self.depends_of.value is None:
+    def update_depends_on_from_ids(self):
+        if self.depends_on.value is None:
             return
         self.depends_on_task_number.value = []
-        for t_id in self.depends_of.value:
+        for t_id in self.depends_on.value:
             data: AbstractTaskData | None = self.pdata.get_data_from_id(t_id)
             if data is self:
                 continue
@@ -1187,7 +1187,7 @@ class PlanningData(AbstractData):
                 self.add_closing_day(data)
         for data in self.iterate_task_data():
             data.update_task_choices()
-            data.update_depends_of_from_ids()
+            data.update_depends_on_from_ids()
         for chart in self.iterate_chart_data():
             chart.update_project_choices()
 
@@ -1430,7 +1430,7 @@ class PlanningData(AbstractData):
                 self.tsk_num_to_tsk[str_idx] = data
         for data in self.iterate_task_data():
             data.update_task_choices()
-            data.update_depends_of_from_ids()
+            data.update_depends_on_from_ids()
 
     def add_leave(self, data: LeaveData, after_data: Optional[AbstractData] = None):
         """Add resource leave to planning"""
@@ -1480,7 +1480,7 @@ class PlanningData(AbstractData):
         for data in self.iterate_all_data():
             data.process_gantt()
         for data in self.iterate_task_data():
-            data.update_depends_of()
+            data.update_depends_on()
         for projname, project in self.all_projects.items():
             if projname is not None:
                 mainproj.add_task(project)

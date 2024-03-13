@@ -775,7 +775,7 @@ class Task(object):
         start=None,
         stop=None,
         duration=None,
-        depends_of=None,
+        depends_on=None,
         resources=None,
         percent_done=0,
         color=None,
@@ -795,7 +795,7 @@ class Task(object):
         start -- datetime.date, first day of the task, default None
         stop -- datetime.date, last day of the task, default None
         duration -- int, duration of the task, default None
-        depends_of -- list of Task which are parents of this one, default None
+        depends_on -- list of Task which are parents of this one, default None
         resources -- list of Resources assigned to the task, default None
         percent_done -- int, percent of achievment, default 0
         color -- string, html color, default None
@@ -809,7 +809,7 @@ class Task(object):
                     "start": start,
                     "stop": stop,
                     "duration": duration,
-                    "depends_of": depends_of,
+                    "depends_on": depends_on,
                     "resources": resources,
                     "percent_done": percent_done,
                 }
@@ -835,7 +835,7 @@ class Task(object):
                 nonecount += 1
 
         # check limits (2 must be set on 4) or scheduling is defined by duration and dependencies
-        if nonecount != 1 and (self.duration is None or depends_of is None):
+        if nonecount != 1 and (self.duration is None or depends_on is None):
             LOG.error(
                 '** Task "{1}" must be defined by two of three limits ({0})'.format(
                     {"start": self.start, "stop": self.stop, "duration": self.duration},
@@ -845,12 +845,12 @@ class Task(object):
             # Bug ? may be defined later
             # raise ValueError('Task "{1}" must be defined by two of three limits ({0})'.format({'start':self.start, 'stop':self.stop, 'duration':self.duration}, fullname))
 
-        if type(depends_of) is type([]):
-            self.depends_of = depends_of
-        elif depends_of is not None:
-            self.depends_of = [depends_of]
+        if type(depends_on) is type([]):
+            self.depends_on = depends_on
+        elif depends_on is not None:
+            self.depends_on = [depends_on]
         else:
-            self.depends_of = None
+            self.depends_on = None
 
         self.resources = resources
         self.percent_done = percent_done
@@ -868,24 +868,24 @@ class Task(object):
 
         return
 
-    def add_depends(self, depends_of):
+    def add_depends(self, depends_on):
         """
         Adds dependency to a task
 
         Keyword arguments:
-        depends_of -- list of Task which are parents of this one
+        depends_on -- list of Task which are parents of this one
         """
-        if type(depends_of) is type([]):
-            if self.depends_of is None:
-                self.depends_of = depends_of
+        if type(depends_on) is type([]):
+            if self.depends_on is None:
+                self.depends_on = depends_on
             else:
-                for d in depends_of:
-                    self.depends_of.append(d)
+                for d in depends_on:
+                    self.depends_on.append(d)
         else:
-            if self.depends_of is None:
-                self.depends_of = depends_of
+            if self.depends_on is None:
+                self.depends_on = depends_on
             else:
-                self.depends_of.append(depends_of)
+                self.depends_on.append(depends_on)
 
         return
 
@@ -900,8 +900,8 @@ class Task(object):
         LOG.debug("** Task::start_date ({0})".format(self.name))
         if self.start is not None:
             # start date setted, calculate begining
-            if self.depends_of is None:
-                # depends of nothing... start date is start
+            if self.depends_on is None:
+                # depends on nothing... start date is start
                 # LOG.debug('*** Do not depend of other task')
                 start = self.start
                 while self.non_working_day(start):
@@ -917,14 +917,14 @@ class Task(object):
                 self._cache_start_date = start
                 return self._cache_start_date
             else:
-                # depends of other task, start date could vary
+                # depends on other task, start date could vary
                 # LOG.debug('*** Do depend of other tasks')
                 start = self.start
                 while self.non_working_day(start):
                     start = start + datetime.timedelta(days=1)
 
                 prev_task_end = start
-                for t in self.depends_of:
+                for t in self.depends_on:
                     if isinstance(t, Milestone):
                         if t.end_date() >= prev_task_end:
                             prev_task_end = t.end_date()
@@ -948,9 +948,9 @@ class Task(object):
         elif self.duration is None:  # start and stop fixed
             current_day = self.start
             # check depends
-            if self.depends_of is not None:
-                prev_task_end = self.depends_of[0].end_date()
-                for t in self.depends_of:
+            if self.depends_on is not None:
+                prev_task_end = self.depends_on[0].end_date()
+                for t in self.depends_on:
                     if isinstance(t, Milestone):
                         if t.end_date() > prev_task_end:
                             prev_task_end = t.end_date() - datetime.timedelta(days=1)
@@ -983,11 +983,11 @@ class Task(object):
 
         elif (
             self.duration is not None
-            and self.depends_of is not None
+            and self.depends_on is not None
             and self.stop is None
         ):  # duration and dependencies fixed
-            prev_task_end = self.depends_of[0].end_date()
-            for t in self.depends_of:
+            prev_task_end = self.depends_on[0].end_date()
+            for t in self.depends_on:
                 if isinstance(t, Milestone):
                     if t.end_date() > prev_task_end:
                         prev_task_end = t.end_date() - datetime.timedelta(days=1)
@@ -1022,9 +1022,9 @@ class Task(object):
             current_day = self.stop - datetime.timedelta(days=real_duration - 1)
 
             # check depends
-            if self.depends_of is not None:
-                prev_task_end = self.depends_of[0].end_date()
-                for t in self.depends_of:
+            if self.depends_on is not None:
+                prev_task_end = self.depends_on[0].end_date()
+                for t in self.depends_on:
                     if isinstance(t, Milestone):
                         if t.end_date() > prev_task_end:
                             prev_task_end = t.end_date()
@@ -1418,11 +1418,11 @@ class Task(object):
         LOG.debug(
             "** Task::svg_dependencies ({0})".format({"name": self.name, "prj": prj})
         )
-        if self.depends_of is None:
+        if self.depends_on is None:
             return None
         else:
             svg = svgwrite.container.Group()
-            for t in self.depends_of:
+            for t in self.depends_on:
                 if isinstance(t, Milestone):
                     if not (
                         t.drawn_x_end_coord is None
@@ -1697,7 +1697,7 @@ class Milestone(Task):
     """
 
     def __init__(
-        self, name, start=None, depends_of=None, color=None, fullname=None, display=True
+        self, name, start=None, depends_on=None, color=None, fullname=None, display=True
     ):
         """
         Initialize milestone object. Two of start, stop or duration may be given.
@@ -1709,13 +1709,13 @@ class Milestone(Task):
         name -- name of the milestone (id)
         fullname -- long name given to the resource
         start -- datetime.date, first day of the milestone, default None
-        depends_of -- list of Milestone which are parents of this one, default None
+        depends_on -- list of Milestone which are parents of this one, default None
         color -- string, html color, default None
         display -- boolean, display this milestone, default True
         """
         LOG.debug(
             "** Milestone::__init__ {0}".format(
-                {"name": name, "start": start, "depends_of": depends_of}
+                {"name": name, "start": start, "depends_on": depends_on}
             )
         )
         self.name = name
@@ -1737,12 +1737,12 @@ class Milestone(Task):
         self.display = display
         self.state = "Milestone"
 
-        if type(depends_of) is type([]):
-            self.depends_of = depends_of
-        elif depends_of is not None:
-            self.depends_of = [depends_of]
+        if type(depends_on) is type([]):
+            self.depends_on = depends_on
+        elif depends_on is not None:
+            self.depends_on = [depends_on]
         else:
-            self.depends_of = None
+            self.depends_on = None
 
         self.drawn_x_begin_coord = None
         self.drawn_x_end_coord = None
@@ -1907,11 +1907,11 @@ class Milestone(Task):
                 {"name": self.name, "prj": prj}
             )
         )
-        if self.depends_of is None:
+        if self.depends_on is None:
             return None
         else:
             svg = svgwrite.container.Group()
-            for t in self.depends_of:
+            for t in self.depends_on:
                 if isinstance(t, Milestone):
                     if not (
                         t.drawn_x_end_coord is None

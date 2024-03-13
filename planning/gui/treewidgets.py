@@ -692,7 +692,7 @@ class TaskTreeWidget(BaseTreeWidget):
 
     def _update_ids_on_change(self, ditem: DataItem[str]):
         if isinstance(ditem.parent, AbstractTaskData):
-            ditem.parent.update_depends_of_from_task_number()
+            ditem.parent.update_depends_on_from_task_number()
 
     def setup_specific_actions(self):
         """Setup context menu specific actions"""

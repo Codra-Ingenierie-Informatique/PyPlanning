@@ -57,14 +57,14 @@ t3 = gantt.Task(
     name="tache3",
     start=datetime.date(2014, 12, 25),
     duration=4,
-    depends_of=[t1, t7, t2],
+    depends_on=[t1, t7, t2],
     resources=[rJLS],
 )
 t4 = gantt.Task(
     name="tache4",
     start=datetime.date(2015, 1, 1),
     duration=4,
-    depends_of=t1,
+    depends_on=t1,
     resources=[rJLS],
 )
 t5 = gantt.Task(name="tache5", start=datetime.date(2014, 12, 23), duration=3)
@@ -72,14 +72,14 @@ t6 = gantt.Task(
     name="tache6",
     start=datetime.date(2014, 12, 25),
     duration=4,
-    depends_of=t7,
+    depends_on=t7,
     resources=[rANO],
 )
 t8 = gantt.Task(
     name="tache8",
     start=datetime.date(2014, 12, 25),
     duration=4,
-    depends_of=t7,
+    depends_on=t7,
     resources=[rANO, rJLS],
 )
 
@@ -119,18 +119,18 @@ ptcm = gantt.Project(name="Test case for milestones")
 
 tcm11 = gantt.Task(name="tcm11", start=datetime.date(2014, 12, 25), duration=4)
 tcm12 = gantt.Task(name="tcm12", start=datetime.date(2014, 12, 26), duration=5)
-ms1 = gantt.Milestone(name=" ", depends_of=[tcm11, tcm12])
+ms1 = gantt.Milestone(name=" ", depends_on=[tcm11, tcm12])
 tcm21 = gantt.Task(
-    name="tcm21", start=datetime.date(2014, 12, 30), duration=4, depends_of=[ms1]
+    name="tcm21", start=datetime.date(2014, 12, 30), duration=4, depends_on=[ms1]
 )
 tcm22 = gantt.Task(
-    name="tcm22", start=datetime.date(2014, 12, 30), duration=6, depends_of=[ms1]
+    name="tcm22", start=datetime.date(2014, 12, 30), duration=6, depends_on=[ms1]
 )
-ms2 = gantt.Milestone(name="MS2", depends_of=[ms1, tcm21, tcm22])
+ms2 = gantt.Milestone(name="MS2", depends_on=[ms1, tcm21, tcm22])
 tcm31 = gantt.Task(
-    name="tcm31", start=datetime.date(2014, 12, 30), duration=6, depends_of=[ms2]
+    name="tcm31", start=datetime.date(2014, 12, 30), duration=6, depends_on=[ms2]
 )
-ms3 = gantt.Milestone(name="MS3", depends_of=[ms1])
+ms3 = gantt.Milestone(name="MS3", depends_on=[ms1])
 
 
 ptcm.add_task(tcm11)
