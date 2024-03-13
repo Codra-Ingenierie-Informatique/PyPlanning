@@ -579,7 +579,7 @@ class ChartData(AbstractDurationData):
             return False
         xml_prefix, _ext = osp.basename(str(self.pdata.filename)).rsplit(".", 1)
         default_name_re = re.compile(
-            rf"^{xml_prefix}(_?\d{{2}})?(\.svg)?", re.IGNORECASE
+            rf"^{xml_prefix}(_?\d{{2}})?(\.svg)?$", re.IGNORECASE
         )
         is_default_name = self.name.value is None or bool(
             default_name_re.match(str(self.name.value))
