@@ -1502,18 +1502,21 @@ class PlanningData(AbstractData):
             if not pnames:
                 project = self.all_projects[None]
             else:
-                project = gantt.Project(name="Combined", color=self.color.value)
+                # transparent color and no name
+                project = gantt.Project(name="", color="#FFFFFFFF")
                 for pname in pnames:
                     proj = self.all_projects.get(pname, None)
                     if proj is None:
                         wrong_pnames.append(pname)
                         continue
-                    for task in proj.get_tasks():
-                        project.add_task(task)
+                    project.add_task(proj)
+                    # for task in proj.get_tasks():
+                    #     project.add_task(task)
             chart.make_svg(project, one_line_for_tasks)
-            if wrong_pnames and chart.projects.value is not None:
-                for pname in wrong_pnames:
-                    chart.projects.value.remove(pname)
+
+            # if wrong_pnames and chart.projects.value is not None:
+            #     for pname in wrong_pnames:
+            #         chart.projects.value.remove(pname)
         self.update_task_calc_dates()
 
     def generate_current_chart(self, index: int, one_line_for_tasks=True):
@@ -1532,17 +1535,14 @@ class PlanningData(AbstractData):
         if not pnames:
             project = self.all_projects[None]
         else:
-            project = gantt.Project(name="Combined", color=self.color.value)
+            # transparent color and no name
+            project = gantt.Project(name="", color="#FFFFFFFF")
             for pname in pnames:
                 proj = self.all_projects.get(pname, None)
                 if proj is None:
                     wrong_pnames.append(pname)
                     continue
-                for task in proj.get_tasks():
-                    project.add_task(task)
+                project.add_task(proj)
 
         chart.make_svg(project, one_line_for_tasks)
-        if wrong_pnames and chart.projects.value is not None:
-            for pname in wrong_pnames:
-                chart.projects.value.remove(pname)
         self.update_task_calc_dates()
