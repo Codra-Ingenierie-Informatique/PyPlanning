@@ -976,6 +976,9 @@ class ChartTreeWidget(BaseTreeWidget):
         if self.planning is None or not isinstance(parent, ChartData):
             return
         parent.set_is_default_name()
+        if parent.is_default_name and self.planning is not None:
+            index = self.currentIndex().row() + 1
+            parent.set_chart_filename(self.planning.filename, index)
 
     def setup_specific_actions(self):
         """Setup context menu common actions"""
@@ -1014,9 +1017,12 @@ class ChartTreeWidget(BaseTreeWidget):
     def new_chart(self):
         """New chart item"""
         data = ChartData(self.planning, EMPTY_NAME)
+        data.is_default_name = True
+        data.set_chart_filename(self.planning.filename, self.currentIndex().row() + 1)
         self.planning.add_chart(data, after_data=self.get_current_data())
         self.__add_chartitem(data)
         self.set_current_id(data.id.value)
+        data.set_is_default_name()
         self.repopulate()
 
     def __add_chartitem(self, data: ChartData):

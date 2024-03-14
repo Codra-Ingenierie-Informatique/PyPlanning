@@ -6,6 +6,7 @@
 
 import os
 import os.path as osp
+import shutil
 import traceback
 import xml.etree.ElementTree as ET
 from typing import Optional
@@ -90,15 +91,29 @@ class PlanningEditor(QStackedWidget):
 
     def save_file(self, path):
         """Save data to file"""
+        planning = self.trees.planning
+        if planning is None:
+            return
+
+        default_charts_paths = [
+            chart.fullname.value
+            for chart in planning.chtlist
+            if isinstance(chart.fullname.value, str)
+        ]
+        for chart_path in default_charts_paths:
+            shutil.copy(chart_path, osp.join(chart_path + ".tmp"))
+
         if self.xml_mode:
-            if self.trees.planning is not None:
-                self.code.setPlainText(self.trees.planning.to_text())
+            self.code.setPlainText(planning.to_text())
             text = self.code.toPlainText()
             with open(path, "wb") as fdesc:
                 fdesc.write(text.encode("utf-8"))
         else:
-            self.trees.planning.to_filename(path)
+            planning.to_filename(path)
             self.trees.chart_tree.repopulate()
+
+        for chart_path in default_charts_paths:
+            os.rename(osp.join(chart_path.rstrip(".tmp")), chart_path)
 
     def set_text_and_path(self, text, path):
         """Set text and path
@@ -170,6 +185,12 @@ class PlanningPreview(QTabWidget):
             return
         new_bname = osp.basename(fname)
         prev_bname = self.tabText(index)
+        if (
+            new_bname != prev_bname
+            and self.__path is not None
+            and osp.exists(path_to_remove := osp.join(self.__path, prev_bname))
+        ):
+            os.remove(path_to_remove)
         viewer = self.views.pop(prev_bname)
         viewer.load(fname)
         self.views[new_bname] = viewer
