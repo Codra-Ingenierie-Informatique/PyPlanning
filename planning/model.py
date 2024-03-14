@@ -644,6 +644,8 @@ class ChartData(AbstractDurationData):
             filename (str): The filename of the chart
             index (int): The index of the chart. Not used for now.
         """
+        if xml_filename is None:
+            return
         xml_prefix = osp.splitext(osp.basename(xml_filename))[0]
         if self.is_default_name or self.name.value is None:
             bname = xml_prefix + f"_{index:02d}.svg"
