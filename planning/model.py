@@ -766,7 +766,7 @@ class AbstractTaskData(AbstractDurationData):
             if task.start is None and prevtask is not None:
                 if prevtask.stop is not None:
                     task.start = prevtask.stop + datetime.timedelta(days=1)
-                else:
+                elif prevtask.duration is not None and prevtask.start is not None:
                     delta = datetime.timedelta(days=prevtask.duration)
                     task.start = prevtask.start + delta
                 if task.depends_on is None:
@@ -818,6 +818,7 @@ class AbstractTaskData(AbstractDurationData):
         if wrong_values:
             for value in wrong_values:
                 self.depends_on_task_number.value.remove(value)
+        self.process_gantt()
 
     def update_depends_on_from_ids(self):
         if self.depends_on.value is None:
@@ -825,17 +826,21 @@ class AbstractTaskData(AbstractDurationData):
         self.depends_on_task_number.value = []
         for t_id in self.depends_on.value:
             data: AbstractTaskData | None = self.pdata.get_data_from_id(t_id)
-            if data is self:
+            if data is self or data is None:
                 continue
-            if data is not None:
-                self.depends_on_task_number.value.append(data.task_number.value)
-                if not data.has_named_id:
-                    old_id = data.id.value
-                    new_id = f"auto_id-{data.default_id.split('-', 1)[1]}"
-                    if old_id in self.pdata.all_tasks:
-                        self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
 
-                    data.id.value = new_id
+            self.depends_on_task_number.value.append(data.task_number.value)
+
+            if data.has_named_id:
+                continue
+
+            old_id = data.id.value
+            new_id = f"auto_id-{data.default_id.split('-', 1)[1]}"
+            if old_id in self.pdata.all_tasks:
+                self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
+
+                data.id.value = new_id
+        self.process_gantt()
 
     def update_task_choices(self, force=False):
         """Update task choices"""

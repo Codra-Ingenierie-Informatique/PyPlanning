@@ -158,7 +158,8 @@ class PlanningPreview(QTabWidget):
             for index in reversed(range(self.count())):
                 if to_remove == self.tabText(index):
                     self.removeTab(index)
-                    self.views.pop(to_remove)
+                    if to_remove in self.views:
+                        self.views.pop(to_remove)
                     if self.__path is not None and osp.exists(
                         path_to_remove := osp.join(self.__path, to_remove)
                     ):
