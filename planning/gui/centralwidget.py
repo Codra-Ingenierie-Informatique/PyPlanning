@@ -144,8 +144,10 @@ class PlanningPreview(QTabWidget):
                 if to_remove == self.tabText(index):
                     self.removeTab(index)
                     self.views.pop(to_remove)
-                    if self.__path is not None:
-                        os.remove(osp.join(self.__path, to_remove))
+                    if self.__path is not None and osp.exists(
+                        path_to_remove := osp.join(self.__path, to_remove)
+                    ):
+                        os.remove(path_to_remove)
         for i, (fname, bname) in enumerate(zip(fnames, bnames)):
             if bname in self.views:
                 viewer = self.views[bname]

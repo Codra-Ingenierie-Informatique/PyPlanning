@@ -596,7 +596,7 @@ class ChartData(AbstractDurationData):
         self.offset = self.get_int("offset")
         self.t0mode = self.get_bool("t0mode")
         self.projects = self.get_multi_choices(
-            "projects", [], self.pdata.project_choices
+            "projects", [], self.pdata.project_choices()
         )
         self.set_is_default_name()
 
@@ -703,11 +703,11 @@ class ChartData(AbstractDurationData):
         else:
             raise ValueError(f"Invalid planning type '{ptype}'")
 
-    def update_project_choices(self):
+    def update_project_choices(self, force=False):
         """Update task choices"""
         if self.pdata is None:
             return
-        available_choices = self.pdata.project_choices
+        available_choices = self.pdata.project_choices(force)
         self.projects.choices = available_choices
 
         if self.projects.value is None:
@@ -771,8 +771,7 @@ class AbstractTaskData(AbstractDurationData):
                     task.start = prevtask.start + delta
                 if task.depends_on is None:
                     task.depends_on = []
-                if prevtask not in task.depends_on:
-                    task.depends_on.append(prevtask)
+
         projname = self.project.value
         if projname not in self.pdata.all_projects:
             self.pdata.all_projects[projname] = gantt.Project(name=projname)
@@ -794,7 +793,6 @@ class AbstractTaskData(AbstractDurationData):
     def update_depends_on_from_task_number(self):
         if self.depends_on_task_number.value is None:
             return
-
         wrong_values = []
         new_values = []
         for value in self.depends_on_task_number.value:
@@ -834,13 +832,15 @@ class AbstractTaskData(AbstractDurationData):
                 if not data.has_named_id:
                     old_id = data.id.value
                     new_id = f"auto_id-{data.default_id.split('-', 1)[1]}"
-                    self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
+                    if old_id in self.pdata.all_tasks:
+                        self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
+
                     data.id.value = new_id
 
-    def update_task_choices(self):
+    def update_task_choices(self, force=False):
         """Update task choices"""
         if self.pdata is not None:
-            self.depends_on_task_number.choices = self.pdata.task_choices  # type: ignore
+            self.depends_on_task_number.choices = self.pdata.task_choices(force)  # type: ignore
 
 
 class TaskModes(Enum):
@@ -1392,18 +1392,16 @@ class PlanningData(AbstractData):
         self.__append_or_insert(self.tsklist, index, data)
         self.update_task_number(index)
 
-    @property
-    def task_choices(self) -> list[tuple[str, str]]:
-        if len(self._tsk_choices) != len(self.tsklist):
+    def task_choices(self, force=False) -> list[tuple[str, str]]:
+        if force or len(self._tsk_choices) != len(self.tsklist):
             self._tsk_choices = [
                 (str(data.task_number.value), str(data.name.value))
                 for data in self.iterate_task_data()
             ]
         return self._tsk_choices
 
-    @property
-    def project_choices(self) -> list[tuple[str, str]]:
-        if (len(self.all_projects) - 1) != len(self._projects_choices):
+    def project_choices(self, force=False) -> list[tuple[str, str]]:
+        if force or (len(self.all_projects) - 1) != len(self._projects_choices):
             self._projects_choices = [
                 (key, proj.name)
                 for key, proj in self.all_projects.items()
@@ -1428,6 +1426,7 @@ class PlanningData(AbstractData):
                 str_idx = str(i)
                 data.task_number.value = str(str_idx)
                 self.tsk_num_to_tsk[str_idx] = data
+
         for data in self.iterate_task_data():
             data.update_task_choices()
             data.update_depends_on_from_ids()

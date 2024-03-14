@@ -689,10 +689,19 @@ class TaskTreeWidget(BaseTreeWidget):
         self.VALIDATORS["name"] = lambda new_name: new_name != ""
 
         self.CALLBACKS["depends_on_task_number"] = self._update_ids_on_change
+        self.CALLBACKS["name"] = self._update_choices_on_change
 
     def _update_ids_on_change(self, ditem: DataItem[str]):
         if isinstance(ditem.parent, AbstractTaskData):
             ditem.parent.update_depends_on_from_task_number()
+
+    def _update_choices_on_change(self, ditem: DataItem[str]):
+        """Update choices on change"""
+        print("update_choices_on_change")
+        if isinstance(ditem.parent, AbstractTaskData) and self.planning:
+            self.planning.task_choices(True)
+            for data in self.planning.iterate_task_data():
+                data.update_task_choices()
 
     def setup_specific_actions(self):
         """Setup context menu specific actions"""
@@ -822,7 +831,9 @@ class TaskTreeWidget(BaseTreeWidget):
             if current_data is not None:
                 data.project.value = current_data.project.value
         data.set_resource_ids(resids)
-        self.planning.add_task(data, after_data=current_data)
+        if self.planning:
+            data.depends_on.value = [current_data.id.value]
+            self.planning.add_task(data, after_data=current_data)
         self.__add_taskitem(data)
         self.set_current_id(data.id.value)
         self.repopulate()
