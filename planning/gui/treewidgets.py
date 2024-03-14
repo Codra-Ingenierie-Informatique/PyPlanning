@@ -667,6 +667,7 @@ class TaskTreeWidget(BaseTreeWidget):
     )
     COLUMNS_TO_RESIZE = (0, 1, 3, 4, 5, 6, 7)
     COLUMNS_TO_EDIT_ON_CLICK = (7,)
+    CALLBACKS = {}
 
     def __init__(self, parent=None, debug=False):
         self.reload_action = None
@@ -962,6 +963,7 @@ class ChartTreeWidget(BaseTreeWidget):
         DTypes.BOOLEAN,
         DTypes.TEXT,
     )
+    CALLBACKS = {}
 
     def __init__(self, parent=None, debug=False):
         self.new_chart_action = None
@@ -1022,7 +1024,6 @@ class ChartTreeWidget(BaseTreeWidget):
         self.planning.add_chart(data, after_data=self.get_current_data())
         self.__add_chartitem(data)
         self.set_current_id(data.id.value)
-        data.set_is_default_name()
         self.repopulate()
 
     def __add_chartitem(self, data: ChartData):
