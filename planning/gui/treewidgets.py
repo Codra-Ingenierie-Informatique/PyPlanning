@@ -698,7 +698,6 @@ class TaskTreeWidget(BaseTreeWidget):
 
     def _update_choices_on_change(self, ditem: DataItem[str]):
         """Update choices on change"""
-        print("update_choices_on_change")
         if isinstance(ditem.parent, AbstractTaskData) and self.planning:
             self.planning.task_choices(True)
             for data in self.planning.iterate_task_data():
