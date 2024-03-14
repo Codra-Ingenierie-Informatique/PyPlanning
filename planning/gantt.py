@@ -1088,13 +1088,13 @@ class Task(object):
 
         LOG.debug("** Task::end_date ({0})".format(self.name))
 
-        if self.duration is None or self.start is None and self.stop is not None:
+        if (self.duration is None or self.start is None) and self.stop is not None:
             real_end = self.stop
             # Take care of vacations
             while self.non_working_day(real_end):
                 real_end -= datetime.timedelta(days=1)
 
-            if real_end <= self.start_date():
+            if real_end <= self.start_date() and self.duration is not None:
                 current_day = self.start_date()
                 real_duration = 0
                 duration = self.duration
@@ -1129,7 +1129,7 @@ class Task(object):
 
             return self._cache_end_date
 
-        if self.stop is None:
+        if self.stop is None and self.duration is not None:
             current_day = self.start_date()
             real_duration = 0
             duration = self.duration
