@@ -4,4 +4,4 @@ PyPlanning
 ----------
 """
 
-__version__ = "1.5.12"
+__version__ = "1.6.0"

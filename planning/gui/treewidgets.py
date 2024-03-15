@@ -720,7 +720,7 @@ class TaskTreeWidget(BaseTreeWidget):
         self.duplicate_task_action = create_action(
             self,
             _("Duplicate task"),
-            icon=get_icon("new_task.svg"),
+            icon=get_icon("duplicate_task.svg"),
             triggered=self.duplicate_task,
         )
         self.new_milestone_action = create_action(

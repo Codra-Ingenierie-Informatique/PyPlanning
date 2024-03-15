@@ -1,5 +1,29 @@
 # PyPlanning Releases #
 
+## Version 1.6.0 ##
+
+💥 Changes:
+
+* [Issue #3](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/3) - Performance: update only visible chart
+* [Issue #5](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/5) - Add support for custom chart names
+* [Issue #7](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/7) - Add "Duplicate" action
+* [Issue #18](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/18) - Add support for "%" (percent done) feature for tasks
+* [Issue #19](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/19) - Add support for "Depends on" feature for tasks:
+  * Added task number in the tree view
+  * New "Depends on" column in the tree view with multiple checkboxes selection
+  * When adding a new task, the "depends on" column is automatically filled with the
+    previous task as a dependency, if any
+* Charts / Project management:
+  * Added support for multiple projects in the same chart
+  * Projects are selected using multiple checkboxes in the chart tree view
+
+🛠️ Bug fixes:
+
+* [Issue #2](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/2) - GUI: task color combo box is not shown in the tree widget
+* [Issue #13](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/13) - Performance: add an option to update on demand?
+* [Issue #16](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/16) - Color issue when creating a new task
+* [Issue #17](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/17) - Another `color` issue with tasks
+
 ## Version 1.5.12 ##
 
 🛠️ Bug fixes:

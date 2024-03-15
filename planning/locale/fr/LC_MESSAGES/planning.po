@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-03-13 18:14+0100\n"
+"POT-Creation-Date: 2024-03-15 10:37+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -212,19 +212,18 @@ msgid "Move down"
 msgstr "Descendre"
 
 #: planning\gui\treewidgets.py:373
-#, fuzzy
 msgid "Update tree"
-msgstr "Arbre des graphes"
+msgstr "Mettre à jour l'arbre"
 
 #: planning\gui\treewidgets.py:635
 msgid "Task tree"
 msgstr "Arbre des tâches"
 
-#: planning\gui\treewidgets.py:637 planning\gui\treewidgets.py:932
+#: planning\gui\treewidgets.py:637 planning\gui\treewidgets.py:945
 msgid "Name"
 msgstr "Nom"
 
-#: planning\gui\treewidgets.py:638 planning\gui\treewidgets.py:933
+#: planning\gui\treewidgets.py:638 planning\gui\treewidgets.py:946
 msgid "Start"
 msgstr "Début"
 
@@ -232,7 +231,7 @@ msgstr "Début"
 msgid "Duration"
 msgstr "Durée"
 
-#: planning\gui\treewidgets.py:640 planning\gui\treewidgets.py:935
+#: planning\gui\treewidgets.py:640 planning\gui\treewidgets.py:948
 msgid "End"
 msgstr "Fin"
 
@@ -252,83 +251,83 @@ msgstr "Prérequis"
 msgid "Project"
 msgstr "Projet"
 
-#: planning\gui\treewidgets.py:701
+#: planning\gui\treewidgets.py:711
 msgid "New resource"
 msgstr "Nouvelle ressource"
 
-#: planning\gui\treewidgets.py:707
+#: planning\gui\treewidgets.py:717
 msgid "New task"
 msgstr "Nouvelle tâche"
 
-#: planning\gui\treewidgets.py:713
+#: planning\gui\treewidgets.py:723
 msgid "Duplicate task"
 msgstr "Dupliquer la tâche"
 
-#: planning\gui\treewidgets.py:719
+#: planning\gui\treewidgets.py:729
 msgid "New milestone"
 msgstr "Nouveau jalon"
 
-#: planning\gui\treewidgets.py:725
+#: planning\gui\treewidgets.py:735
 msgid "New leave"
 msgstr "Nouvelle absence"
 
-#: planning\gui\treewidgets.py:730
+#: planning\gui\treewidgets.py:740
 msgid "Duration mode"
 msgstr "Tâche en mode durée"
 
-#: planning\gui\treewidgets.py:733
+#: planning\gui\treewidgets.py:743
 msgid "Remove start date"
 msgstr "Supprimer la date de début"
 
-#: planning\gui\treewidgets.py:930
+#: planning\gui\treewidgets.py:943
 msgid "Chart tree"
 msgstr "Arbre des graphes"
 
-#: planning\gui\treewidgets.py:934
+#: planning\gui\treewidgets.py:947
 msgid "Today"
 msgstr "Aujourd'hui"
 
-#: planning\gui\treewidgets.py:936
+#: planning\gui\treewidgets.py:949
 msgid "Type"
 msgstr "Type"
 
-#: planning\gui\treewidgets.py:937
+#: planning\gui\treewidgets.py:950
 msgid "Scale"
 msgstr "Echelle"
 
-#: planning\gui\treewidgets.py:938
+#: planning\gui\treewidgets.py:951
 msgid "T0 mode"
 msgstr "Mode T0"
 
-#: planning\gui\treewidgets.py:939
+#: planning\gui\treewidgets.py:952
 msgid "Projects"
 msgstr "Projets"
 
-#: planning\gui\treewidgets.py:973
+#: planning\gui\treewidgets.py:990
 msgid "Set current date to today"
 msgstr "Mettre à jour à la date d'aujourd'hui"
 
-#: planning\gui\treewidgets.py:979
+#: planning\gui\treewidgets.py:996
 msgid "New chart"
 msgstr "Nouveau graphe"
 
-#: planning\gui\treewidgets.py:1040
+#: planning\gui\treewidgets.py:1059
 msgid "General"
 msgstr "Général"
 
-#: planning\gui\treewidgets.py:1099
+#: planning\gui\treewidgets.py:1118
 msgid "Undo"
 msgstr "Annuler"
 
-#: planning\gui\treewidgets.py:1106
+#: planning\gui\treewidgets.py:1125
 msgid "Redo"
 msgstr "Répéter"
 
-#: planning\gui\treewidgets.py:1113
+#: planning\gui\treewidgets.py:1132
 msgid "Collapse all"
 msgstr "Tout replier"
 
-#: planning\gui\treewidgets.py:1119
+#: planning\gui\treewidgets.py:1138
 msgid "Expand all"
 msgstr "Tout déplier"
 
@@ -356,15 +355,15 @@ msgstr "Ressources"
 msgid "Tasks"
 msgstr "Tâches"
 
-#: planning\model.py:1051
+#: planning\model.py:1056
 msgid "Closing"
 msgstr "Fermeture"
 
-#: planning\model.py:1062
+#: planning\model.py:1067
 msgid "Leave"
 msgstr "Absence"
 
-#: planning\model.py:1117
+#: planning\model.py:1122
 msgid "All projects"
 msgstr "Tous les projets"
 
