@@ -117,7 +117,6 @@ class TaskTreeDelegate(QW.QItemDelegate):
             editor = CheckableComboBox(parent=parent)
             editor.addItems(ditem.choice_values, ditem.choice_keys)
             editor.setMinimumWidth(self.parent().columnWidth(index.column()))
-            editor.setSizeAdjustPolicy(QW.QComboBox.AdjustToContents)
             editor.lineEdit().editingFinished.connect(
                 lambda: self.commitAndCloseEditor()
             )
@@ -663,10 +662,11 @@ class TaskTreeWidget(BaseTreeWidget):
         DTypes.INTEGER,
         DTypes.COLOR,
         DTypes.TEXT,
+        DTypes.MULTIPLE_CHOICE,
         DTypes.LIST,
     )
     COLUMNS_TO_RESIZE = (0, 1, 3, 4, 5, 6, 7)
-    COLUMNS_TO_EDIT_ON_CLICK = (7,)
+    COLUMNS_TO_EDIT_ON_CLICK = ()
     CALLBACKS = {}
 
     def __init__(self, parent=None, debug=False):
@@ -953,7 +953,7 @@ class ChartTreeWidget(BaseTreeWidget):
     )
     ATTRS = ("name", "start", "today", "stop", "type", "scale", "t0mode", "projects")
     COLUMNS_TO_RESIZE = (0, 1, 2, 3, 6)
-    COLUMNS_TO_EDIT_ON_CLICK = (4, 5, 6, 7)
+    COLUMNS_TO_EDIT_ON_CLICK = (4, 5, 6)
     TYPES = (
         DTypes.TEXT,
         DTypes.DATE,
@@ -962,7 +962,7 @@ class ChartTreeWidget(BaseTreeWidget):
         DTypes.TEXT,
         DTypes.TEXT,
         DTypes.BOOLEAN,
-        DTypes.TEXT,
+        DTypes.MULTIPLE_CHOICE,
     )
     CALLBACKS = {}
 
