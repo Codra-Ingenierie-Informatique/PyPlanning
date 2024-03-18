@@ -640,7 +640,7 @@ class TaskTreeWidget(BaseTreeWidget):
         _("End"),
         "%",
         _("Color"),
-        _("Id"),
+        _("#"),
         _("Depends on"),
         _("Project"),
     )
