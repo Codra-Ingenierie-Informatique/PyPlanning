@@ -1253,6 +1253,8 @@ class PlanningData(AbstractData):
         index = dlist.index(data)
         dlist.pop(index)
         dlist.insert(index + delta_index, data)
+        if isinstance(data, AbstractTaskData):
+            self.update_task_number(index + delta_index - 1)
 
     def remove_data(self, data_id):
         """Remove either task/resource/chart data"""
