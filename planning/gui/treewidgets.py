@@ -830,11 +830,11 @@ class TaskTreeWidget(BaseTreeWidget):
                 resids = [self.get_id_from_item(item.parent())]
             if current_data is not None:
                 data.project.value = current_data.project.value
-            if isinstance(data, AbstractTaskData):
+            if isinstance(data, AbstractTaskData) and current_data is not None:
                 data.depends_on.value = [current_data.id.value]
 
         data.set_resource_ids(resids)
-        if self.planning and current_data is not None:
+        if self.planning:
             self.planning.add_task(data, after_data=current_data)
         self.__add_taskitem(data)
         self.set_current_id(data.id.value)
