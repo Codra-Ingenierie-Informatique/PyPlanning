@@ -12,11 +12,10 @@ from enum import Enum, IntEnum, StrEnum
 from io import StringIO
 from typing import Any, Generator, Generic, Optional, TypeVar, Union
 
-from planning import gantt
+from planning import __version__, gantt
 from planning.config import MAIN_FONT_FAMILY, _
 
-locale.setlocale(locale.LC_TIME, "")
-
+VERSION = ".".join(__version__.split(".", 2)[0:2])
 
 gantt.define_font_attributes(
     fill="black", stroke="black", stroke_width=0, font_family=MAIN_FONT_FAMILY
@@ -1296,18 +1295,6 @@ class PlanningData(AbstractData):
         for chart in self.iterate_chart_data():
             chart.set_is_default_name()
 
-    # # def _extract_all_projects_from_xml(self, element: ET.Element) -> list[ProjectData]:
-    # #     """Get project names from XML tasks"""
-    # #     projects: set[ProjectData] = set()
-    # #     for task in xml_tasks:
-    # #         project_elt = task.get("project", None)
-
-    # #         if project_elt is not None:
-    # #             projects.add(ProjectData(self, name=project_elt))
-    # #     return projects
-
-    # def _new_project_from_name(self, project_name: str) -> ProjectData:
-
     def _init_from_element(self, element: ET.Element):
         """Init instance from XML element"""
         super()._init_from_element(element)
@@ -1350,8 +1337,6 @@ class PlanningData(AbstractData):
         for data in self.iterate_task_data():
             data.update_task_choices()
             data.update_depends_on_from_ids()
-        # for chart in self.iterate_chart_data():
-        #     chart.update_project_choices()
 
     @classmethod
     def from_filename(cls, fname: str):
@@ -1365,6 +1350,7 @@ class PlanningData(AbstractData):
     def to_element(self, parent=None):
         """Serialize model to XML element"""
         base_elt = ET.Element("PLANNING", attrib=self.get_attrib_dict())
+        base_elt.set("version", VERSION)
         charts_elt = ET.SubElement(base_elt, "CHARTS")
         for data in self.iterate_chart_data():
             data.to_element(charts_elt)

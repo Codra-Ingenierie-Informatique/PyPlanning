@@ -21,7 +21,7 @@ def test_different_projects():
     example_path = osp.join(TESTPATH, osp.pardir, osp.pardir, "examples")
     with qt_app_context(exec_loop=True):
         for fname in (
-            osp.join(TESTPATH, "test.xml"),
+            osp.join(TESTPATH, "test_v2.xml"),
             osp.join(example_path, "project_planning.xml"),
         ):
             test_central_widget(fname)

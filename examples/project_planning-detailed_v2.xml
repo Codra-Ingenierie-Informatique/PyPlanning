@@ -1,0 +1,40 @@
+<PLANNING name="New Software ABC" version="2.0">
+  <CHARTS>
+    <CHART start="09/12/22" stop="15/10/23" today="01/02/23" type="t" scale="w" t0mode="False" />
+  </CHARTS>
+  <TASKS>
+    <TASK start="09/12/22" duration="66" name="Specifications, mockups and preliminary design" />
+    <TASK duration="15" name="Preliminary Design Review" />
+    <TASK duration="20" name="Feature #1: coding/testing" />
+    <TASK duration="10" name="Feature #2: coding/testing" />
+    <TASK duration="15" name="GUI prototype" />
+    <TASK duration="35" name="Feature #3: coding/testing" />
+  </TASKS>
+  <CLOSINGDAYS>
+    <CLOSINGDAY start="20/12/22" stop="02/01/23" />
+    <CLOSINGDAY start="06/02/23" stop="10/02/23" />
+    <CLOSINGDAY start="10/04/23" />
+    <CLOSINGDAY start="17/04/23" stop="21/04/23" />
+    <CLOSINGDAY start="01/05/23" />
+    <CLOSINGDAY start="08/05/23" />
+    <CLOSINGDAY start="18/05/23" stop="19/05/23" />
+    <CLOSINGDAY start="29/05/23" />
+    <CLOSINGDAY start="14/07/23" />
+    <CLOSINGDAY start="01/08/23" stop="31/08/23" />
+    <CLOSINGDAY start="09/10/23" stop="14/10/23" />
+    <CLOSINGDAY start="01/11/23" />
+    <CLOSINGDAY start="18/12/23" stop="22/12/23" />
+    <CLOSINGDAY start="25/12/23" />
+    <CLOSINGDAY start="01/01/24" />
+    <CLOSINGDAY start="01/04/24" />
+    <CLOSINGDAY start="01/05/24" />
+    <CLOSINGDAY start="08/05/24" />
+    <CLOSINGDAY start="09/05/24" />
+    <CLOSINGDAY start="20/05/24" />
+    <CLOSINGDAY start="15/08/24" />
+    <CLOSINGDAY start="01/11/24" />
+    <CLOSINGDAY start="11/11/24" />
+    <CLOSINGDAY start="25/12/24" />
+  </CLOSINGDAYS>
+  <PROJECTS />
+</PLANNING>

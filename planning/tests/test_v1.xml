@@ -1,4 +1,4 @@
-<PROJECT name="General">
+<PROJECT name="General" color="#FFFF88" version="1.6">
   <CHARTS>
     <CHART start="30/01/23" stop="05/03/23" today="01/02/23" type="r" scale="d" t0mode="False" />
     <CHART start="01/01/23" stop="30/06/23" today="23/01/23" type="r" scale="w" t0mode="False" />
@@ -13,10 +13,10 @@
       <LEAVE start="02/05/23" />
       <LEAVE start="24/07/23" stop="04/08/23" />
     </RESOURCE>
-    <RESOURCE name="PRo" fullname="Peter Rodriguez" collapsed="True">
+    <RESOURCE name="PRo" fullname="Peter Rodriguez">
       <TASK start="02/01/23" stop="10/02/23" name="Project A / Task #12" />
-      <TASK duration="20" name="Project B / Task #1" color="m" />
-      <TASK duration="94" name="Project B / Task #2" color="o" />
+      <TASK duration="20" name="Project B / Task #1" />
+      <TASK duration="94" name="Project B / Task #2" />
       <LEAVE start="22/12/22" stop="02/01/23" />
       <LEAVE start="09/01/23" stop="10/01/23" />
       <LEAVE start="06/02/23" stop="10/02/23" />
@@ -34,7 +34,7 @@
     <RESOURCE name="LCo" fullname="Lionel Connor">
       <TASK start="03/01/23" stop="17/01/23" name="DEF development" />
       <TASK duration="12" name="Library maintenance (Python)" />
-      <TASK duration="15" name="SCADA project" color="r" />
+      <TASK duration="15" name="SCADA project" color="b" />
       <TASK duration="100" name="Project C / Task #9" color="o" />
       <LEAVE start="02/01/23" />
       <LEAVE start="20/01/23" />
@@ -45,7 +45,7 @@
       <TASK start="09/12/22" duration="3" name="Project D / Task #2" />
       <TASK start="14/12/22" duration="8" name="Project D / Task #3" />
       <TASK duration="14" name="Project D / Task #4" />
-      <TASK duration="40" name="Project D / Task #5" color="o" />
+      <TASK duration="40" name="Project D / Task #5" color="b" />
       <LEAVE start="26/12/22" stop="30/12/22" />
       <LEAVE start="02/01/23" />
       <LEAVE start="31/01/23" />

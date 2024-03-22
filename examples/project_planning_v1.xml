@@ -1,4 +1,4 @@
-<PROJECT name="New Software ABC">
+<PROJECT name="New Software ABC" version="1.6">
   <CHARTS>
     <CHART start="09/12/22" stop="31/08/26" today="01/02/23" type="t" scale="m" t0mode="False" />
   </CHARTS>

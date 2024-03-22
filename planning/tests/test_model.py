@@ -14,7 +14,7 @@ from planning.model import PlanningData
 def test_chart():
     """Test data model features by generating a chart"""
 
-    fname = osp.join(TESTPATH, "test.xml")
+    fname = osp.join(TESTPATH, "test_v2.xml")
     planning = PlanningData.from_filename(fname)
     planning.generate_charts()
     for index, url in enumerate(planning.chart_filenames):
@@ -42,7 +42,7 @@ def parse_and_write_xml(fname1, fname2):
 
 def test_io():
     """Test data model serialize/deserialize features"""
-    fname = osp.join(TESTPATH, "test.xml")
+    fname = osp.join(TESTPATH, "test_v2.xml")
     fname1 = fname.replace(".xml", "-in.xml")
     fname2 = fname.replace(".xml", "-out.xml")
     parse_and_write_xml(fname, fname1)

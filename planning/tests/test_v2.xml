@@ -1,4 +1,4 @@
-<PROJECT name="General" color="#FFFF88">
+<PLANNING name="General" color="#FFFF88" version="2.0">
   <CHARTS>
     <CHART start="30/01/23" stop="05/03/23" today="01/02/23" type="r" scale="d" t0mode="False" />
     <CHART start="01/01/23" stop="30/06/23" today="23/01/23" type="r" scale="w" t0mode="False" />
@@ -64,8 +64,8 @@
     <TASK duration="10" name="Preparing FAT" project="E" color="s" />
     <TASK duration="2" name="Factory Acceptance Testing (Sim)" project="E" color="r" />
     <TASK duration="10" name="Fixes and final delivery" project="E" color="s" id="100" />
-    <TASK start="31/08/22" duration="5" name="Testing with real instruments" project="E" color="s" id="101" depends_of="100" />
-    <TASK start="14/09/22" duration="5" name="Testing with real instruments" project="E" color="s" depends_of="101" />
+    <TASK start="31/08/22" duration="5" name="Testing with real instruments" project="E" color="s" id="101" />
+    <TASK start="14/09/22" duration="5" name="Testing with real instruments" project="E" color="s" />
     <TASK duration="15" name="Factory Acceptance Testing (Real)" project="E" color="s" />
     <TASK start="14/02/22" duration="62" name="Coding / Unit tests" project="B" color="s" />
     <TASK duration="10" name="Integration and preparing FAT" project="B" color="s" />
@@ -113,4 +113,10 @@
     <CLOSINGDAY start="11/11/24" />
     <CLOSINGDAY start="25/12/24" />
   </CLOSINGDAYS>
-</PROJECT>
+  <PROJECTS>
+    <PROJECT name="ABC" color="s" id="ABC" />
+    <PROJECT name="B" color="s" id="B" />
+    <PROJECT name="E" color="s" id="E" />
+    <PROJECT name="F" color="s" id="F" />
+  </PROJECTS>
+</PLANNING>

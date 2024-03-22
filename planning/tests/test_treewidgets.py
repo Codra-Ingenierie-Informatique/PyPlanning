@@ -34,7 +34,7 @@ class TestWidget(QW.QMainWindow):
 
 def test():
     """Test task tree widget"""
-    fname = osp.join(TESTPATH, "test.xml")
+    fname = osp.join(TESTPATH, "test_v2.xml")
     planning = PlanningData.from_filename(fname)
     app = qapplication()
     widget = TestWidget()
