@@ -625,7 +625,7 @@ class ChartData(AbstractDurationData):
         ("w", _("Weeks")),
         ("m", _("Months")),
     )
-    TYPES = (("r", _("Resources")), ("t", _("Tasks")), ("m", _("Macro tasks")))
+    TYPES = (("r", _("Resources")), ("t", _("Tasks")), ("m", _("Macro task")))
     TAG = "CHART"
     DEFAULT_ICON_NAME = "chart.svg"
     READ_ONLY_ITEMS = ("fullname", "color")
@@ -701,10 +701,6 @@ class ChartData(AbstractDurationData):
                 return True
             return self.stop.value >= self.start.value
         return True
-
-    def to_element(self, parent=None):
-        # print(self.get_attrib_dict())
-        return super().to_element(parent)
 
     def set_today(self):
         """Set today item value to... today"""

@@ -58,19 +58,6 @@ IS_DARK = qthelpers.is_dark_mode()
 
 EMPTY_NAME = _("Untitled")
 
-# _T = TypeVar("_T")
-
-
-# class FieldSignal(QC.Signal, Generic[_T]):  # type: ignore
-#     """Typed Signal for field change in tree widgets"""
-
-#     def __init__(self):
-#         super().__init__(DataItem[_T])
-
-#     def emit(self, dataitem: DataItem[_T]) -> None:
-#         """Emit signal"""
-#         super().emit(dataitem)
-
 
 class TaskTreeDelegate(QW.QItemDelegate):
     """Task Tree Item Delegate"""
