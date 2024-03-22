@@ -98,23 +98,23 @@ class PlanningEditor(QStackedWidget):
         default_charts_paths = [
             chart.fullname.value
             for chart in planning.chtlist
-            if isinstance(chart.fullname.value, str)
+            if isinstance(chart.fullname.value, str) and chart.is_default_name
         ]
         for chart_path in default_charts_paths:
             shutil.copy(chart_path, osp.join(chart_path + ".tmp"))
 
         if self.xml_mode:
-            # self.code.SIG_EDIT_STOPPED.emit()
             # self.code.setPlainText(planning.to_text())
             text = self.code.toPlainText()
             with open(path, "wb") as fdesc:
                 fdesc.write(text.encode("utf-8"))
         else:
             planning.to_filename(path)
+            self.parent().update_planning_charts(planning, force=True)
             self.trees.chart_tree.repopulate()
 
         for chart_path in default_charts_paths:
-            os.rename(osp.join(chart_path.rstrip(".tmp")), chart_path)
+            os.rename(osp.join(chart_path + ".tmp"), chart_path)
 
     def set_text_and_path(self, text, path):
         """Set text and path
@@ -227,6 +227,10 @@ class PlanningCentralWidget(QSplitter):
         self.setStretchFactor(0, 2)
         self.setStretchFactor(1, 1)
 
+        self.editor.trees.chart_tree.SIG_CHART_NAME_CHANGED.connect(
+            lambda _ditem: self.update_planning_charts(self.planning)
+        )
+
     @property
     def planning(self) -> PlanningData:
         """Return PlanningData instance"""
@@ -284,7 +288,9 @@ class PlanningCentralWidget(QSplitter):
         """
         self.update_planning_charts(self.planning)
 
-    def update_planning_charts(self, planning: Optional[PlanningData] = None):
+    def update_planning_charts(
+        self, planning: Optional[PlanningData] = None, force=True
+    ):
         """Update charts. Generates all of them if there are new ones,
         or just the current one if it already exists.
 
@@ -297,7 +303,7 @@ class PlanningCentralWidget(QSplitter):
         self.planning = planning
         planning.update_chart_names()
         chart_count = len(planning.chtlist)
-        if self.preview.count() != chart_count:
+        if self.preview.count() != chart_count or force:
             planning.generate_charts()
             self.preview.update_tabs(planning.chart_filenames)
         elif chart_count != 0:
@@ -319,6 +325,7 @@ class PlanningCentralWidget(QSplitter):
         """Load file"""
         self.path = path
         self.preview.clear_all_tabs()
+        self.editor.clear_all()
         self.editor.load_file(path)
         self.__adjust_sizes()
 
