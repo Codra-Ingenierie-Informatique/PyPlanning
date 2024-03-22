@@ -288,7 +288,7 @@ class PlanningCentralWidget(QSplitter):
         self.update_planning_charts(self.planning)
 
     def update_planning_charts(
-        self, planning: Optional[PlanningData] = None, force=True
+        self, planning: Optional[PlanningData] = None, force=False
     ):
         """Update charts. Generates all of them if there are new ones,
         or just the current one if it already exists.
