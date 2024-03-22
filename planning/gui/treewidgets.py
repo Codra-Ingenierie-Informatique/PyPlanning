@@ -9,7 +9,7 @@ import datetime
 import os
 import re
 import xml.etree.ElementTree as ET
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, Callable, Generic, Optional, TypeVar, Union
 
 from guidata import qthelpers
 from guidata.configtools import get_icon
@@ -19,6 +19,7 @@ from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
 
 from planning.config import MAIN_FONT_FAMILY, Conf, _
+from planning.gui.long_text_editor import CustomTextEditor
 from planning.gui.multi_selection_combobox import CheckableComboBox
 from planning.model import (
     AbstractData,
@@ -31,19 +32,22 @@ from planning.model import (
     LeaveData,
     MilestoneData,
     PlanningData,
+    ProjectData,
     ResourceData,
     TaskData,
     TaskModes,
 )
 
-ItemEditor = (
-    QW.QComboBox
-    | QW.QCheckBox
-    | QW.QSpinBox
-    | QW.QDateEdit
-    | QW.QLineEdit
-    | CheckableComboBox
-)
+ItemEditor = Union[
+    QW.QComboBox,
+    QW.QCheckBox,
+    QW.QSpinBox,
+    QW.QDateEdit,
+    QW.QLineEdit,
+    CustomTextEditor,
+    CheckableComboBox,
+]
+
 ItemEditorT = TypeVar(
     "ItemEditorT",
     bound=ItemEditor,
@@ -54,14 +58,33 @@ IS_DARK = qthelpers.is_dark_mode()
 
 EMPTY_NAME = _("Untitled")
 
+# _T = TypeVar("_T")
+
+
+# class FieldSignal(QC.Signal, Generic[_T]):  # type: ignore
+#     """Typed Signal for field change in tree widgets"""
+
+#     def __init__(self):
+#         super().__init__(DataItem[_T])
+
+#     def emit(self, dataitem: DataItem[_T]) -> None:
+#         """Emit signal"""
+#         super().emit(dataitem)
+
 
 class TaskTreeDelegate(QW.QItemDelegate):
     """Task Tree Item Delegate"""
 
-    def __init__(self, parent: "BaseTreeWidget", margin):
+    def __init__(
+        self,
+        parent: "BaseTreeWidget",
+        margin: int,
+        parent_signals: dict[str, QC.Signal],
+    ):
         QW.QItemDelegate.__init__(self, parent)
         self.margin = margin
         self.editor_opened = False
+        self.parent_signals = parent_signals
 
     def sizeHint(self, option, index):  # pylint: disable=invalid-name
         """Reimplement Qt method"""
@@ -100,7 +123,9 @@ class TaskTreeDelegate(QW.QItemDelegate):
             return editor
         elif ditem.datatype == DTypes.CHOICE:
             editor = QW.QComboBox(parent)
-            editor.addItems(ditem.choice_values)
+            choices = ditem.choice_values
+            if len(choices) >= 0:
+                editor.addItems(choices)
             editor.activated.connect(lambda index: self.commitAndCloseEditor())
             return editor
         elif ditem.datatype == DTypes.BOOLEAN:
@@ -120,6 +145,13 @@ class TaskTreeDelegate(QW.QItemDelegate):
             editor.lineEdit().editingFinished.connect(
                 lambda: self.commitAndCloseEditor()
             )
+            return editor
+        elif ditem.datatype == DTypes.LONG_TEXT:
+            editor = CustomTextEditor(parent)
+            editor.setText(ditem.value or "")
+            editor.setMinimumSize(self.parent().columnWidth(index.column()), 150)
+            editor.setFocus()
+            editor.finished.connect(self.commitAndCloseEditor)
             return editor
 
         editor = QW.QLineEdit(parent)
@@ -144,7 +176,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
         elif ditem.datatype == DTypes.DATE:
             editor.setDate(value)
         elif ditem.datatype == DTypes.CHOICE:
-            editor.setCurrentText(ditem.get_choice_value())
+            editor.setCurrentText(ditem.get_choice_value() or "")
         elif ditem.datatype == DTypes.BOOLEAN:
             editor.setChecked(value)
         elif ditem.datatype == DTypes.COLOR:
@@ -159,14 +191,14 @@ class TaskTreeDelegate(QW.QItemDelegate):
         """Reimplement Qt method"""
         ditem = self.dataitem_from_index(index)
         validator = self.parent().VALIDATORS.get(ditem.name)
-        callback = self.parent().CALLBACKS.get(ditem.name)
+        sig = self.parent_signals.get(ditem.name)
 
         value: Any
         if ditem.datatype == DTypes.DAYS:
             value = editor.value() or None
         elif ditem.datatype == DTypes.DATE:
             qdate = editor.date()
-            value = datetime.datetime(qdate.year(), qdate.month(), qdate.day())
+            value = datetime.date(qdate.year(), qdate.month(), qdate.day())
             data = ditem.parent
             if (
                 ditem.name == "start"
@@ -174,10 +206,8 @@ class TaskTreeDelegate(QW.QItemDelegate):
                 and data.stop.value is not None
             ):
                 data.stop.value += value - data.start.value
-        elif ditem.datatype == DTypes.CHOICE:
+        elif ditem.datatype == DTypes.CHOICE or ditem.datatype == DTypes.COLOR:
             value = editor.currentText()
-        elif ditem.datatype == DTypes.COLOR:
-            value = editor.currentText()[0]
         elif ditem.datatype == DTypes.BOOLEAN:
             value = editor.isChecked()
         elif ditem.datatype == DTypes.INTEGER:
@@ -202,8 +232,8 @@ class TaskTreeDelegate(QW.QItemDelegate):
         else:
             ditem.value = value
 
-        if callback is not None:
-            callback(ditem)
+        if sig is not None:
+            sig.emit(ditem)
 
         item = self.item_from_index(index)
         item.setText(ditem.to_display())
@@ -225,7 +255,7 @@ class BaseTreeWidget(QW.QTreeView):
 
     # These functions are called when the value of a DataItem is changed. Can be used
     # to perform specific actions.
-    CALLBACKS: dict[str, Callable[[DataItem[Any]], None]] = {}
+    FIELD_CHANGE_SIGNALS: dict[str, QC.Signal] = {}  # type: ignore
 
     def __init__(self, parent=None, debug=False):
         QW.QTreeView.__init__(self, parent)
@@ -264,7 +294,7 @@ class BaseTreeWidget(QW.QTreeView):
         model.itemChanged.connect(self.model_item_changed)
         self.setModel(model)
 
-        self.setItemDelegate(TaskTreeDelegate(self, 10))
+        self.setItemDelegate(TaskTreeDelegate(self, 10, self.FIELD_CHANGE_SIGNALS))
 
         self.menu = QW.QMenu(self)
 
@@ -433,7 +463,7 @@ class BaseTreeWidget(QW.QTreeView):
         # (reimplement this method)
         return [self.edit_action]
 
-    def get_item_from_index(self, index):
+    def get_item_from_index(self, index: QC.QModelIndex) -> QG.QStandardItem:
         """Get item from index"""
         item = self.model().itemFromIndex(index)
         if item is not None and item.column() > 0:
@@ -443,7 +473,7 @@ class BaseTreeWidget(QW.QTreeView):
             return parent.child(item.row(), 0)
         return item
 
-    def get_current_item(self):
+    def get_current_item(self) -> QG.QStandardItem:
         """Return current item"""
         return self.get_item_from_index(self.currentIndex())
 
@@ -663,11 +693,14 @@ class TaskTreeWidget(BaseTreeWidget):
         DTypes.COLOR,
         DTypes.TEXT,
         DTypes.MULTIPLE_CHOICE,
-        DTypes.LIST,
+        DTypes.CHOICE,
     )
     COLUMNS_TO_RESIZE = (0, 1, 3, 4, 5, 6, 7)
     COLUMNS_TO_EDIT_ON_CLICK = ()
-    CALLBACKS = {}
+    FIELD_CHANGE_SIGNALS = {}
+
+    SIG_UPDATE_IDS_ON_CHANGE = QC.Signal(DataItem)
+    SIG_TASK_NANE_CHANGED = QC.Signal(DataItem)
 
     def __init__(self, parent=None, debug=False):
         self.reload_action = None
@@ -689,8 +722,13 @@ class TaskTreeWidget(BaseTreeWidget):
         # disappear.
         self.VALIDATORS["name"] = lambda new_name: new_name != ""
 
-        self.CALLBACKS["depends_on_task_number"] = self._update_ids_on_change
-        self.CALLBACKS["name"] = self._update_choices_on_change
+        self.SIG_UPDATE_IDS_ON_CHANGE.connect(self._update_ids_on_change)
+        self.SIG_TASK_NANE_CHANGED.connect(self._update_choices_on_change)
+
+        self.FIELD_CHANGE_SIGNALS["depends_on_task_number"] = (
+            self.SIG_UPDATE_IDS_ON_CHANGE
+        )
+        self.FIELD_CHANGE_SIGNALS["name"] = self.SIG_TASK_NANE_CHANGED
 
     def _update_ids_on_change(self, ditem: DataItem[str]):
         if isinstance(ditem.parent, AbstractTaskData):
@@ -940,6 +978,7 @@ class ChartTreeWidget(BaseTreeWidget):
     """Chart Tree Widget"""
 
     SIG_CHART_CHANGED = QC.Signal(int)
+
     TITLE = _("Chart tree")
     NAMES = (
         _("Name"),
@@ -964,7 +1003,10 @@ class ChartTreeWidget(BaseTreeWidget):
         DTypes.BOOLEAN,
         DTypes.MULTIPLE_CHOICE,
     )
-    CALLBACKS = {}
+    FIELD_CHANGE_SIGNALS = {}
+
+    SIG_CHART_NAME_CHANGED = QC.Signal(DataItem)
+    SIG_PROJECT_SELECTION_CHANGED = QC.Signal(DataItem)
 
     def __init__(self, parent=None, debug=False):
         self.new_chart_action = None
@@ -972,14 +1014,22 @@ class ChartTreeWidget(BaseTreeWidget):
         BaseTreeWidget.__init__(self, parent, debug)
         self.setSelectionMode(QW.QTreeView.ExtendedSelection)
         self.VALIDATORS["name"] = self.validate_chart_name
-        self.CALLBACKS["name"] = self.check_default_svg_name
+
+        self.FIELD_CHANGE_SIGNALS["name"] = self.SIG_CHART_NAME_CHANGED
+        self.FIELD_CHANGE_SIGNALS["projects"] = self.SIG_PROJECT_SELECTION_CHANGED
+
+        self.SIG_CHART_NAME_CHANGED.connect(self.check_default_svg_name)
 
     def check_default_svg_name(self, ditem: DataItem[str]):
         parent = ditem.parent
         if self.planning is None or not isinstance(parent, ChartData):
             return
         parent.set_is_default_name()
-        if parent.is_default_name and self.planning is not None:
+        if (
+            parent.is_default_name
+            and self.planning is not None
+            and self.planning.filename is not None
+        ):
             index = self.currentIndex().row() + 1
             parent.set_chart_filename(self.planning.filename, index)
 
@@ -1053,6 +1103,104 @@ class ChartTreeWidget(BaseTreeWidget):
             self.__add_chartitem(data)
 
 
+class ProjectTreeWidget(BaseTreeWidget):
+    """Chart Tree Widget"""
+
+    TITLE = _("Project tree")
+    NAMES = (
+        _("Name"),
+        _("color"),
+        _("Show description"),
+        _("Description"),
+    )
+    ATTRS = (
+        "name",
+        "color",
+        "show_description",
+        "description",
+    )
+    COLUMNS_TO_RESIZE = (0, 1, 2)
+    COLUMNS_TO_EDIT_ON_CLICK = (2,)
+    TYPES = (
+        DTypes.TEXT,
+        DTypes.COLOR,
+        DTypes.BOOLEAN,
+        DTypes.LONG_TEXT,
+    )
+    FIELD_CHANGE_SIGNALS = {}
+    SIG_PROJECT_NANE_CHANGED = QC.Signal(DataItem)
+
+    def __init__(self, parent: Optional[QW.QWidget] = None, debug=False):
+        BaseTreeWidget.__init__(self, parent, debug)
+        self.new_project_action: Optional[QW.QAction] = None  # type: ignore
+        self.FIELD_CHANGE_SIGNALS["name"] = self.SIG_PROJECT_NANE_CHANGED
+
+        self.SIG_PROJECT_NANE_CHANGED.connect(self._update_project_names)
+
+    def setup_specific_actions(self):
+        """Setup context menu common actions"""
+        self.new_project_action = create_action(
+            self,
+            _("New project"),
+            icon=get_icon("new_chart.svg"),
+            triggered=self.new_project,
+        )
+        self.remove_action = create_action(
+            self,
+            _("Delete"),
+            icon=get_icon("libre-gui-trash.svg"),
+            shortcut=keybinding("Delete"),
+            triggered=self.remove,
+        )
+        self.always_enabled_actions += [self.new_project_action]
+        return [self.new_project_action, None] + super().setup_specific_actions()
+
+    def _update_project_names(self):
+        """Update project names"""
+        if self.planning is None:
+            return
+
+        self.planning.project_choices(force=True)
+        for chart in self.planning.iterate_chart_data():
+            chart.update_project_choices()
+        for task in self.planning.iterate_task_data():
+            task.update_project_choice()
+
+    def new_project(self):
+        """New chart item"""
+        if self.planning is not None:
+            project = ProjectData(self.planning, EMPTY_NAME)
+            current_data = self.get_current_data()
+            if not isinstance(current_data, ProjectData):
+                current_data = None
+            self.planning.add_project(project, current_data)
+            self.__add_projectitem(project)
+            self.set_current_id(project.id.value)
+            self.repopulate()
+            self._update_project_names()
+
+    def remove(self):
+        """Remove selected items"""
+        item = self.get_current_item()
+        project_id = self.get_id_from_item(item)
+        if self.planning is not None and project_id is not None:
+            self.planning.projects.pop(project_id, None)
+            self._update_project_names()
+            self.repopulate()
+
+    def __add_projectitem(self, data: ProjectData):
+        """Add chart item to tree"""
+        self.add_or_update_item_row(data)
+
+    def populate_tree(self):
+        """Populate tree"""
+        # add charts
+        if self.planning is None:
+            return
+        for data in self.planning.iterate_project_data():
+            self.__add_projectitem(data)
+
+
 class TreeWidgets(QW.QSplitter):
     """Task/Chart tree widgets"""
 
@@ -1068,9 +1216,10 @@ class TreeWidgets(QW.QSplitter):
         self.__snapshots_lock = False
         self.planning: Optional[PlanningData] = None
 
+        self.project_tree = ProjectTreeWidget(self, debug=debug)
         self.chart_tree = ChartTreeWidget(self, debug=debug)
         self.task_tree = TaskTreeWidget(self, debug=debug)
-        self.forest = [self.chart_tree, self.task_tree]
+        self.forest = [self.chart_tree, self.task_tree, self.project_tree]
         for tree in self.forest:
             tree.SIG_MODEL_CHANGED.connect(self.model_has_changed)
             tree.pressed.connect(self.tree_pressed)
@@ -1094,7 +1243,11 @@ class TreeWidgets(QW.QSplitter):
         self.setStretchFactor(0, 1)
         self.setStretchFactor(1, 4)
 
-        self.task_tree.CALLBACKS["project"] = lambda ditem: self.chart_tree.repopulate()
+        # self.task_tree.FIELD_CHANGE_SIGNALS["project"] = self.SIG_MODEL_CHANGED
+
+        # (
+        #     lambda ditem: self.chart_tree.repopulate()
+        # )
 
     def tree_pressed(self):
         """A mouse button was pressed on tree view"""

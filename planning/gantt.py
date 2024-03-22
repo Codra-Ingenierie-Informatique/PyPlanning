@@ -44,7 +44,9 @@ import enum
 import logging
 import re
 import sys
+import textwrap
 import types
+from typing import Optional
 
 import svgwrite
 from dateutil.relativedelta import relativedelta
@@ -54,13 +56,15 @@ from dateutil.relativedelta import relativedelta
 # 3.543307 is for conversion from mm to pt units !
 mm = 3.543307
 cm = 35.43307
+px_to_mm = 0.264583
+px_to_cm = 0.0264583
 
 
 class COLORS(enum.Enum):
     YEARS = "#9b9b9b"
     VACATIONS = "#999999"
     MILESTONES = "#FF3030"
-    PROJECTS = "#c6eeff"
+    PROJECTS = "#9c9ea0"
     TODAY = "#76e9ff"
     START_END_DATES = "#9b9b9b"
 
@@ -733,7 +737,7 @@ def _get_maxx(scale, start_date, end_date):
     return maxx
 
 
-def _time_diff(scale, start_date, end_date, duration, milestone=False):
+def _time_diff(scale, start_date, end_date, duration, milestone=False) -> int:
     """Return time difference, depending on scale.
     If duration is True, this computes the duration of the task, else it computes
     the instant of start of the task which is the time difference between start_date
@@ -762,6 +766,7 @@ def _time_diff(scale, start_date, end_date, duration, milestone=False):
             start_date = start_date.replace(day=1)
         rdelta = relativedelta(end_date, start_date)
         return rdelta.months + rdelta.years * 12
+    raise ValueError(f"Could not compute a time difference.")
 
 
 class Task(object):
@@ -1161,6 +1166,7 @@ class Task(object):
         title_align_on_left=False,
         offset=0,
         show_start_end_dates=False,
+        macro_mode=False,
     ):
         """
         Return SVG for drawing this task.
@@ -1174,6 +1180,7 @@ class Task(object):
         scale -- drawing scale (d: days, w: weeks, m: months, q: quaterly)
         title_align_on_left -- boolean, align task title on left
         offset -- X offset from image border to start of drawing zone
+        macro_mode -- boolean, not used (only in Project.svg())
         """
         LOG.debug(
             "** Task::svg ({0})".format(
@@ -1772,6 +1779,7 @@ class Milestone(Task):
         title_align_on_left=False,
         offset=0,
         show_start_end_dates=False,
+        macro_mode=False,
     ):
         """
         Return SVG for drawing this milestone.
@@ -1892,7 +1900,7 @@ class Milestone(Task):
                 )
             )
 
-        return (svg, 2)
+        return (svg, 1)
 
     def svg_dependencies(self, prj):
         """
@@ -2052,7 +2060,13 @@ class Project(object):
     Class for handling projects
     """
 
-    def __init__(self, name="", color=None):
+    def __init__(
+        self,
+        name="",
+        color: Optional[str] = None,
+        description: str = "",
+        show_description: bool = False,
+    ):
         """
         Initialize project with a given name and color for all tasks
 
@@ -2060,7 +2074,7 @@ class Project(object):
         name -- string, name of the project
         color -- color for all tasks of the project
         """
-        self.tasks = []
+        self.tasks: list[Task | Project] = []
         self.name = name
         if color is None:
             self.color = COLORS.PROJECTS.value
@@ -2068,6 +2082,9 @@ class Project(object):
             self.color = color
 
         self.cache_nb_elements = None
+        self.description = description
+        self.show_description = show_description
+        self.macro_task = Task(self.name, color=self.color)
         return
 
     def add_task(self, task):
@@ -2388,6 +2405,7 @@ class Project(object):
         title_align_on_left=False,
         offset=0,
         t0mode=False,
+        macro_mode=False,
     ):
         """
         Draw gantt of tasks and output it to filename. If start or end are
@@ -2408,15 +2426,9 @@ class Project(object):
 
         self._reset_coord()
 
-        if start is None:
-            start_date = self.start_date()
-        else:
-            start_date = start
+        start_date = self.start_date() if start is None else start
 
-        if end is None:
-            end_date = self.end_date()
-        else:
-            end_date = end
+        end_date = self.end_date() if end is None else end
 
         if start_date > end_date:
             message = "start date {0} > end_date {1}".format(start_date, end_date)
@@ -2428,11 +2440,11 @@ class Project(object):
             prev_y=2,
             start=start_date,
             end=end_date,
-            color=self.color,
             scale=scale,
             title_align_on_left=title_align_on_left,
             offset=offset,
             t0mode=t0mode,
+            macro_mode=macro_mode,
         )
         if psvg is not None:
             ldwg.add(psvg)
@@ -2655,7 +2667,6 @@ class Project(object):
                         prev_y=nline,
                         start=start_date,
                         end=end_date,
-                        color=self.color,
                         scale=scale,
                         title_align_on_left=title_align_on_left,
                         offset=offset,
@@ -2750,6 +2761,87 @@ class Project(object):
                 last = t.end_date()
         return last
 
+    def desc_svg(
+        self,
+        avail_width: int,
+        color: str,
+        x: float,
+        prev_y: int,
+        margin: int = 5,
+        font_size: int = 18,
+    ) -> tuple[Optional[svgwrite.container.Group], float]:
+
+        line_char_count = int(avail_width / (font_size / 2))
+
+        text_lines = self.description.split("\n")
+        text_lines = sum(
+            (textwrap.wrap(line, width=line_char_count) for line in text_lines),
+            [self.name],
+        )
+
+        line_count = len(text_lines)
+        if not self.name:
+            return None, 0.0
+        max_line_char_count = max(len(line) for line in text_lines)
+        width = int(max_line_char_count * font_size / 2 + 2 * margin)
+
+        height = line_count * font_size + 2 * margin
+
+        x_top_left = x * mm - width
+        y_top_left = (prev_y + 0.5) * cm
+        desc_box = svgwrite.container.Group()
+
+        title_width = len(text_lines[0]) * font_size / 2
+        desc_box.add(
+            svgwrite.shapes.Line(
+                start=(title_width + 1 * cm, y_top_left),
+                end=(x_top_left, y_top_left),
+                stroke="gray",
+                stroke_dasharray="15,10",
+                stroke_width=1,
+            )
+        )
+
+        desc_box.add(
+            svgwrite.shapes.Rect(
+                (x_top_left, y_top_left),
+                (width, height),
+                fill="white",
+                stroke=color,
+                stroke_width=3,
+                opacity=0.8,
+            )
+        )
+
+        desc_box.add(
+            svgwrite.text.Text(
+                text_lines[0],
+                insert=(
+                    x_top_left + margin,
+                    y_top_left + margin / 2 + font_size,
+                ),  # * px_to_mm),
+                font_size=font_size,
+                font_family=_font_attributes()["font_family"],
+                font_weight="bold",
+            )
+        )
+
+        for i, line in enumerate(text_lines[1:], start=1):
+            desc_box.add(
+                svgwrite.text.Text(
+                    line,
+                    insert=(
+                        x_top_left + margin,
+                        y_top_left + margin / 2 + (i + 1) * font_size,
+                    ),
+                    font_size=font_size,
+                    font_family=_font_attributes()["font_family"],
+                    font_weight="normal",
+                )
+            )
+
+        return desc_box, height
+
     def svg(
         self,
         prev_y=0,
@@ -2762,7 +2854,8 @@ class Project(object):
         offset=0,
         t0mode=False,
         show_start_end_dates=None,
-    ):
+        macro_mode=False,
+    ) -> tuple[svgwrite.container.Group | None, int]:
         """
         Return (SVG code, number of lines drawn) for the project. Draws all
         tasks and add project name with a purple bar on the left side.
@@ -2786,21 +2879,34 @@ class Project(object):
         if color is None or self.color is not None:
             color = self.color
 
+        font_size = 18
+
         cy = prev_y + 1 * (self.name != "")
 
         prj = svgwrite.container.Group()
 
+        macro_drawn = False
         for t in self.tasks:
+            if macro_mode and type(t) is Task:
+                if macro_drawn:
+                    continue
+                else:
+                    self.macro_task.start_date = self.start_date
+                    self.macro_task.end_date = self.end_date
+                    self.macro_task.color = self.color
+                    t = self.macro_task
+                    macro_drawn = True
+
             trepr, theight = t.svg(
                 cy,
                 start=start,
                 end=end,
-                color=color,
                 level=level + 1,
                 scale=scale,
                 title_align_on_left=title_align_on_left,
                 offset=offset,
                 show_start_end_dates=show_start_end_dates,
+                macro_mode=macro_mode,
             )
             if trepr is not None:
                 prj.add(trepr)
@@ -2808,13 +2914,14 @@ class Project(object):
 
         fprj = svgwrite.container.Group()
         prj_bar = False
+
         if self.name != "":
-            # if ((self.start_date() >= start and self.end_date() <= end)
-            #     or (self.start_date() >= start and (self.end_date() <= end or self.start_date() <= end))) or level == 1:
-            if (
-                (self.start_date() >= start and self.end_date() <= end)
-                or ((self.end_date() >= start and self.start_date() <= end))
-            ) or level == 1:
+            is_project_in_interval = (
+                start <= self.start_date() <= end
+                or start <= self.end_date() <= end
+                or self.start_date() <= start <= end <= self.end_date()
+            )
+            if is_project_in_interval or level == 1:
                 fprj.add(
                     svgwrite.text.Text(
                         "{0}".format(self.name),
@@ -2826,7 +2933,7 @@ class Project(object):
                         stroke=_font_attributes()["stroke"],
                         stroke_width=_font_attributes()["stroke_width"],
                         font_family=_font_attributes()["font_family"],
-                        font_size=15 + 3,
+                        font_size=font_size,
                     )
                 )
 
@@ -2834,25 +2941,40 @@ class Project(object):
                     svgwrite.shapes.Rect(
                         insert=((6 * level + 0.8 + offset) * mm, (prev_y + 0.5) * cm),
                         size=(0.2 * cm, ((cy - prev_y - 1) + 0.4) * cm),
-                        fill="purple",
-                        stroke="lightgray",
+                        fill=color,
+                        stroke=color,
                         stroke_width=0,
-                        opacity=0.5,
+                        opacity=0.8,
                     )
                 )
                 prj_bar = True
+
             else:
                 cy -= 1
+
+            if is_project_in_interval and level >= 1 and self.show_description:
+
+                x = _time_diff(scale, start, end, False) * 10
+                desc_box, px_desc_height = self.desc_svg(
+                    400, color, x, prev_y, font_size=font_size
+                )
+                if desc_box is not None:
+                    prj.add(desc_box)
+
+                    cm_desc_height = px_desc_height * px_to_cm + 1
+
+                    tasks_height = cy - prev_y
+                    if tasks_height < cm_desc_height:
+                        cy += int(cm_desc_height - tasks_height)
 
         # Do not display empty tasks
         if (cy - prev_y) == 0 or ((cy - prev_y) == 1 and prj_bar):
             return (None, 0)
 
         fprj.add(prj)
-
         return (fprj, cy - prev_y)
 
-    def svg_dependencies(self, prj):
+    def svg_dependencies(self, prj: "Project"):
         """
         Draws svg dependencies between tasks according to coordinates cached
         when drawing tasks

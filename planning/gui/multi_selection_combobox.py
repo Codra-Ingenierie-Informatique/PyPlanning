@@ -125,6 +125,11 @@ class CheckableComboBox(QComboBox, Generic[T]):
         if not datalist:
             return
         dataset = set(datalist)
+        last_selected_idx = 0
         for i in range(self.model().rowCount()):
             if self.model().item(i).data() in dataset:
                 self.model().item(i).setCheckState(Qt.CheckState.Checked)
+                last_selected_idx = i
+
+        if self.model().rowCount() > 0:
+            self.setCurrentIndex(last_selected_idx)

@@ -8,7 +8,7 @@ import os.path as osp
 import re
 import xml.etree.ElementTree as ET
 from copy import deepcopy
-from enum import Enum
+from enum import Enum, IntEnum, StrEnum
 from io import StringIO
 from typing import Any, Generator, Generic, Optional, TypeVar, Union
 
@@ -52,6 +52,13 @@ class DTypes(Enum):
     CHOICE = 6
     MULTIPLE_CHOICE = 7
     BOOLEAN = "🗸"
+    LONG_TEXT = 9
+
+
+class DefaultChoiceMode(Enum):
+    NONE = 0
+    FIRST = 1
+    ALL = 2
 
 
 class NoDefault:
@@ -79,6 +86,7 @@ class DataItem(Generic[_T]):
         datatype: DTypes,
         value: Optional[_T],
         choices: Optional[list[tuple[Any, Any]]] = None,
+        default_choice_mode=DefaultChoiceMode.FIRST,
     ):
         self.parent: AbstractDataT = parent
         self.name = name
@@ -89,6 +97,7 @@ class DataItem(Generic[_T]):
         )  # tuple of (key, value) tuples
         if datatype in (DTypes.CHOICE, DTypes.MULTIPLE_CHOICE) and choices is None:
             raise ValueError("Choices must be specified")
+        self.default_choice_mode = default_choice_mode
 
     @property
     def value(self) -> Optional[_T]:
@@ -114,8 +123,10 @@ class DataItem(Generic[_T]):
             return [value for _key, value in self.choices]
         return []
 
-    def get_choice_value(self) -> _T:
+    def get_choice_value(self) -> _T | None:
         """Return choice value"""
+        if len(self.choices) == 0:
+            return None
         if self.value is None:
             return self.choices[0][1]
         for key, value in self.choices:
@@ -125,6 +136,8 @@ class DataItem(Generic[_T]):
 
     def get_choices_values(self) -> list[_T]:
         """Return choices value"""
+        if len(self.choices) == 0:
+            return []
         if self.value is None:
             return [self.choices[0][1]]
         choices = [value for key, value in self.choices if key in self.value]
@@ -134,6 +147,8 @@ class DataItem(Generic[_T]):
 
     def set_choice_value(self, value):
         """Set item value by choice value"""
+        if len(self.choices) == 0:
+            return
         for key, val in self.choices:
             if val == value:
                 self.value = key
@@ -178,12 +193,12 @@ class DataItem(Generic[_T]):
             if self.datatype == DTypes.DAYS:
                 return 1
             if self.datatype == DTypes.DATE:
-                return datetime.datetime.today().replace(
-                    hour=0, minute=0, second=0, microsecond=0
-                )
+                return datetime.date.today()
             if self.datatype == DTypes.CHOICE:
+                if len(self.choices) == 0:
+                    return ""
                 return self.choice_keys[0]
-            if self.datatype == DTypes.TEXT:
+            if self.datatype == DTypes.TEXT or self.datatype == DTypes.LONG_TEXT:
                 return ""
             if self.datatype == DTypes.BOOLEAN:
                 return False
@@ -194,7 +209,7 @@ class DataItem(Generic[_T]):
                     return None
                 for cname in self.COLORS:
                     if cname.startswith(self.value):
-                        return self.value
+                        return cname
             if self.datatype == DTypes.LIST:
                 return ""
             if self.datatype == DTypes.MULTIPLE_CHOICE:
@@ -214,10 +229,19 @@ class DataItem(Generic[_T]):
             if self.value > 1:
                 text += "s"
             return text
-        if self.datatype == DTypes.CHOICE:
+        if self.datatype in (DTypes.CHOICE, DTypes.MULTIPLE_CHOICE):
             if self.value is None:
-                return self.choice_values[0]
-            return self.get_choice_value()
+                if (
+                    self.default_choice_mode is DefaultChoiceMode.NONE
+                    or len(self.choices) == 0
+                ):
+                    return None
+                elif self.default_choice_mode is DefaultChoiceMode.FIRST:
+                    return self.choice_values[0]
+            elif self.datatype is DTypes.CHOICE:
+                return self.get_choice_value()
+            elif self.datatype is DTypes.MULTIPLE_CHOICE:
+                return ", ".join(str(v) for v in self.get_choices_values())
         if self.datatype == DTypes.BOOLEAN:
             if self.value:
                 return DTypes.BOOLEAN.value
@@ -230,6 +254,18 @@ class DataItem(Generic[_T]):
             if widget_value not in self.choice_values:
                 raise ValueError(f"No value {widget_value} in choices")
             self.set_choice_value(widget_value)
+        elif self.datatype == DTypes.MULTIPLE_CHOICE:
+            self.value = []
+            split_values = []
+            for val in widget_value.split(","):
+                strip_val = val.strip()
+                if strip_val:
+                    split_values.append(strip_val)
+            for key, ref_val in self.choices:
+                for val in split_values:
+                    if ref_val == val:
+                        self.value.append(key)
+
         elif self.datatype == DTypes.BOOLEAN:
             self.value = widget_value == DTypes.BOOLEAN.value
         else:
@@ -240,7 +276,7 @@ class DataItem(Generic[_T]):
         val = self.value
         if val is None:
             return ""
-        if self.datatype == DTypes.TEXT:
+        if self.datatype == DTypes.TEXT or self.datatype == DTypes.LONG_TEXT:
             return str(val)
         if self.datatype in (DTypes.INTEGER, DTypes.DAYS):
             return str(val)
@@ -260,6 +296,8 @@ class DataItem(Generic[_T]):
         if self.datatype == DTypes.BOOLEAN:
             return str(val)
         if self.datatype == DTypes.MULTIPLE_CHOICE:
+            if self.value is None:
+                return ""
             return ", ".join(self.value)
         raise NotImplementedError(f"Unsupported datatype {self.datatype}")
 
@@ -267,7 +305,7 @@ class DataItem(Generic[_T]):
         """Set data item value from text"""
         if self.datatype == DTypes.COLOR:
             self.value = self.get_html_color(text)
-        elif self.datatype == DTypes.TEXT:
+        elif self.datatype == DTypes.TEXT or self.datatype == DTypes.LONG_TEXT:
             self.value = None if len(text) == 0 else text
         elif self.datatype == DTypes.INTEGER:
             self.value = None if text == "" else int(text)
@@ -290,13 +328,17 @@ class DataItem(Generic[_T]):
                 self.value = int(text.split(" ")[0])
         elif self.datatype == DTypes.DATE:
             if text == "":  # No value in data model
-                self.value = datetime.datetime.today()
+                self.value = datetime.date.today()
             else:
-                self.value = datetime.datetime.strptime(text, "%d/%m/%y")
+                self.value = datetime.datetime.strptime(text, "%d/%m/%y").date()
         elif self.datatype == DTypes.BOOLEAN:
             self.value = text.lower() in ("", "true")
         elif self.datatype == DTypes.MULTIPLE_CHOICE:
-            return
+            self.value = []
+            for val in text.split(","):
+                strip_val = val.strip()
+                if strip_val:
+                    self.value.append(strip_val)
         else:
             raise NotImplementedError(f"Unsupported datatype {self.datatype}")
 
@@ -320,7 +362,7 @@ class AbstractData:
         self.name = DataItem[str](self, "name", DTypes.TEXT, name)
         self.fullname = DataItem[str](self, "fullname", DTypes.TEXT, fullname)
         self.color = DataItem[str](self, "color", DTypes.COLOR, color)
-        self.project = DataItem[str](self, "project", DTypes.TEXT, None)
+        self.project = DataItem[str](self, "project", DTypes.CHOICE, None, [])
         self.id = DataItem[str](self, "id", DTypes.TEXT, self.default_id)
         self.__gantt_object = None
 
@@ -371,13 +413,24 @@ class AbstractData:
         """Return True if item name is read-only"""
         return name in self.READ_ONLY_ITEMS
 
-    def _init_from_element(self, element):
+    def _init_from_element(self, element: ET.Element):
         """Init instance from XML element"""
         self.element = element
         self.name: DataItem[str] = self.get_str("name", default=self.DEFAULT_NAME)
         self.fullname: DataItem[str] = self.get_str("fullname")
         self.color: DataItem[str] = self.get_color(default=self.DEFAULT_COLOR)
-        self.project: DataItem[str] = self.get_str("project")
+
+        # This section has been added to open older files that do not have the
+        # PROJECTS section in the XML file
+        project_name = element.get("project", None)
+        if project_name is not None and project_name not in self.pdata.projects:
+            new_project = ProjectData(self.pdata, name=project_name)
+            new_project.id.value = project_name
+            self.pdata.add_project(new_project, None)
+        self.project: DataItem[str] = self.get_choices(
+            "project", default=None, choices=self.pdata.project_choices()
+        )
+
         self.id: DataItem[str] = self.get_str("id", default=self.default_id)
 
     @classmethod
@@ -398,7 +451,7 @@ class AbstractData:
             ditem = getattr(self, name, None)
             if (
                 ditem is not None
-                and ditem.value is not None
+                and ditem.value not in (None, [])
                 and not self.is_read_only(ditem.name)
             ):
                 attrib[name] = ditem.to_text()
@@ -453,6 +506,12 @@ class AbstractData:
         """Get value from XML element and set its datatype"""
         return self.create_item(name, DTypes.TEXT, default=default)
 
+    def get_long_text(
+        self, name: str, default: Optional[_T | type[NoDefault]] = NoDefault
+    ):
+        """Get value from XML element and set its datatype"""
+        return self.create_item(name, DTypes.LONG_TEXT, default=default)
+
     def get_color(self, default: Optional[_T | type[NoDefault]] = NoDefault):
         """Get color value (html code) from XML attribute"""
         return self.create_item("color", DTypes.COLOR, default=default)
@@ -474,18 +533,33 @@ class AbstractData:
         return self.create_item(name, DTypes.LIST, default=default)
 
     def get_choices(
-        self, name, default: Optional[_T | type[NoDefault]] = NoDefault, choices=None
+        self,
+        name,
+        default: Optional[_T | type[NoDefault]] = NoDefault,
+        choices=None,
+        default_mode=DefaultChoiceMode.FIRST,
     ):
         """Get choices value from XML attribute"""
-        return self.create_item(name, DTypes.CHOICE, default=default, choices=choices)
+        ditem = self.create_item(name, DTypes.CHOICE, default=default, choices=choices)
+        ditem.default_choice_mode = default_mode
+        return ditem
 
     def get_multi_choices(
-        self, name, default: Optional[_T | type[NoDefault]] = NoDefault, choices=None
+        self,
+        name,
+        default: Optional[_T | type[NoDefault]] = NoDefault,
+        choices=None,
+        default_mode=DefaultChoiceMode.FIRST,
     ):
         """Get choices value from XML attribute"""
-        return self.create_item(
-            name, DTypes.MULTIPLE_CHOICE, default=default, choices=choices
+        ditem = self.create_item(
+            name,
+            DTypes.MULTIPLE_CHOICE,
+            default=default,
+            choices=choices,
         )
+        ditem.default_choice_mode = default_mode
+        return ditem
 
     def get_bool(self, name, default: Optional[_T | type[NoDefault]] = NoDefault):
         """Get boolean value from XML attribute"""
@@ -551,7 +625,7 @@ class ChartData(AbstractDurationData):
         ("w", _("Weeks")),
         ("m", _("Months")),
     )
-    TYPES = (("r", _("Resources")), ("t", _("Tasks")))
+    TYPES = (("r", _("Resources")), ("t", _("Tasks")), ("m", _("Macro tasks")))
     TAG = "CHART"
     DEFAULT_ICON_NAME = "chart.svg"
     READ_ONLY_ITEMS = ("fullname", "color")
@@ -564,7 +638,7 @@ class ChartData(AbstractDurationData):
         self.offset = DataItem(self, "offset", DTypes.INTEGER, None)
         self.t0mode = DataItem(self, "t0mode", DTypes.BOOLEAN, None)
         self.projects = DataItem[list[str]](
-            self, "projects", DTypes.MULTIPLE_CHOICE, None, []
+            self, "projects", DTypes.MULTIPLE_CHOICE, None, [], DefaultChoiceMode.NONE
         )
         self.is_default_name = self.set_is_default_name()
 
@@ -596,7 +670,7 @@ class ChartData(AbstractDurationData):
         self.offset = self.get_int("offset")
         self.t0mode = self.get_bool("t0mode")
         self.projects = self.get_multi_choices(
-            "projects", [], self.pdata.project_choices()
+            "projects", [], self.pdata.project_choices(), DefaultChoiceMode.NONE
         )
         self.set_is_default_name()
 
@@ -620,19 +694,21 @@ class ChartData(AbstractDurationData):
         if item_name == "project" and self.has_project:
             return self.project.value in self.pdata.get_task_project_names()
         if item_name == "projects" and self.projects.value:
-            pnames = set(self.pdata.get_task_project_names())
-            return self.projects.value is None or all(
-                pname in pnames for pname in self.projects.value
-            )
+            pids = set(self.pdata.projects.keys())
+            return all(pid in pids for pid in self.projects.value)
         if item_name in ("start", "stop"):
             if not self.has_start or not self.has_stop:
                 return True
             return self.stop.value >= self.start.value
         return True
 
+    def to_element(self, parent=None):
+        # print(self.get_attrib_dict())
+        return super().to_element(parent)
+
     def set_today(self):
         """Set today item value to... today"""
-        self.today.value = datetime.datetime.today().replace(
+        self.today.value = datetime.date.today().replace(
             hour=0, minute=0, second=0, microsecond=0
         )
 
@@ -661,7 +737,7 @@ class ChartData(AbstractDurationData):
 
     def make_svg(
         self,
-        project,
+        project: gantt.Project,
         one_line_for_tasks,
         show_title=False,
         show_conflicts=False,
@@ -693,7 +769,7 @@ class ChartData(AbstractDurationData):
                 resource_on_left=True,
                 scale=scale,
             )
-        elif ptype == "t":
+        elif ptype == "t" or ptype == "m":
             project.make_svg_for_tasks(
                 start=self.start.value,
                 end=self.stop.value,
@@ -701,6 +777,7 @@ class ChartData(AbstractDurationData):
                 today=self.today.value,
                 scale=scale,
                 t0mode=t0mode,
+                macro_mode=(ptype == "m"),
             )
         else:
             raise ValueError(f"Invalid planning type '{ptype}'")
@@ -710,7 +787,7 @@ class ChartData(AbstractDurationData):
         if self.pdata is None:
             return
         available_choices = self.pdata.project_choices(force)
-        self.projects.choices = available_choices
+        self.projects.choices = available_choices[1:]
 
         if self.projects.value is None:
             return
@@ -734,7 +811,9 @@ class AbstractTaskData(AbstractDurationData):
             DTypes.MULTIPLE_CHOICE,
             value=None,
             choices=[(self.task_number.value, self.name.value)],
+            default_choice_mode=DefaultChoiceMode.NONE,
         )
+        self.update_project_choice()
 
     def duplicate(self):
         new_item = super().duplicate()
@@ -751,7 +830,9 @@ class AbstractTaskData(AbstractDurationData):
             DTypes.MULTIPLE_CHOICE,
             value=None,
             choices=[(self.task_number.value, self.name.value)],
+            default_choice_mode=DefaultChoiceMode.NONE,
         )
+        self.update_project_choice()
 
     def get_attrib_names(self):
         """Return attribute names"""
@@ -774,10 +855,13 @@ class AbstractTaskData(AbstractDurationData):
                 if task.depends_on is None:
                     task.depends_on = []
 
-        projname = self.project.value
-        if projname not in self.pdata.all_projects:
-            self.pdata.all_projects[projname] = gantt.Project(name=projname)
-        self.pdata.all_projects[projname].add_task(task)
+        proj_id = self.project.value
+        # if proj_id not in self.pdata.all_projects:
+        #     self.pdata.all_projects[proj_id] = gantt.Project(
+        #         name=str(proj_id), description="Description of this project"
+        #     )
+        proj_id = self.project.value
+        self.pdata.all_projects[proj_id].add_task(task)
         self.pdata.all_tasks[self.id.value] = task
 
     def update_depends_on(self):
@@ -820,7 +904,6 @@ class AbstractTaskData(AbstractDurationData):
         if wrong_values:
             for value in wrong_values:
                 self.depends_on_task_number.value.remove(value)
-        self.process_gantt()
 
     def update_depends_on_from_ids(self):
         if self.depends_on.value is None:
@@ -842,12 +925,26 @@ class AbstractTaskData(AbstractDurationData):
                 self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
 
                 data.id.value = new_id
-        self.process_gantt()
 
     def update_task_choices(self, force=False):
         """Update task choices"""
         if self.pdata is not None:
             self.depends_on_task_number.choices = self.pdata.task_choices(force)  # type: ignore
+
+    def update_project_choice(self, force=False):
+        """Update task choices"""
+        if self.pdata is None:
+            return
+        available_choices = self.pdata.project_choices(force)
+        self.project.choices = available_choices
+
+        project_keys = self.project.choice_keys
+
+        if self.project.value is None:
+            return
+
+        if self.project.value not in project_keys:
+            self.project.value = None
 
 
 class TaskModes(Enum):
@@ -871,7 +968,7 @@ class TaskData(AbstractTaskData):
         self.percent_done = DataItem(self, "percent_done", DTypes.INTEGER, None)
         self.__resids = []
 
-    def _init_from_element(self, element):
+    def _init_from_element(self, element: ET.Element):
         """Init instance from XML element"""
         super()._init_from_element(element)
         self.percent_done = self.get_int("percent_done")
@@ -993,7 +1090,7 @@ class TaskData(AbstractTaskData):
             duration=self.duration.value,
             percent_done=percent_done,
             resources=resource_list,
-            color=self.color.value,
+            color=self.color.value or DataItem.COLORS["cyan"],
         )
         super().process_gantt()
 
@@ -1118,6 +1215,46 @@ class ResourceData(AbstractData):
         )
 
 
+class ProjectData(AbstractData):
+    TAG = "PROJECT"
+    DEFAULT_ICON_NAME = "project.svg"
+    DEFAULT_COLOR = DataItem.COLORS["silver"]
+    DEFAULT_NAME = _("Project")
+    READ_ONLY_ITEMS = ()
+
+    def __init__(
+        self,
+        pdata: "PlanningData",
+        name: Optional[str] = None,
+        fullname: Optional[str] = None,
+    ):
+        super().__init__(pdata, name, fullname)
+
+        self.color = DataItem[str](self, "color", DTypes.COLOR, self.DEFAULT_COLOR)
+        self.show_description = DataItem[bool](
+            self, "show_description", DTypes.BOOLEAN, True
+        )
+
+        self.description = DataItem[str](self, "description", DTypes.LONG_TEXT, None)
+
+    @property
+    def default_id(self):
+        return f"prj-{id(self)}"
+
+    @property
+    def has_named_id(self):
+        return True
+
+    def _init_from_element(self, element):
+        super()._init_from_element(element)
+        self.color: DataItem[str] = self.get_color(self.DEFAULT_COLOR)
+        self.description: DataItem[str] = self.get_long_text("description")
+
+    def get_attrib_names(self):
+        attrib_names = super().get_attrib_names()
+        return attrib_names + ["project_status", "advancement_status", "description"]
+
+
 class PlanningData(AbstractData):
     """Planning data set"""
 
@@ -1133,22 +1270,26 @@ class PlanningData(AbstractData):
         self.tsklist: list[AbstractTaskData] = []
         self.tsk_num_to_tsk: dict[str, AbstractTaskData] = {}
         self._tsk_choices: list[tuple[str, str]] = []
-        self._projects_choices: list[tuple[str, str]] = []
+        self._projects_choices: list[tuple[str | None, str]] = []
+        self.projects: dict[str, ProjectData] = {}
         self.lvelist: list[LeaveData] = []
         self.clolist: list[ClosingDayData] = []
         self.chtlist: list[ChartData] = []
+        self.prjlist: list[ProjectData] = []
         self.__lists: tuple[
             list[ResourceData],
             list[AbstractTaskData],
             list[LeaveData],
             list[ClosingDayData],
             list[ChartData],
+            list[ProjectData],
         ] = (
             self.reslist,
             self.tsklist,
             self.lvelist,
             self.clolist,
             self.chtlist,
+            self.prjlist,
         )
         gantt.VACATIONS = []
 
@@ -1159,11 +1300,29 @@ class PlanningData(AbstractData):
         for chart in self.iterate_chart_data():
             chart.set_is_default_name()
 
+    # # def _extract_all_projects_from_xml(self, element: ET.Element) -> list[ProjectData]:
+    # #     """Get project names from XML tasks"""
+    # #     projects: set[ProjectData] = set()
+    # #     for task in xml_tasks:
+    # #         project_elt = task.get("project", None)
+
+    # #         if project_elt is not None:
+    # #             projects.add(ProjectData(self, name=project_elt))
+    # #     return projects
+
+    # def _new_project_from_name(self, project_name: str) -> ProjectData:
+
     def _init_from_element(self, element: ET.Element):
         """Init instance from XML element"""
         super()._init_from_element(element)
         charts_tag = "CHARTS"
         tasks_tag = "TASKS"
+        projects_tag = "PROJECTS"
+        projects_elt = element.find(projects_tag)
+        if projects_elt is not None:
+            for elem in projects_elt.findall(ProjectData.TAG):
+                project = ProjectData.from_element(self, elem)
+                self.add_project(project, None)
         for elem in self.element.find(charts_tag).findall(ChartData.TAG):
             chtdata = ChartData.from_element(self, elem)
             self.add_chart(chtdata)
@@ -1195,8 +1354,8 @@ class PlanningData(AbstractData):
         for data in self.iterate_task_data():
             data.update_task_choices()
             data.update_depends_on_from_ids()
-        for chart in self.iterate_chart_data():
-            chart.update_project_choices()
+        # for chart in self.iterate_chart_data():
+        #     chart.update_project_choices()
 
     @classmethod
     def from_filename(cls, fname: str):
@@ -1209,7 +1368,7 @@ class PlanningData(AbstractData):
 
     def to_element(self, parent=None):
         """Serialize model to XML element"""
-        base_elt = ET.Element("PROJECT", attrib=self.get_attrib_dict())
+        base_elt = ET.Element("PLANNING", attrib=self.get_attrib_dict())
         charts_elt = ET.SubElement(base_elt, "CHARTS")
         for data in self.iterate_chart_data():
             data.to_element(charts_elt)
@@ -1225,6 +1384,9 @@ class PlanningData(AbstractData):
         cdays_elt = ET.SubElement(base_elt, "CLOSINGDAYS")
         for data in self.iterate_closing_days_data():
             data.to_element(cdays_elt)
+        projects_elt = ET.SubElement(base_elt, "PROJECTS")
+        for project in self.iterate_project_data():
+            project.to_element(projects_elt)
         return base_elt
 
     def to_text(self):
@@ -1247,14 +1409,20 @@ class PlanningData(AbstractData):
     def move_data(self, data_id, delta_index):
         """Move task/resource/chart up/down"""
         data = self.get_data_from_id(data_id)
+        dlist = None
         for dlist in self.__lists:
             if data in dlist:
                 break
+        if dlist is None:
+            return
+
         index = dlist.index(data)
-        dlist.pop(index)
-        dlist.insert(index + delta_index, data)
+        dlist[index], dlist[index + delta_index] = (
+            dlist[index + delta_index],
+            dlist[index],
+        )
         if isinstance(data, AbstractTaskData):
-            self.update_task_number(max(0, index + delta_index - 1))
+            self.update_task_number(max(0, index + delta_index - 1), True)
 
     def remove_data(self, data_id):
         """Remove either task/resource/chart data"""
@@ -1304,6 +1472,10 @@ class PlanningData(AbstractData):
     def iterate_resource_data(self) -> Generator[ResourceData, None, None]:
         """Iterate over resource data dictionary items"""
         yield from self.reslist
+
+    def iterate_project_data(self) -> Generator[ProjectData, None, None]:
+        """Iterate over project data dictionary items"""
+        yield from self.prjlist
 
     def iterate_task_data(
         self, only=None
@@ -1401,6 +1573,16 @@ class PlanningData(AbstractData):
         self.__append_or_insert(self.tsklist, index, data)
         self.update_task_number(index)
 
+    def add_project(self, project: ProjectData, after_data: Optional[ProjectData]):
+        self.projects[str(project.id.value)] = project
+        self.all_projects[str(project.id.value)] = gantt.Project(
+            name=str(project.name.value),
+            color=project.color.value,
+            show_description=bool(project.show_description.value),
+        )
+        index = self.prjlist.index(after_data) if after_data else None
+        self.__append_or_insert(self.prjlist, index, project)
+
     def task_choices(self, force=False) -> list[tuple[str, str]]:
         if force or len(self._tsk_choices) != len(self.tsklist):
             self._tsk_choices = [
@@ -1409,16 +1591,19 @@ class PlanningData(AbstractData):
             ]
         return self._tsk_choices
 
-    def project_choices(self, force=False) -> list[tuple[str, str]]:
-        if force or (len(self.all_projects) - 1) != len(self._projects_choices):
-            self._projects_choices = [
-                (key, proj.name)
-                for key, proj in self.all_projects.items()
-                if key is not None
-            ]
+    def project_choices(self, force=False) -> list[tuple[str | None, str]]:
+        if force or (len(self.projects) + 1) != len(self._projects_choices):
+            self._projects_choices = [(None, "")]
+            self._projects_choices.extend(
+                [
+                    (proj.id.value, str(proj.name.value))
+                    for proj in self.prjlist
+                    if proj.id.value is not None
+                ]
+            )
         return self._projects_choices
 
-    def update_task_number(self, index: Optional[int] = None):
+    def update_task_number(self, index: Optional[int] = None, force=False):
         """Update task number. If None, only the last one is updated,
         else all tasks from index are updated. Also updates all the
         "depends_on_task_number" dataitems with the new task numbers.
@@ -1437,8 +1622,8 @@ class PlanningData(AbstractData):
                 self.tsk_num_to_tsk[str_idx] = data
 
         for data in self.iterate_task_data():
-            data.update_task_choices()
             data.update_depends_on_from_ids()
+            data.update_task_choices(force=force)
 
     def add_leave(self, data: LeaveData, after_data: Optional[AbstractData] = None):
         """Add resource leave to planning"""
@@ -1483,14 +1668,26 @@ class PlanningData(AbstractData):
         self.all_projects.clear()
         self.all_resources.clear()
         self.all_tasks.clear()
-        mainproj = gantt.Project(name=self.name.value, color=self.color.value)
+        mainproj = gantt.Project(
+            name=self.name.value,
+            color=self.color.value,
+        )
         self.all_projects[None] = mainproj
+        for project in self.iterate_project_data():
+            if project.id.value is None:
+                continue
+            self.all_projects[project.id.value] = gantt.Project(
+                name=str(project.name.value),
+                color=project.color.value,
+                description=project.description.value or "",
+                show_description=bool(project.show_description.value),
+            )
         for data in self.iterate_all_data():
             data.process_gantt()
         for data in self.iterate_task_data():
             data.update_depends_on()
-        for projname, project in self.all_projects.items():
-            if projname is not None:
+        for proj_id, project in self.all_projects.items():
+            if proj_id is not None:
                 mainproj.add_task(project)
         for data in self.iterate_chart_data():
             data.update_project_choices()
@@ -1505,17 +1702,17 @@ class PlanningData(AbstractData):
         """Generate charts"""
         self.process_gantt()
         for chart in self.iterate_chart_data():
-            pnames = chart.projects.value
-            wrong_pnames = []
-            if not pnames:
+            proj_ids = chart.projects.get_choices_values()
+            wrong_proj_id = []
+            if not proj_ids:
                 project = self.all_projects[None]
             else:
                 # transparent color and no name
                 project = gantt.Project(name="", color="#FFFFFFFF")
-                for pname in pnames:
-                    proj = self.all_projects.get(pname, None)
+                for proj_id in proj_ids:
+                    proj = self.all_projects.get(proj_id, None)
                     if proj is None:
-                        wrong_pnames.append(pname)
+                        wrong_proj_id.append(proj_id)
                         continue
                     project.add_task(proj)
                     # for task in proj.get_tasks():

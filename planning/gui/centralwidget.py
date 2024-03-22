@@ -104,7 +104,8 @@ class PlanningEditor(QStackedWidget):
             shutil.copy(chart_path, osp.join(chart_path + ".tmp"))
 
         if self.xml_mode:
-            self.code.setPlainText(planning.to_text())
+            # self.code.SIG_EDIT_STOPPED.emit()
+            # self.code.setPlainText(planning.to_text())
             text = self.code.toPlainText()
             with open(path, "wb") as fdesc:
                 fdesc.write(text.encode("utf-8"))
