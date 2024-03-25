@@ -115,9 +115,9 @@
     <CLOSINGDAY start="25/12/24" />
   </CLOSINGDAYS>
   <PROJECTS>
-    <PROJECT name="ABC" color="r" id="ABC" />
-    <PROJECT name="B" color="s" id="B" />
-    <PROJECT name="E" color="s" id="E" />
-    <PROJECT name="F" color="g" id="F" />
+    <PROJECT name="ABC" color="r" id="ABC" description="Alphabet project" show_description="True" />
+    <PROJECT name="B" color="s" id="B" show_description="True" />
+    <PROJECT name="E" color="s" id="E" show_description="False" />
+    <PROJECT name="F" color="g" id="F" show_description="False" />
   </PROJECTS>
 </PLANNING>
