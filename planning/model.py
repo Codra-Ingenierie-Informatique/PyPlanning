@@ -6,6 +6,7 @@ import datetime
 import locale
 import os.path as osp
 import re
+import uuid
 import xml.etree.ElementTree as ET
 from copy import deepcopy
 from enum import Enum, IntEnum, StrEnum
@@ -352,6 +353,7 @@ class AbstractData:
     DEFAULT_COLOR = None
     READ_ONLY_ITEMS = ()
     NO_COPY: tuple[str, ...] = ("pdata",)
+    DEFAULT_ID_PREFIX = "default"
 
     def __init__(self, pdata: "PlanningData", name=None, fullname=None):
         self.pdata = pdata
@@ -363,12 +365,22 @@ class AbstractData:
         self.fullname = DataItem[str](self, "fullname", DTypes.TEXT, fullname)
         self.color = DataItem[str](self, "color", DTypes.COLOR, color)
         self.project = DataItem[str](self, "project", DTypes.CHOICE, None, [])
+
+        self._default_id = ""
         self.id = DataItem[str](self, "id", DTypes.TEXT, self.default_id)
         self.__gantt_object = None
 
+    def create_id(self) -> str:
+        new_id = f"{self.DEFAULT_ID_PREFIX}-{uuid.uuid4().hex[:6]}"
+        while self.pdata.get_data_from_id(new_id):
+            new_id = f"{self.DEFAULT_ID_PREFIX}-{uuid.uuid4().hex[:6]}"
+        return new_id
+
     @property
     def default_id(self) -> str:
-        return f"default-{id(self)}"
+        if self._default_id == "" and self.pdata is not None:
+            self._default_id = self.create_id()
+        return self._default_id
 
     def duplicate(self):
         """Duplicate data set"""
@@ -389,7 +401,9 @@ class AbstractData:
         return obj
 
     @property
-    def gantt_object(self):
+    def gantt_object(
+        self,
+    ) -> gantt.Resource | gantt.Task | gantt.Milestone | gantt.Project | None:
         """Return associated gantt object"""
         return self.__gantt_object
 
@@ -629,6 +643,7 @@ class ChartData(AbstractDurationData):
     TAG = "CHART"
     DEFAULT_ICON_NAME = "chart.svg"
     READ_ONLY_ITEMS = ("fullname", "color")
+    DEFAULT_ID_PREFIX = "chart"
 
     def __init__(self, name=None, fullname=None):
         super().__init__(name, fullname)
@@ -892,7 +907,7 @@ class AbstractTaskData(AbstractDurationData):
                 continue
             if not other_task.has_named_id:
                 old_id = other_task.id.value
-                new_id = f"auto_id-{other_task.default_id.split('-', 1)[1]}"
+                new_id = other_task.create_id()
                 self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
                 other_task.id.value = new_id
             new_values.append(other_task.id.value)
@@ -916,7 +931,7 @@ class AbstractTaskData(AbstractDurationData):
                 continue
 
             old_id = data.id.value
-            new_id = f"auto_id-{data.default_id.split('-', 1)[1]}"
+            new_id = data.create_id()
             if old_id in self.pdata.all_tasks:
                 self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
 
@@ -956,6 +971,7 @@ class TaskData(AbstractTaskData):
     TAG = "TASK"
     DEFAULT_ICON_NAME = "task.svg"
     READ_ONLY_ITEMS = ("start_calc", "stop_calc", "task_number")
+    DEFAULT_ID_PREFIX = "task"
 
     def __init__(self, pdata, name=None, fullname=None):
         super().__init__(pdata, name, fullname)
@@ -979,7 +995,9 @@ class TaskData(AbstractTaskData):
 
     def is_mode_switchable(self):
         """Return True if task mode can be switched from one to another"""
-        return self.get_mode() is not None and self.has_start
+        return self.get_mode() is not None and (
+            self.has_start or self.start_calc.value is not None
+        )
 
     def get_mode(self):
         """Return task mode"""
@@ -987,17 +1005,27 @@ class TaskData(AbstractTaskData):
             return TaskModes.DURATION
         if not self.has_duration and self.has_stop:
             return TaskModes.STOP
+        if self.start_calc.value is not None and self.has_duration:
+            return TaskModes.DURATION
+        if self.duration is not None and self.stop_calc.value is not None:
+            return TaskModes.STOP
         return None
 
     def set_stop_from_start_duration(self):
         """Set task stop (taking into account week-ends)"""
         self.stop.value = self.gantt_object.end_date()
+        if self.start.value is None and self.start_calc.value is not None:
+            self.start.value = self.start_calc.value
+            self.start_calc.value = None
+            self.stop_calc.value = None
         self.duration.value = None
 
     def set_duration_from_start_stop(self):
         """Set real task duration (taking into account week-ends)"""
-        cday = self.start.value
+        cday = self.start.value or self.start_calc.value
         real_duration = 0
+        if cday is None:
+            return
         while cday <= self.stop.value:
             if not self.gantt_object.non_working_day(cday):
                 real_duration += 1
@@ -1105,6 +1133,7 @@ class MilestoneData(AbstractTaskData):
     TAG = "MILESTONE"
     DEFAULT_ICON_NAME = "milestone.svg"
     READ_ONLY_ITEMS = ("duration", "stop", "task_number")
+    DEFAULT_ID_PREFIX = "mile"
 
     def is_valid(self, item_name):
         """Check data item values, eventually depending on planning data"""
@@ -1149,6 +1178,7 @@ class ClosingDayData(AbstractVacationData):
 
     TAG = "CLOSINGDAY"
     DEFAULT_NAME = _("Closing")
+    DEFAULT_ID_PREFIX = "closing"
 
     def process_gantt(self):
         """Create or update Gantt objects and add them to dictionaries"""
@@ -1162,6 +1192,7 @@ class LeaveData(AbstractVacationData):
     DEFAULT_NAME = _("Leave")
 
     def __init__(self, pdata, name=None, fullname=None):
+        self.DEFAULT_ID_PREFIX = "leave"
         super().__init__(pdata, name, fullname)
         self.__resid = None
 
@@ -1189,6 +1220,7 @@ class ResourceData(AbstractData):
     TAG = "RESOURCE"
     DEFAULT_ICON_NAME = "resource.svg"
     READ_ONLY_ITEMS = ("project",)
+    DEFAULT_ID_PREFIX = "resource"
 
     def __init__(self, pdata, name=None, fullname=None):
         super().__init__(pdata, name, fullname)
@@ -1217,6 +1249,7 @@ class ProjectData(AbstractData):
     DEFAULT_COLOR = DataItem.COLORS["silver"]
     DEFAULT_NAME = _("Project")
     READ_ONLY_ITEMS = ()
+    DEFAULT_ID_PREFIX = "project"
 
     def __init__(
         self,
@@ -1232,10 +1265,6 @@ class ProjectData(AbstractData):
         )
 
         self.description = DataItem[str](self, "description", DTypes.LONG_TEXT, None)
-
-    @property
-    def default_id(self):
-        return f"prj-{id(self)}"
 
     @property
     def has_named_id(self):
@@ -1263,6 +1292,7 @@ class PlanningData(AbstractData):
     DEFAULT_NAME = _("All projects")
 
     def __init__(self, name=None, fullname=None):
+        self._default_id = "main_planning"
         super().__init__(self, name, fullname)
         self.all_projects: dict[Optional[str], gantt.Project] = {}
         self.all_resources: dict[str, gantt.Resource] = {}
@@ -1294,6 +1324,10 @@ class PlanningData(AbstractData):
             self.prjlist,
         )
         gantt.VACATIONS = []
+
+    @property
+    def default_id(self):
+        return self._default_id
 
     def set_filename(self, filename: str):
         """Set planning data XML filename"""

@@ -845,6 +845,8 @@ class TaskTreeWidget(BaseTreeWidget):
         """New task item"""
         item = self.get_current_item()
         data = TaskData(self.planning, EMPTY_NAME)
+        data.start.value = datetime.date.today()
+        data.duration.value = 1
         current_data = self.get_current_data()
         if self.planning is None:
             return
@@ -861,8 +863,13 @@ class TaskTreeWidget(BaseTreeWidget):
 
             if isinstance(current_data, AbstractTaskData):
                 data.depends_on.value = [current_data.id.value]
+                data.start.value = current_data.stop.value or current_data.start.value
+                data.duration.value = 1
+
             elif len(resids) == 1:
                 current_data = list(self.planning.iterate_task_data(resids))[-1]
+                data.start.value = current_data.stop.value or current_data.start.value
+                data.duration.value = 1
 
         data.set_resource_ids(resids)
         self.planning.add_task(data, after_data=current_data)
@@ -1176,7 +1183,8 @@ class ProjectTreeWidget(BaseTreeWidget):
         item = self.get_current_item()
         project_id = self.get_id_from_item(item)
         if self.planning is not None and project_id is not None:
-            self.planning.projects.pop(project_id, None)
+            project_to_delete = self.planning.projects.pop(project_id)
+            self.planning.prjlist.remove(project_to_delete)
             self._update_project_names()
             self.repopulate()
 
