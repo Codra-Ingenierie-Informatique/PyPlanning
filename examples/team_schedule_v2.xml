@@ -3,6 +3,7 @@
     <CHART start="30/01/23" stop="05/03/23" today="01/02/23" type="r" scale="d" t0mode="False" />
     <CHART start="01/01/23" stop="30/06/23" today="23/01/23" type="r" scale="w" t0mode="False" />
     <CHART start="01/12/22" stop="30/08/23" today="18/01/23" type="t" scale="w" t0mode="False" />
+    <CHART start="01/12/22" stop="30/08/23" type="m" projects="ABC, F" />
   </CHARTS>
   <TASKS>
     <RESOURCE name="PSm" fullname="Paul Smith">
@@ -114,9 +115,9 @@
     <CLOSINGDAY start="25/12/24" />
   </CLOSINGDAYS>
   <PROJECTS>
-    <PROJECT name="ABC" color="s" id="ABC" />
+    <PROJECT name="ABC" color="r" id="ABC" />
     <PROJECT name="B" color="s" id="B" />
     <PROJECT name="E" color="s" id="E" />
-    <PROJECT name="F" color="s" id="F" />
+    <PROJECT name="F" color="g" id="F" />
   </PROJECTS>
 </PLANNING>
