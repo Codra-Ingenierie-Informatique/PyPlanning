@@ -76,10 +76,12 @@ class PlanningEditor(QStackedWidget):
 
     def clear_all(self):
         """Clear all contents"""
+        self.trees.blockSignals(True)
         if self.xml_mode:
             self.code.setPlainText(PlanningData().to_text())
         else:
             self.trees.setup(PlanningData())
+        self.trees.blockSignals(False)
 
     def load_file(self, path):
         """Load data from file"""
@@ -113,7 +115,10 @@ class PlanningEditor(QStackedWidget):
             self.trees.chart_tree.repopulate()
 
         for chart_path in default_charts_paths:
-            os.rename(osp.join(chart_path + ".tmp"), chart_path)
+            if not osp.exists(chart_path):
+                os.rename(osp.join(chart_path + ".tmp"), chart_path)
+            else:
+                os.remove(osp.join(chart_path + ".tmp"))
 
     def set_text_and_path(self, text, path):
         """Set text and path
@@ -158,10 +163,15 @@ class PlanningPreview(QTabWidget):
             for index in reversed(range(self.count())):
                 if to_remove == self.tabText(index):
                     self.removeTab(index)
+                    pop = None
                     if to_remove in self.views:
-                        self.views.pop(to_remove)
-                    if self.__path is not None and osp.exists(
-                        path_to_remove := osp.join(self.__path, to_remove)
+                        pop = self.views.pop(to_remove)
+                    if (
+                        pop is not None
+                        and self.__path is not None
+                        and osp.exists(
+                            path_to_remove := osp.join(self.__path, to_remove)
+                        )
                     ):
                         os.remove(path_to_remove)
         for i, (fname, bname) in enumerate(zip(fnames, bnames)):
@@ -299,7 +309,6 @@ class PlanningCentralWidget(QSplitter):
         """
         if planning is None and (planning := self.planning) is None:
             return
-        self.planning = planning
         planning.update_chart_names()
         chart_count = len(planning.chtlist)
         if self.preview.count() != chart_count or force:
@@ -323,8 +332,8 @@ class PlanningCentralWidget(QSplitter):
     def load_file(self, path: str):
         """Load file"""
         self.path = path
-        self.preview.clear_all_tabs()
         self.editor.clear_all()
+        self.preview.clear_all_tabs()
         self.editor.load_file(path)
         self.__adjust_sizes()
 
