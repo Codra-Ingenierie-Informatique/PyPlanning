@@ -36,6 +36,7 @@ AnyData = Union[
     "MilestoneData",
     "LeaveData",
     "AbstractTaskData",
+    "ProjectData",
 ]
 
 
@@ -1244,10 +1245,16 @@ class ProjectData(AbstractData):
         super()._init_from_element(element)
         self.color: DataItem[str] = self.get_color(self.DEFAULT_COLOR)
         self.description: DataItem[str] = self.get_long_text("description")
+        self.show_description: DataItem[bool] = self.get_bool("show_description")
 
     def get_attrib_names(self):
         attrib_names = super().get_attrib_names()
-        return attrib_names + ["project_status", "advancement_status", "description"]
+        return attrib_names + [
+            "project_status",
+            "advancement_status",
+            "description",
+            "show_description",
+        ]
 
 
 class PlanningData(AbstractData):
