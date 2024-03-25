@@ -846,6 +846,8 @@ class TaskTreeWidget(BaseTreeWidget):
         item = self.get_current_item()
         data = TaskData(self.planning, EMPTY_NAME)
         current_data = self.get_current_data()
+        if self.planning is None:
+            return
         if isinstance(current_data, ResourceData):
             resids = [current_data.id.value]
         else:
@@ -853,14 +855,17 @@ class TaskTreeWidget(BaseTreeWidget):
                 resids = []
             else:
                 resids = [self.get_id_from_item(item.parent())]
+
             if current_data is not None:
                 data.project.value = current_data.project.value
-            if isinstance(data, AbstractTaskData) and current_data is not None:
+
+            if isinstance(current_data, AbstractTaskData):
                 data.depends_on.value = [current_data.id.value]
+            elif isinstance(current_data, LeaveData) and len(resids) == 1:
+                current_data = list(self.planning.iterate_task_data(resids))[-1]
 
         data.set_resource_ids(resids)
-        if self.planning:
-            self.planning.add_task(data, after_data=current_data)
+        self.planning.add_task(data, after_data=current_data)
         self.__add_taskitem(data)
         self.set_current_id(data.id.value)
         self.repopulate()
