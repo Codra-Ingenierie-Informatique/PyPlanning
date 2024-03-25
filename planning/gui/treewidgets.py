@@ -861,7 +861,7 @@ class TaskTreeWidget(BaseTreeWidget):
 
             if isinstance(current_data, AbstractTaskData):
                 data.depends_on.value = [current_data.id.value]
-            elif isinstance(current_data, LeaveData) and len(resids) == 1:
+            elif len(resids) == 1:
                 current_data = list(self.planning.iterate_task_data(resids))[-1]
 
         data.set_resource_ids(resids)
