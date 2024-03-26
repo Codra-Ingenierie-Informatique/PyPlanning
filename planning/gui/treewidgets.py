@@ -1329,6 +1329,7 @@ class TreeWidgets(QW.QSplitter):
     def setup(self, planning):
         """Setup tree widgets"""
         self.planning = planning
+        self.planning.process_gantt()
         for tree in self.forest:
             tree.setup(planning)
 

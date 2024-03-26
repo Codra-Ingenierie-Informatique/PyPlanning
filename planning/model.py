@@ -865,10 +865,8 @@ class AbstractTaskData(AbstractDurationData):
                     task.depends_on = []
 
         proj_id = self.project.value
-        # if proj_id not in self.pdata.all_projects:
-        #     self.pdata.all_projects[proj_id] = gantt.Project(
-        #         name=str(proj_id), description="Description of this project"
-        #     )
+        if proj_id not in self.pdata.all_projects:
+            self.pdata.process_gantt()
         proj_id = self.project.value
         self.pdata.all_projects[proj_id].add_task(task)
         self.pdata.all_tasks[self.id.value] = task
@@ -931,9 +929,10 @@ class AbstractTaskData(AbstractDurationData):
             old_id = data.id.value
             new_id = data.create_id()
             self.depends_on.value[i] = new_id
-            if old_id in self.pdata.all_tasks:
-                self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
-                data.id.value = new_id
+            if old_id not in self.pdata.all_tasks:
+                data.process_gantt()
+            self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
+            data.id.value = new_id
 
     def update_task_choices(self, force=False):
         """Update task choices"""
