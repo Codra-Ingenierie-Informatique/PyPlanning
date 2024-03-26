@@ -2781,8 +2781,14 @@ class Project(object):
         line_count = len(text_lines)
         if not self.name:
             return None, 0.0
+
+        title_capital_chars = sum(1 for char in self.name if char.isupper())
+        title_lower_chars = len(self.name) - title_capital_chars
+        title_width = (
+            title_capital_chars * font_size / 1.5 + title_lower_chars * font_size / 2
+        )
         max_line_char_count = max(len(line) for line in text_lines)
-        width = int(max_line_char_count * font_size / 2 + 2 * margin)
+        width = int(max(title_width, max_line_char_count * font_size / 2) + 2 * margin)
 
         height = line_count * font_size + 2 * margin
 
@@ -2790,7 +2796,6 @@ class Project(object):
         y_top_left = (prev_y + 0.5) * cm
         desc_box = svgwrite.container.Group()
 
-        title_width = len(text_lines[0]) * font_size / 2
         desc_box.add(
             svgwrite.shapes.Line(
                 start=(title_width + 1 * cm, y_top_left),
