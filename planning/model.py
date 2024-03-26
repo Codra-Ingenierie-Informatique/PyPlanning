@@ -1321,6 +1321,7 @@ class PlanningData(AbstractData):
             self.prjlist,
         )
         gantt.VACATIONS = []
+        self.process_gantt()
 
     @property
     def default_id(self):

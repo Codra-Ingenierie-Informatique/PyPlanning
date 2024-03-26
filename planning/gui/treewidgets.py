@@ -1326,10 +1326,9 @@ class TreeWidgets(QW.QSplitter):
         """Reimplement QWidget method"""
         self.__set_toolbars_state()
 
-    def setup(self, planning):
+    def setup(self, planning: PlanningData):
         """Setup tree widgets"""
         self.planning = planning
-        self.planning.process_gantt()
         for tree in self.forest:
             tree.setup(planning)
 
