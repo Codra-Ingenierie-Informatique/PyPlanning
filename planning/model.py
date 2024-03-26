@@ -719,9 +719,7 @@ class ChartData(AbstractDurationData):
 
     def set_today(self):
         """Set today item value to... today"""
-        self.today.value = datetime.date.today().replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
+        self.today.value = datetime.date.today()
 
     def set_chart_filename(self, xml_filename: str, index: int):
         """Set chart index, and then chart name to default xml_filename+index if no
@@ -814,7 +812,7 @@ class AbstractTaskData(AbstractDurationData):
     def __init__(self, pdata, name=None, fullname=None):
         super().__init__(pdata, name, fullname)
         self.depends_on = DataItem[list[str]](self, "depends_on", DTypes.LIST, None)
-        self.percent_done = DataItem[int](self, "percent_done", DTypes.INTEGER, 0)
+        # self.percent_done = DataItem[int](self, "percent_done", DTypes.INTEGER, None)
         self.task_number = DataItem[str](self, "task_number", DTypes.TEXT, None)
         self.depends_on_task_number = DataItem[list[str]](
             self,
@@ -834,7 +832,7 @@ class AbstractTaskData(AbstractDurationData):
         """Init instance from XML element"""
         super()._init_from_element(element)
         self.depends_on: DataItem[list[str]] = self.get_list("depends_on")
-        self.percent_done: DataItem[int] = self.get_int("percent_done")
+        # self.percent_done: DataItem[int] = self.get_int("percent_done")
         self.depends_on_task_number = DataItem[list[str]](
             self,
             "depends_on_task_number",

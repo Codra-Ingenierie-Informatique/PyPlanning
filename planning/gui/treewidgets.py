@@ -863,7 +863,11 @@ class TaskTreeWidget(BaseTreeWidget):
 
             if isinstance(current_data, AbstractTaskData):
                 data.depends_on.value = [current_data.id.value]
-                data.start.value = current_data.stop.value or current_data.start.value
+                data.start.value = (
+                    current_data.stop_calc.value
+                    if isinstance(current_data, TaskData)
+                    else current_data.stop.value
+                )
                 data.duration.value = 1
 
             elif len(resids) == 1:
