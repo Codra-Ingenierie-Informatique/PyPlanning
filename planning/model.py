@@ -920,7 +920,7 @@ class AbstractTaskData(AbstractDurationData):
         if self.depends_on.value is None:
             return
         self.depends_on_task_number.value = []
-        for t_id in self.depends_on.value:
+        for i, t_id in enumerate(self.depends_on.value):
             data: AbstractTaskData | None = self.pdata.get_data_from_id(t_id)
             if data is self or data is None:
                 continue
@@ -932,9 +932,9 @@ class AbstractTaskData(AbstractDurationData):
 
             old_id = data.id.value
             new_id = data.create_id()
+            self.depends_on.value[i] = new_id
             if old_id in self.pdata.all_tasks:
                 self.pdata.all_tasks[new_id] = self.pdata.all_tasks.pop(old_id)
-
                 data.id.value = new_id
 
     def update_task_choices(self, force=False):

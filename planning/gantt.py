@@ -880,12 +880,11 @@ class Task(object):
         Keyword arguments:
         depends_on -- list of Task which are parents of this one
         """
-        if type(depends_on) is type([]):
+        if isinstance(depends_on, list):
             if self.depends_on is None:
                 self.depends_on = depends_on
             else:
-                for d in depends_on:
-                    self.depends_on.append(d)
+                self.depends_on.extend(depends_on)
         else:
             if self.depends_on is None:
                 self.depends_on = depends_on
