@@ -2884,9 +2884,10 @@ class Project(object):
 
         prj = svgwrite.container.Group()
 
+        is_macro_project = macro_mode and level > 0
         macro_drawn = False
         for t in self.tasks:
-            if macro_mode and type(t) is Task:
+            if is_macro_project and type(t) is Task:
                 if macro_drawn:
                     continue
                 else:
