@@ -820,10 +820,10 @@ class AbstractTaskData(AbstractDurationData):
         self.depends_on_task_number = DataItem[list[str]](
             self,
             "depends_on_task_number",
-            DTypes.MULTIPLE_CHOICE,
+            DTypes.LIST,
             value=None,
-            choices=[(self.task_number.value, self.name.value)],
-            default_choice_mode=DefaultChoiceMode.NONE,
+            # choices=[(self.task_number.value, self.name.value)],
+            # default_choice_mode=DefaultChoiceMode.NONE,
         )
         self.update_project_choice()
 
@@ -839,10 +839,10 @@ class AbstractTaskData(AbstractDurationData):
         self.depends_on_task_number = DataItem[list[str]](
             self,
             "depends_on_task_number",
-            DTypes.MULTIPLE_CHOICE,
+            DTypes.LIST,
             value=None,
-            choices=[(self.task_number.value, self.name.value)],
-            default_choice_mode=DefaultChoiceMode.NONE,
+            # choices=[(self.task_number.value, self.name.value)],
+            # default_choice_mode=DefaultChoiceMode.NONE,
         )
         self.update_project_choice()
 
