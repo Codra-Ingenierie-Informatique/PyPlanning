@@ -1,5 +1,35 @@
 # PyPlanning Releases #
 
+## Version 2.0.0 ##
+
+💥 Changes:
+
+* New Project Tree that allows users to create, delete, modify and organise projects
+  * Project selections for charts has not changed
+  * Project selection for tasks is now done via a combobox
+  * Projects color can be modified
+  * Projects have descritpions that can be displayed on the chart
+* [Issue #20](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/20) - The chart type combobox contains a new option "Macro Tasks"
+* Smaller changes:
+  * Updated id generation to be shorter and more explicit
+  * Updated date handling when creating a new task
+  * Changes in the xml format to suite new needs
+  * Version attribute
+
+🛠️ Bug fixes:
+
+* Fix some translations
+* Fix bugs related to tasks number when moving up or down:
+  * Selected task number not changing
+  * crash when moving to first position
+* Fix error when creating a task in empty Task Tree
+* Fix task number == 0 or None when task created on Ressource Id
+* Fix chart not updating on project selection
+* Fix svg deletion when opening another planning, *saving as* or creating a new planning
+* Fix error when creating a new task by clicking on a *leave* row
+* Fix internal with due to incompatibility between date and datetime objects
+* Updated choice editors (Single choice and multiple choices) to have several default selection mode. The previous working mode could block the user in some instances by not allowing to select an empty value. Also, the multiple selection widget had a bug that prevented its values to be saved and retrived correctly from the xml.
+
 ## Version 1.6.0 ##
 
 💥 Changes:
