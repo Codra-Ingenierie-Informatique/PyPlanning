@@ -1112,7 +1112,7 @@ class ProjectTreeWidget(BaseTreeWidget):
     TITLE = _("Project tree")
     NAMES = (
         _("Name"),
-        _("color"),
+        _("Color"),
         _("Show description"),
         _("Description"),
     )
