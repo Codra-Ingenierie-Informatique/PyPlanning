@@ -639,7 +639,7 @@ class ChartData(AbstractDurationData):
         ("w", _("Weeks")),
         ("m", _("Months")),
     )
-    TYPES = (("r", _("Resources")), ("t", _("Tasks")), ("m", _("Macro task")))
+    TYPES = (("r", _("Resources")), ("t", _("Tasks")), ("m", _("Macro tasks")))
     TAG = "CHART"
     DEFAULT_ICON_NAME = "chart.svg"
     READ_ONLY_ITEMS = ("fullname", "color")
@@ -687,6 +687,9 @@ class ChartData(AbstractDurationData):
         self.projects = self.get_multi_choices(
             "projects", [], self.pdata.project_choices(), DefaultChoiceMode.NONE
         )
+        if self.projects.value is not None and self.project.value is not None:
+            self.projects.value = [self.project.value]
+            self.project.value = None
         self.set_is_default_name()
 
     def get_attrib_names(self):

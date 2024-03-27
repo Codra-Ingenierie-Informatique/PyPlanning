@@ -369,8 +369,8 @@ msgid "Months"
 msgstr "Mois"
 
 #: planning\model.py:642
-msgid "Macro task"
-msgstr "Tâche macro"
+msgid "Macro tasks"
+msgstr "Tâches macro"
 
 #: planning\model.py:642
 msgid "Resources"
