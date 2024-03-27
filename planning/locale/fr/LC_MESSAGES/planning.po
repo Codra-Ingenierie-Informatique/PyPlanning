@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-03-26 14:43+0100\n"
+"POT-Creation-Date: 2024-03-27 14:04+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -236,7 +236,7 @@ msgstr "Durée"
 msgid "End"
 msgstr "Fin"
 
-#: planning\gui\treewidgets.py:658
+#: planning\gui\treewidgets.py:658 planning\gui\treewidgets.py:1115
 msgid "Color"
 msgstr "Couleur"
 
@@ -248,7 +248,7 @@ msgstr "N°"
 msgid "Depends on"
 msgstr "Prédécesseurs"
 
-#: planning\gui\treewidgets.py:661 planning\model.py:1247
+#: planning\gui\treewidgets.py:661 planning\model.py:1250
 msgid "Project"
 msgstr "Projet"
 
@@ -316,10 +316,6 @@ msgstr "Nouveau graphe"
 msgid "Project tree"
 msgstr "Arbres des projets"
 
-#: planning\gui\treewidgets.py:1115
-msgid "color"
-msgstr "Couleur"
-
 #: planning\gui\treewidgets.py:1116
 msgid "Show description"
 msgstr "Afficher la des description"
@@ -380,15 +376,15 @@ msgstr "Ressources"
 msgid "Tasks"
 msgstr "Tâches"
 
-#: planning\model.py:1177
+#: planning\model.py:1180
 msgid "Closing"
 msgstr "Fermeture"
 
-#: planning\model.py:1189
+#: planning\model.py:1192
 msgid "Leave"
 msgstr "Absence"
 
-#: planning\model.py:1289
+#: planning\model.py:1292
 msgid "All projects"
 msgstr "Tous les projets"
 
@@ -403,3 +399,6 @@ msgstr "fonction"
 #: planning\utils\qthelpers.py:47
 msgid "Error message:"
 msgstr "Message d'erreur :"
+
+#~ msgid "color"
+#~ msgstr "Couleur"
