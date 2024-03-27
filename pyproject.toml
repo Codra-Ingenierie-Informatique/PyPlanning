@@ -9,7 +9,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "PyPlanning"
-authors = [{ name = "Codra", email = "p.raybaut@codra.fr" }]
+authors = [{ name = "Pierre Raybaut", email = "p.raybaut@codra.fr" }]
+maintainers = [{ name = "PyPlanning Developers", email = "p.raybaut@codra.fr" }]
 description = "Manage team schedules and quickly create simple project plannings"
 readme = "README.md"
 license = { file = "LICENSE" }

@@ -470,12 +470,14 @@ Please check the file content."""
 
     def about(self):
         """About dialog box"""
+        created_by = _("Created by")
+        dev_by = _("Developed and maintained by %s open-source project team") % APP_NAME
+        cprght = "2024 PyPlanning Developers"
         QW.QMessageBox.about(
             self,
             _("About") + APP_NAME,
             f"""<b>{APP_NAME}</b> v{__version__}<br>{APP_DESC}
-            <p>{_('Software created by')} Pierre Raybaut
-            <br>Copyright &copy; 2022 Codra
+            <p>{created_by} Pierre Raybaut<br>{dev_by}<br>Copyright &copy; {cprght}
             <p>guidata {GUIDATA_VERSION_STR}
             <br>Python {platform.python_version()},
             Qt {QC.__version__} {_('under')} {platform.system()}

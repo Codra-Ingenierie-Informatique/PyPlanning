@@ -13,7 +13,7 @@ import planning  # noqa: E402
 
 project = "PyPlanning"
 author = ""
-copyright = "2023, Codra - Pierre Raybaut"
+copyright = "2024, PyPlanning Developers"
 html_logo = latex_logo = "_static/PyPlanning-title.png"
 release = planning.__version__
 
