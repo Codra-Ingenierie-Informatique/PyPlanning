@@ -22,8 +22,8 @@
       <LEAVE start="06/02/23" stop="10/02/23" />
     </RESOURCE>
     <RESOURCE name="CDo" fullname="Christopher Douglas">
-      <TASK start="02/01/23" stop="31/03/23" name="Project ABC / Task #41" project="ABC" />
-      <TASK duration="100" name="Project ABC / Task #44" project="ABC" color="o" />
+      <TASK start="02/01/23" stop="31/03/23" name="Project ABC / Task #41" project="project-d0f20c" />
+      <TASK duration="100" name="Project ABC / Task #44" project="project-d0f20c" color="o" />
     </RESOURCE>
     <RESOURCE name="OMo" fullname="Oliver Monroe">
       <TASK start="02/01/23" stop="28/02/23" name="Quality management" />
@@ -56,29 +56,29 @@
       <TASK duration="30" name="Project F / Task #1" />
       <TASK duration="75" name="Project F / Task #2" />
     </RESOURCE>
-    <TASK start="08/03/22" duration="45" name="Coding CodraFT v1.8" project="B" color="c" />
-    <TASK duration="7" name="Integration CodraFT v1.8" project="B" color="c" />
-    <TASK duration="4" name="Internal review CodraFT v1.8" project="B" color="c" />
-    <TASK start="01/01/22" duration="90" name="Coding / Unit tests" project="E" color="s" />
-    <TASK duration="34" name="Integration" project="E" color="s" />
-    <TASK duration="10" name="Preparing FAT" project="E" color="s" />
-    <TASK duration="2" name="Factory Acceptance Testing (Sim)" project="E" color="r" />
-    <TASK duration="10" name="Fixes and final delivery" project="E" color="s" id="100" />
-    <TASK start="31/08/22" duration="5" name="Testing with real instruments" project="E" color="s" id="101" />
-    <TASK start="14/09/22" duration="5" name="Testing with real instruments" project="E" color="s" />
-    <TASK duration="15" name="Factory Acceptance Testing (Real)" project="E" color="s" />
-    <TASK start="14/02/22" duration="62" name="Coding / Unit tests" project="B" color="s" />
-    <TASK duration="10" name="Integration and preparing FAT" project="B" color="s" />
-    <TASK duration="5" name="Factory Acceptance Testing (Sim)" project="B" color="r" />
-    <TASK duration="10" name="Fixes and final delivery" project="B" color="s" />
-    <TASK start="02/08/22" duration="3" name="Testing with real instruments" project="B" color="s" />
-    <TASK start="12/05/22" duration="36" name="Preliminary design" project="F" color="s" />
-    <TASK duration="9" name="PDR" project="F" color="s" />
-    <TASK duration="100" name="Factory Acceptance Testing (Real)" project="F" color="s" />
-    <TASK duration="20" name="CDR" project="F" color="s" />
-    <TASK duration="85" name="Coding/testing/Sim FAT" project="F" color="s" />
-    <TASK duration="36" name="FAT (Real)" project="F" color="s" />
-    <MILESTONE name="Milestone" project="F" />
+    <TASK start="08/03/22" duration="45" name="Coding CodraFT v1.8" project="project-e4a6fb" color="c" />
+    <TASK duration="7" name="Integration CodraFT v1.8" project="project-e4a6fb" color="c" />
+    <TASK duration="4" name="Internal review CodraFT v1.8" project="project-e4a6fb" color="c" />
+    <TASK start="01/01/22" duration="90" name="Coding / Unit tests" project="project-08bcd2" color="s" />
+    <TASK duration="34" name="Integration" project="project-08bcd2" color="s" />
+    <TASK duration="10" name="Preparing FAT" project="project-08bcd2" color="s" />
+    <TASK duration="2" name="Factory Acceptance Testing (Sim)" project="project-08bcd2" color="r" />
+    <TASK duration="10" name="Fixes and final delivery" project="project-08bcd2" color="s" id="100" />
+    <TASK start="31/08/22" duration="5" name="Testing with real instruments" project="project-08bcd2" color="s" id="101" />
+    <TASK start="14/09/22" duration="5" name="Testing with real instruments" project="project-08bcd2" color="s" />
+    <TASK duration="15" name="Factory Acceptance Testing (Real)" project="project-08bcd2" color="s" />
+    <TASK start="14/02/22" duration="62" name="Coding / Unit tests" project="project-e4a6fb" color="s" />
+    <TASK duration="10" name="Integration and preparing FAT" project="project-e4a6fb" color="s" />
+    <TASK duration="5" name="Factory Acceptance Testing (Sim)" project="project-e4a6fb" color="r" />
+    <TASK duration="10" name="Fixes and final delivery" project="project-e4a6fb" color="s" />
+    <TASK start="02/08/22" duration="3" name="Testing with real instruments" project="project-e4a6fb" color="s" />
+    <TASK start="12/05/22" duration="36" name="Preliminary design" project="project-09839b" color="s" />
+    <TASK duration="9" name="PDR" project="project-09839b" color="s" />
+    <TASK duration="100" name="Factory Acceptance Testing (Real)" project="project-09839b" color="s" />
+    <TASK duration="20" name="CDR" project="project-09839b" color="s" />
+    <TASK duration="85" name="Coding/testing/Sim FAT" project="project-09839b" color="s" />
+    <TASK duration="36" name="FAT (Real)" project="project-09839b" color="s" />
+    <MILESTONE name="Milestone" project="project-09839b" />
   </TASKS>
   <CLOSINGDAYS>
     <CLOSINGDAY start="18/04/22" />
@@ -114,9 +114,9 @@
     <CLOSINGDAY start="25/12/24" />
   </CLOSINGDAYS>
   <PROJECTS>
-    <PROJECT name="ABC" color="s" id="ABC" show_description="True" />
-    <PROJECT name="B" color="s" id="B" show_description="True" />
-    <PROJECT name="E" color="s" id="E" show_description="True" />
-    <PROJECT name="F" color="o" id="F" show_description="True" />
+    <PROJECT name="ABC" color="s" id="project-d0f20c" show_description="True" />
+    <PROJECT name="B" color="s" id="project-e4a6fb" show_description="True" />
+    <PROJECT name="E" color="s" id="project-08bcd2" show_description="True" />
+    <PROJECT name="F" color="s" id="project-09839b" show_description="True" />
   </PROJECTS>
 </PLANNING>
