@@ -1578,8 +1578,9 @@ class PlanningData(AbstractData):
     ):
         """Add task/milestone to planning"""
         index = None
+        task_number_index = None
         if isinstance(after_data, TaskData):
-            index = self.tsklist.index(after_data)
+            index = task_number_index = self.tsklist.index(after_data)
         elif isinstance(after_data, ResourceData):
             # Sum all task indexes for all resources before:
             resids = []
@@ -1591,8 +1592,9 @@ class PlanningData(AbstractData):
             for resid in resids:
                 for _task in self.iterate_task_data(only=[resid]):
                     index += 1
+            task_number_index = index + 1
         self.__append_or_insert(self.tsklist, index, data)
-        self.update_task_number(index)
+        self.update_task_number(task_number_index)
 
     def add_project(self, project: ProjectData, after_data: Optional[ProjectData]):
         self.projects[str(project.id.value)] = project
