@@ -434,13 +434,8 @@ class AbstractData:
         self.fullname: DataItem[str] = self.get_str("fullname")
         self.color: DataItem[str] = self.get_color(default=self.DEFAULT_COLOR)
 
-        # This section has been added to open older files that do not have the
-        # PROJECTS section in the XML file
-        project_name = element.get("project", None)
-        if project_name is not None and project_name not in self.pdata.projects:
-            new_project = ProjectData(self.pdata, name=project_name)
-            new_project.id.value = project_name
-            self.pdata.add_project(new_project, None)
+        self._check_create_missing_project(element)
+
         self.project: DataItem[str] = self.get_choices(
             "project", default=None, choices=self.pdata.project_choices()
         )
@@ -470,6 +465,25 @@ class AbstractData:
             ):
                 attrib[name] = ditem.to_text()
         return attrib
+
+    def _check_create_missing_project(self, element: ET.Element):
+        """Check if project attribute is set and is an exisiting project id. If not,
+        checks if it is an existing project name. If not, creates a new project.
+
+        Args:
+            element: element which can contain a project attribute to check
+        """
+        project_attr = element.get("project", None)
+        if project_attr is not None and project_attr not in self.pdata.projects:
+            project_names = tuple(prj.name.value for prj in self.pdata.prjlist)
+            if project_attr not in project_names:
+                new_project = ProjectData(self.pdata, name=project_attr)
+                self.pdata.add_project(new_project, None)
+                element.set("project", new_project.id.value or "")
+            else:
+                project_index = project_names.index(project_attr)
+                project = self.pdata.prjlist[project_index]
+                element.set("project", project.id.value or "")
 
     def get_attrib_names(self):
         """Return attribute names"""
