@@ -92,6 +92,7 @@ class PlanningMainWindow(QW.QMainWindow):
         self.edit_menu = None
         self.charts_menu = None
         self.tasks_menu = None
+        self.projects_menu = None
         self.help_menu = None
 
         self.create_actions()
@@ -293,6 +294,8 @@ Thanks for your patience."""
         add_actions(self.tasks_menu, actions["tasks"])
         self.charts_menu = self.menuBar().addMenu(_("&Charts"))
         add_actions(self.charts_menu, actions["charts"])
+        self.projects_menu = self.menuBar().addMenu(_("&Projects"))
+        add_actions(self.projects_menu, actions["projects"])
         self.menuBar().addSeparator()
         help_menu = self.menuBar().addMenu("?")
         logv_act = create_action(

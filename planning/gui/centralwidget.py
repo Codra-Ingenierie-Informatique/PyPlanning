@@ -72,6 +72,7 @@ class PlanningEditor(QStackedWidget):
             "edit": self.trees.common_actions,
             "charts": self.trees.chart_tree.specific_actions,
             "tasks": self.trees.task_tree.specific_actions,
+            "projects": self.trees.project_tree.specific_actions,
         }
 
     def clear_all(self):
