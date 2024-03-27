@@ -1145,7 +1145,7 @@ class ProjectTreeWidget(BaseTreeWidget):
         self.new_project_action = create_action(
             self,
             _("New project"),
-            icon=get_icon("new_chart.svg"),
+            icon=get_icon("new_project.svg"),
             triggered=self.new_project,
         )
         self.remove_action = create_action(
