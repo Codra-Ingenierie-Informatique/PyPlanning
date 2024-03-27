@@ -206,7 +206,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
         elif ditem.datatype == DTypes.MULTIPLE_CHOICE:
             value = editor.currentData()
         else:
-            value = editor.text()
+            value = editor.text().strip()
             if ditem.name == "name" and len(value) == 0:
                 value = EMPTY_NAME
             elif value == "":
