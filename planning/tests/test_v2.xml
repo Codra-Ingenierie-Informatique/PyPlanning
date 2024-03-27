@@ -115,8 +115,8 @@
   </CLOSINGDAYS>
   <PROJECTS>
     <PROJECT name="ABC" color="s" id="ABC" show_description="True" />
-    <PROJECT name="B" color="s" id="B" />
-    <PROJECT name="E" color="s" id="E" />
-    <PROJECT name="F" color="s" id="F" />
+    <PROJECT name="B" color="s" id="B" show_description="True" />
+    <PROJECT name="E" color="s" id="E" show_description="True" />
+    <PROJECT name="F" color="o" id="F" show_description="True" />
   </PROJECTS>
 </PLANNING>
