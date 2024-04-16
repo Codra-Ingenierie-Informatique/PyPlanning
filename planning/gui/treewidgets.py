@@ -429,6 +429,7 @@ class BaseTreeWidget(QW.QTreeView):
         """Update context menu"""
         self.menu.clear()
         indexes = self.selectedIndexes()
+        self.set_specific_actions_state(bool(indexes))
         actions = self.get_actions_from_indexes(indexes)
         if actions:
             actions.append(None)
