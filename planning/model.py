@@ -307,7 +307,7 @@ class DataItem(Generic[_T]):
         if self.datatype == DTypes.COLOR:
             self.value = self.get_html_color(text)
         elif self.datatype == DTypes.TEXT or self.datatype == DTypes.LONG_TEXT:
-            self.value = None if len(text) == 0 else text
+            self.value = None if len(text) == 0 else text.strip()
         elif self.datatype == DTypes.INTEGER:
             self.value = None if text == "" else int(text)
         elif self.datatype == DTypes.LIST:
@@ -352,7 +352,7 @@ class AbstractData:
     DEFAULT_NAME = None
     DEFAULT_COLOR = None
     READ_ONLY_ITEMS = ()
-    NO_COPY: tuple[str, ...] = ("pdata",)
+    __NO_COPY: tuple[str, ...] = ("pdata",)
     DEFAULT_ID_PREFIX = "default"
 
     def __init__(self, pdata: "PlanningData", name=None, fullname=None):
@@ -384,21 +384,26 @@ class AbstractData:
 
     def duplicate(self):
         """Duplicate data set"""
-        new_item = deepcopy(self)
-        new_item.pdata = self.pdata
-        new_item.id.value = new_item.default_id
-        return new_item
-
-    def __deepcopy__(self, memo):
-        """Deepcopy method"""
         cls = self.__class__
-        obj = cls.__new__(cls)
-        memo[id(self)] = obj
-        for k, v in self.__dict__.items():
-            if k in self.NO_COPY:
-                v = dict()
-            setattr(obj, k, deepcopy(v, memo))
-        return obj
+        new_data = cls.__new__(cls)
+        for name, value in self.__dict__.items():
+            if name in self.__NO_COPY and value:
+                setattr(new_data, name, value)
+            else:
+                setattr(new_data, name, deepcopy(value))
+
+        copy_pattern = re.compile(r"\((\d+)\)$")
+        if re.search(copy_pattern, str(new_data.name.value)):
+            new_data.name.value = re.sub(
+                copy_pattern,
+                lambda m: f"({int(m.group(1)) + 1})",
+                str(new_data.name.value),
+            )
+        else:
+            new_data.name.value = f"{new_data.name.value} (1)"
+
+        new_data.id.value = new_data.create_id()
+        return new_data
 
     @property
     def gantt_object(

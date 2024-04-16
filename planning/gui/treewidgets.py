@@ -885,7 +885,7 @@ class TaskTreeWidget(BaseTreeWidget):
     def duplicate_task(self):
         """Duplicates the selected task."""
         current_data: AbstractData | None = self.get_current_data()
-        if isinstance(current_data, AbstractTaskData):
+        if isinstance(current_data, AbstractTaskData) and self.planning is not None:
             data = current_data.duplicate()
             self.planning.add_task(data, after_data=current_data)
             self.__add_taskitem(data)
@@ -922,7 +922,7 @@ class TaskTreeWidget(BaseTreeWidget):
         """Add resource item to tree"""
         self.add_or_update_item_row(data, group=True)
 
-    def __add_taskitem(self, data: MilestoneData | TaskData):
+    def __add_taskitem(self, data: AbstractTaskData):
         """Add task/milestone item to tree"""
         if isinstance(data, MilestoneData):
             self.add_or_update_item_row(data)
