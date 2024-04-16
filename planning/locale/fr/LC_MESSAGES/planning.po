@@ -326,7 +326,7 @@ msgstr "Arbres des projets"
 
 #: planning\gui\treewidgets.py:1116
 msgid "Show description"
-msgstr "Afficher la des description"
+msgstr "Afficher la description"
 
 #: planning\gui\treewidgets.py:1117
 msgid "Description"
