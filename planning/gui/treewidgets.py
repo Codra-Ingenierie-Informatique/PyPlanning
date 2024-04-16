@@ -1242,6 +1242,7 @@ class TreeWidgets(QW.QSplitter):
         self.task_tree.setFocus()
         self.chart_tree.set_specific_actions_state(False)
         self.chart_tree.toolbar.hide()
+        self.project_tree.toolbar.hide()
 
         self.setCollapsible(0, False)
         self.setCollapsible(1, False)

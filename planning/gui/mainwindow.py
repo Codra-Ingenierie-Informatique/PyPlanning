@@ -221,7 +221,6 @@ Thanks for your patience."""
         )
         self.xmlmode_act.setChecked(Conf.main.xml_mode.get(False))
 
-
         self.new_act = create_action(
             self,
             _("&New"),
