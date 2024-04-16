@@ -4,7 +4,6 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=no-member
 
-
 import datetime
 import os
 import re
@@ -152,9 +151,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
         self.commitData.emit(editor)
         self.closeEditor.emit(editor)
 
-    def setEditorData(
-        self, editor: ItemEditor, index: QC.QModelIndex
-    ):  # pylint: disable=invalid-name
+    def setEditorData(self, editor: ItemEditor, index: QC.QModelIndex):  # pylint: disable=invalid-name
         """Reimplement Qt method"""
         ditem = self.dataitem_from_index(index)
         value = ditem.to_widget_value()
@@ -1223,7 +1220,11 @@ class TreeWidgets(QW.QSplitter):
         self.project_tree = ProjectTreeWidget(self, debug=debug)
         self.chart_tree = ChartTreeWidget(self, debug=debug)
         self.task_tree = TaskTreeWidget(self, debug=debug)
-        self.forest = [self.chart_tree, self.task_tree, self.project_tree]
+        self.forest: list[BaseTreeWidget] = [
+            self.chart_tree,
+            self.task_tree,
+            self.project_tree,
+        ]
         for tree in self.forest:
             tree.SIG_MODEL_CHANGED.connect(self.model_has_changed)
             tree.pressed.connect(self.tree_pressed)

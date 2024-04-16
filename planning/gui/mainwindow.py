@@ -20,6 +20,7 @@ from guidata.qthelpers import add_actions, create_action, win32_fix_title_bar_ba
 from guidata.userconfig import get_config_basedir
 from guidata.widgets.console import DockableConsole
 from qtpy import QtCore as QC
+from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
 from qtpy.compat import getopenfilename, getsavefilename
 
@@ -95,9 +96,14 @@ class PlanningMainWindow(QW.QMainWindow):
         self.projects_menu = None
         self.help_menu = None
 
+        self.create_toolbars()
         self.create_actions()
         self.create_menus()
-        self.create_toolbars()
+
+        # This is necessary when the application is opened in xml mode
+        if self.central_widget.editor.xml_mode:
+            self.central_widget.editor.trees.hideEvent(QG.QHideEvent())
+
         self.statusBar().showMessage(_("Welcome to %s!") % APP_NAME, 5000)
 
         self.check_recent_files()
@@ -213,7 +219,9 @@ Thanks for your patience."""
         self.xmlmode_act = create_action(
             self, _("Advanced XML mode"), toggled=self.switch_xml_mode
         )
+        print("before")
         self.xmlmode_act.setChecked(Conf.main.xml_mode.get(False))
+        print("affter")
 
         self.new_act = create_action(
             self,
@@ -346,6 +354,7 @@ Thanks for your patience."""
 
     def switch_xml_mode(self, state):
         """Switch to XML advanced mode"""
+        print("trigger")
         if self.maybe_save(_("Switching mode")):
             if Conf.main.xml_mode.get(False) != state:
                 Conf.main.xml_mode.set(state)
