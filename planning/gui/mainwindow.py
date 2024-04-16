@@ -219,9 +219,8 @@ Thanks for your patience."""
         self.xmlmode_act = create_action(
             self, _("Advanced XML mode"), toggled=self.switch_xml_mode
         )
-        print("before")
         self.xmlmode_act.setChecked(Conf.main.xml_mode.get(False))
-        print("affter")
+
 
         self.new_act = create_action(
             self,
@@ -354,7 +353,6 @@ Thanks for your patience."""
 
     def switch_xml_mode(self, state):
         """Switch to XML advanced mode"""
-        print("trigger")
         if self.maybe_save(_("Switching mode")):
             if Conf.main.xml_mode.get(False) != state:
                 Conf.main.xml_mode.set(state)
