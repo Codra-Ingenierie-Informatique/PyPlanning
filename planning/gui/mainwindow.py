@@ -96,9 +96,9 @@ class PlanningMainWindow(QW.QMainWindow):
         self.projects_menu = None
         self.help_menu = None
 
-        self.create_toolbars()
         self.create_actions()
         self.create_menus()
+        self.create_toolbars()
 
         # This is necessary when the application is opened in xml mode
         if self.central_widget.editor.xml_mode:
