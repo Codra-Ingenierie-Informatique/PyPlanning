@@ -2521,15 +2521,9 @@ class Project(object):
 
         self._reset_coord()
 
-        if start is None:
-            start_date = self.start_date()
-        else:
-            start_date = start
+        start_date = self.start_date() if start is None else start
 
-        if end is None:
-            end_date = self.end_date()
-        else:
-            end_date = end
+        end_date = self.end_date() if end is None else end
 
         if start_date > end_date:
             message = "start date {0} > end_date {1}".format(start_date, end_date)
@@ -2601,10 +2595,7 @@ class Project(object):
 
             overcharged_days = r.search_for_task_conflicts()
 
-            if resource_on_left:
-                conflict_display_line = nline + 1
-            else:
-                conflict_display_line = nline
+            conflict_display_line = nline + 1 if resource_on_left else nline
             nline += 1
 
             vac = svgwrite.container.Group()
@@ -2720,6 +2711,15 @@ class Project(object):
                 opacity=1,
             )
         )
+        dwg.add(
+            svgwrite.shapes.Line(
+                start=((0) * cm, (nline + 1) * cm),
+                end=((maxx + 1 + offset / 10) * cm, (nline + 1) * cm),
+                stroke="black",
+                stroke_width=2,
+            )
+        )
+
         dwg.add(
             self._svg_calendar(
                 maxx, nline - 1, start_date, today, scale, offset=offset, t0mode=t0mode
