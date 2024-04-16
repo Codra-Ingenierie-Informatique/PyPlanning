@@ -1287,7 +1287,7 @@ class Task(object):
         svg.add(
             svgwrite.shapes.Rect(
                 insert=((x + 1 + offset) * mm, (y + 6) * mm),
-                size=(((d - 2)) * mm, 3 * mm),
+                size=((d - 2) * mm, 3 * mm),
                 fill="#909090",
                 stroke=color,
                 stroke_width=1,
@@ -2769,7 +2769,6 @@ class Project(object):
         margin: int = 5,
         font_size: int = 18,
     ) -> tuple[Optional[svgwrite.container.Group], float]:
-
         line_char_count = int(avail_width / (font_size / 2))
 
         text_lines = self.description.split("\n")
@@ -2958,7 +2957,6 @@ class Project(object):
                 cy -= 1
 
             if is_project_in_interval and level >= 1 and self.show_description:
-
                 x = _time_diff(scale, start, end, False) * 10
                 desc_box, px_desc_height = self.desc_svg(
                     400, color, x, prev_y, font_size=font_size

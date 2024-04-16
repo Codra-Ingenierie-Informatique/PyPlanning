@@ -16,6 +16,8 @@ from typing import Any, Generator, Generic, Optional, TypeVar, Union
 from planning import __version__, gantt
 from planning.config import MAIN_FONT_FAMILY, _
 
+locale.setlocale(locale.LC_TIME, "")
+
 VERSION = ".".join(__version__.split(".", 2)[0:2])
 
 gantt.define_font_attributes(
