@@ -71,7 +71,8 @@ class NoDefault:
 class DataItem(Generic[_T]):
     """Data elementary item"""
 
-    COLORS = {
+    COLORS: dict[str, str | None] = {
+        "": None,
         "orange": "#fab978",
         "red": "#e47172",
         "blue": "#53ccff",

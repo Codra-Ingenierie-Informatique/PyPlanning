@@ -571,9 +571,10 @@ class BaseTreeWidget(QW.QTreeView):
                 item.setText(text)
                 if ditem is not None:
                     self.update_item_icon(item, ditem)
-                    if ditem.datatype == DTypes.COLOR and ditem.value is not None:
-                        color = ditem.get_html_color(ditem.value)
-                        item.setBackground(QG.QBrush(QG.QColor(color)))
+                    if ditem.datatype == DTypes.COLOR:
+                        color = ditem.get_html_color(ditem.value or "")
+                        qcolor = QG.QBrush(QG.QColor(color)) if color else QG.QBrush()
+                        item.setBackground(qcolor)
             else:
                 item = QG.QStandardItem(text)
                 self.item_data[id(item)] = ditem
