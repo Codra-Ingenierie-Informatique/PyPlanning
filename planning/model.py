@@ -1387,12 +1387,13 @@ class PlanningData(AbstractData):
                     data = LeaveData.from_element(self, telem)
                     data.set_resource_id(resid)
                     self.add_leave(data)
-        for elem in tasks_elt.findall(TaskData.TAG):
-            data = TaskData.from_element(self, elem)
-            self.add_task(data)
-        for elem in tasks_elt.findall(MilestoneData.TAG):
-            data = MilestoneData.from_element(self, elem)
-            self.add_task(data)
+        for elem in tasks_elt.iter():
+            if elem.tag == TaskData.TAG:
+                data = TaskData.from_element(self, elem)
+                self.add_task(data)
+            elif elem.tag == MilestoneData.TAG:
+                data = MilestoneData.from_element(self, elem)
+                self.add_task(data)
         cdays_elt = self.element.find("CLOSINGDAYS")
         if cdays_elt is not None:
             for elem in cdays_elt.findall(ClosingDayData.TAG):
