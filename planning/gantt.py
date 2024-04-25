@@ -2788,7 +2788,7 @@ class Project(object):
         )
         max_line_char_count = max(len(line) for line in text_lines)
         width = int(max(title_width, max_line_char_count * font_size / 2) + 2 * margin)
-
+        width = min(avail_width, width)
         height = line_count * font_size + 2 * margin
 
         x_top_left = x * mm - width
@@ -2820,7 +2820,7 @@ class Project(object):
             svgwrite.text.Text(
                 text_lines[0],
                 insert=(
-                    x_top_left + margin,
+                    x_top_left + 2 * margin,
                     y_top_left + margin / 2 + font_size,
                 ),  # * px_to_mm),
                 font_size=font_size,
@@ -2834,7 +2834,7 @@ class Project(object):
                 svgwrite.text.Text(
                     line,
                     insert=(
-                        x_top_left + margin,
+                        x_top_left + 2 * margin,
                         y_top_left + margin / 2 + (i + 1) * font_size,
                     ),
                     font_size=font_size,
