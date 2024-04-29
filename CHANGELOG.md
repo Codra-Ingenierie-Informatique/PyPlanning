@@ -1,5 +1,18 @@
 # PyPlanning Releases #
 
+## Version 2.0.1 ##
+
+🛠️ Bug fixes:
+
+* [Issue #31](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/31) - Action "duplicate task" does not work normally
+* [Issue #24](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/24) - When PyPlanning is opened directly in XML mode, the toolbar is active and can cause errors
+* [Issue #30](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/30) - When the application starts, the project actions are shown in the toolbar
+* [Issue #27](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/27) - Months displayed in the SVG chart are always in english
+* [Issue #25](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/25) - Action "Edit" triggers an error in an empty project when no item is currently selected (e.g. empty planning)
+* [Issue #26](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/26) - Color editor does not allow to unselect a color to use the default one
+* [Issue #29](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/29) - Ressource graph missing bottom line
+* Improved description box sizing in the chart view
+
 ## Version 2.0.0 ##
 
 💥 New features:
