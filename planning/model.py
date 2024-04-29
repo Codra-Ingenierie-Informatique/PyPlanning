@@ -1605,7 +1605,7 @@ class PlanningData(AbstractData):
         """Add task/milestone to planning"""
         index = None
         task_number_index = None
-        if isinstance(after_data, TaskData):
+        if isinstance(after_data, AbstractTaskData):
             index = task_number_index = self.tsklist.index(after_data)
         elif isinstance(after_data, ResourceData):
             # Sum all task indexes for all resources before:
