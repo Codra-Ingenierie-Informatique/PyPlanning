@@ -1379,6 +1379,7 @@ class PlanningData(AbstractData):
             resid = resdata.id.value
             self.add_resource(resdata)
             for telem in resdata.element:
+                # Tasks attributed to a resource (direct children to RESOURCE)
                 if telem.tag == TaskData.TAG:
                     data = TaskData.from_element(self, telem)
                     data.set_resource_ids([resid])
@@ -1387,7 +1388,8 @@ class PlanningData(AbstractData):
                     data = LeaveData.from_element(self, telem)
                     data.set_resource_id(resid)
                     self.add_leave(data)
-        for elem in tasks_elt.iter():
+        # Tasks not attributed to a resource (direct children to TASKS)
+        for elem in tasks_elt:
             if elem.tag == TaskData.TAG:
                 data = TaskData.from_element(self, elem)
                 self.add_task(data)
