@@ -392,8 +392,11 @@ class AbstractData:
         for name, value in self.__dict__.items():
             if name in self.__NO_COPY and value:
                 setattr(new_data, name, value)
-            else:
-                setattr(new_data, name, deepcopy(value))
+                continue
+            copied_value = deepcopy(value)
+            if isinstance(copied_value, DataItem):
+                copied_value.parent = new_data
+            setattr(new_data, name, copied_value)
 
         copy_pattern = re.compile(r"\((\d+)\)$")
         if re.search(copy_pattern, str(new_data.name.value)):
@@ -851,6 +854,7 @@ class AbstractTaskData(AbstractDurationData):
 
     def duplicate(self):
         new_item = super().duplicate()
+        new_item.task_number.value = None
         return new_item
 
     def _init_from_element(self, element):
