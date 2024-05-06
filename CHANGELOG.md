@@ -4,6 +4,7 @@
 
 🛠️ Bug fixes:
 
+* [Issue #36](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/36) - Duplicated task cannot depend on original task
 * [Issue #31](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/31) - Action "duplicate task" does not work normally
 * [Issue #24](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/24) - When PyPlanning is opened directly in XML mode, the toolbar is active and can cause errors
 * [Issue #30](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/30) - When the application starts, the project actions are shown in the toolbar
