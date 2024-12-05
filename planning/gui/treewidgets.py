@@ -89,9 +89,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
         return self.parent().item_data[id(self.item_from_index(index))]
 
     # pylint: disable=unused-argument,invalid-name
-    def createEditor(
-        self, parent: QW.QWidget, option: QW.QStyleOptionViewItem, index: QC.QModelIndex
-    ) -> ItemEditor:
+    def createEditor(self, parent: QW.QWidget, option: QW.QStyleOptionViewItem, index: QC.QModelIndex) -> ItemEditor:
         """Reimplement Qt method"""
         self.editor_opened = True
         ditem = self.dataitem_from_index(index)
@@ -128,9 +126,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
             editor = CheckableComboBox(parent=parent)
             editor.addItems(ditem.choice_values, ditem.choice_keys)
             editor.setMinimumWidth(self.parent().columnWidth(index.column()))
-            editor.lineEdit().editingFinished.connect(
-                lambda: self.commitAndCloseEditor()
-            )
+            editor.lineEdit().editingFinished.connect(lambda: self.commitAndCloseEditor())
             return editor
         elif ditem.datatype == DTypes.LONG_TEXT:
             editor = CustomTextEditor(parent)
@@ -184,11 +180,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
             qdate = editor.date()
             value = datetime.date(qdate.year(), qdate.month(), qdate.day())
             data = ditem.parent
-            if (
-                ditem.name == "start"
-                and data.start.value is not None
-                and data.stop.value is not None
-            ):
+            if ditem.name == "start" and data.start.value is not None and data.stop.value is not None:
                 data.stop.value += value - data.start.value
         elif ditem.datatype == DTypes.CHOICE or ditem.datatype == DTypes.COLOR:
             value = editor.currentText()
@@ -500,9 +492,7 @@ class BaseTreeWidget(QW.QTreeView):
     def get_selected_data(self):
         """Get selected items associated data"""
         return [
-            self.planning.get_data_from_id(
-                self.get_id_from_item(self.get_item_from_index(index))
-            )
+            self.planning.get_data_from_id(self.get_id_from_item(self.get_item_from_index(index)))
             for index in self.selectedIndexes()
         ]
 
@@ -546,16 +536,12 @@ class BaseTreeWidget(QW.QTreeView):
     def add_or_update_item_row(self, data: AbstractData, parent=None, group=False):
         """Add data item row to tree, or update it if already present"""
         update = data.id.value in self.item_rows
-        items: list[QG.QStandardItem] = (
-            self.item_rows[data.id.value or ""] if update else []
-        )
+        items: list[QG.QStandardItem] = self.item_rows[data.id.value or ""] if update else []
         for column, attrs in enumerate(self.ATTRS):
             if not isinstance(attrs, tuple):
                 attrs = (attrs,)
 
-            ditems: list[DataItem | None] = [
-                getattr(data, attr, None) for attr in attrs
-            ]
+            ditems: list[DataItem | None] = [getattr(data, attr, None) for attr in attrs]
 
             ditem: DataItem | None = None
             for ditem in ditems:
@@ -586,9 +572,7 @@ class BaseTreeWidget(QW.QTreeView):
                 if ditem is not None and data.is_read_only(ditem.name):
                     item.setForeground(QG.QBrush(QC.Qt.GlobalColor.gray))
 
-                item.setEditable(
-                    ditem is not None and not data.is_read_only(ditem.name)
-                )
+                item.setEditable(ditem is not None and not data.is_read_only(ditem.name))
                 if ditem is not None:
                     if ditem.datatype in (
                         DTypes.DATE,
@@ -698,9 +682,7 @@ class TaskTreeWidget(BaseTreeWidget):
         self.task_mode_action = None
         BaseTreeWidget.__init__(self, parent, debug)
 
-        self.VALIDATORS["percent_done"] = (
-            lambda value: value is None or 0 <= value <= 100
-        )
+        self.VALIDATORS["percent_done"] = lambda value: value is None or 0 <= value <= 100
 
         # Correct a bug where an empty name is accepted. Then if the user sets a new
         # name, it wouldn't be set in the "name" dataitem, but in fullname. The result
@@ -711,9 +693,7 @@ class TaskTreeWidget(BaseTreeWidget):
         self.SIG_UPDATE_IDS_ON_CHANGE.connect(self._update_ids_on_change)
         self.SIG_TASK_NANE_CHANGED.connect(self._update_choices_on_change)
 
-        self.FIELD_CHANGE_SIGNALS["depends_on_task_number"] = (
-            self.SIG_UPDATE_IDS_ON_CHANGE
-        )
+        self.FIELD_CHANGE_SIGNALS["depends_on_task_number"] = self.SIG_UPDATE_IDS_ON_CHANGE
         self.FIELD_CHANGE_SIGNALS["name"] = self.SIG_TASK_NANE_CHANGED
 
     def _update_ids_on_change(self, ditem: DataItem[str]):
@@ -759,12 +739,8 @@ class TaskTreeWidget(BaseTreeWidget):
             icon=get_icon("new_leave.svg"),
             triggered=self.new_leave,
         )
-        self.task_mode_action = create_action(
-            self, _("Duration mode"), toggled=self.enable_duration_mode
-        )
-        self.remove_start_action = create_action(
-            self, _("Remove start date"), triggered=self.remove_start
-        )
+        self.task_mode_action = create_action(self, _("Duration mode"), toggled=self.enable_duration_mode)
+        self.remove_start_action = create_action(self, _("Remove start date"), triggered=self.remove_start)
         self.always_enabled_actions += [
             self.new_resource_action,
             self.new_task_action,
@@ -786,8 +762,7 @@ class TaskTreeWidget(BaseTreeWidget):
         if self.planning is not None:
             data = self.get_current_data()
             self.new_leave_action.setEnabled(
-                isinstance(data, (ResourceData, LeaveData))
-                or (isinstance(data, TaskData) and not data.no_resource)
+                isinstance(data, (ResourceData, LeaveData)) or (isinstance(data, TaskData) and not data.no_resource)
             )
 
             is_task = isinstance(data, AbstractTaskData)
@@ -809,11 +784,7 @@ class TaskTreeWidget(BaseTreeWidget):
                 tma.setEnabled(data.is_mode_switchable())
                 other_actions = [tma]
                 prevdata = data.get_previous()
-                if (
-                    prevdata is not None
-                    and data.has_start
-                    and (prevdata.has_stop or prevdata.has_duration)
-                ):
+                if prevdata is not None and data.has_start and (prevdata.has_stop or prevdata.has_duration):
                     other_actions += [self.remove_start_action]
                 actions = other_actions + actions
         return actions
@@ -863,9 +834,7 @@ class TaskTreeWidget(BaseTreeWidget):
             if isinstance(current_data, AbstractTaskData):
                 data.depends_on.value = [current_data.id.value]
                 data.start.value = (
-                    current_data.stop_calc.value
-                    if isinstance(current_data, TaskData)
-                    else current_data.stop.value
+                    current_data.stop_calc.value if isinstance(current_data, TaskData) else current_data.stop.value
                 )
                 data.duration.value = 1
 
@@ -955,16 +924,10 @@ class TaskTreeWidget(BaseTreeWidget):
     def remove_item(self, item):
         """Remove item"""
         data = self.planning.get_data_from_id(self.get_id_from_item(item))
-        if (
-            isinstance(data, TaskData)
-            and data.has_start
-            and (data.has_stop or data.has_duration)
-        ):
+        if isinstance(data, TaskData) and data.has_start and (data.has_stop or data.has_duration):
             prev_data = data.get_previous()
             next_data = data.get_next()
-            if (prev_data is None) and (
-                next_data is not None and not next_data.has_start
-            ):
+            if (prev_data is None) and (next_data is not None and not next_data.has_start):
                 if data.has_duration:
                     duration = datetime.timedelta(days=data.duration.value)
                     next_data.start.value = data.start.value + duration
@@ -1027,11 +990,7 @@ class ChartTreeWidget(BaseTreeWidget):
         if self.planning is None or not isinstance(parent, ChartData):
             return
         parent.set_is_default_name()
-        if (
-            parent.is_default_name
-            and self.planning is not None
-            and self.planning.filename is not None
-        ):
+        if parent.is_default_name and self.planning is not None and self.planning.filename is not None:
             index = self.currentIndex().row() + 1
             parent.set_chart_filename(self.planning.filename, index)
 

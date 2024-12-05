@@ -120,9 +120,7 @@ class PlanningMainWindow(QW.QMainWindow):
 
     def check_for_previous_crash(self):  # pragma: no cover
         """Check for previous crash"""
-        if Conf.main.faulthandler_log_available.get(
-            False
-        ) or Conf.main.traceback_log_available.get(False):
+        if Conf.main.faulthandler_log_available.get(False) or Conf.main.traceback_log_available.get(False):
             txt = "<br>".join(
                 [
                     _("Log files were generated during last session."),
@@ -216,9 +214,7 @@ Thanks for your patience."""
         self.separator_act = create_action(self, "")
         self.separator_act.setSeparator(True)
 
-        self.xmlmode_act = create_action(
-            self, _("Advanced XML mode"), toggled=self.switch_xml_mode
-        )
+        self.xmlmode_act = create_action(self, _("Advanced XML mode"), toggled=self.switch_xml_mode)
         self.xmlmode_act.setChecked(Conf.main.xml_mode.get(False))
 
         self.new_act = create_action(
@@ -415,9 +411,7 @@ Please check the file content."""
         if not self.maybe_save(_("Open file")):
             return False
         if fname is None:
-            fname, _selected_filter = getopenfilename(
-                self, _("Open"), self.basedir, "*" + self.EXTENSION
-            )
+            fname, _selected_filter = getopenfilename(self, _("Open"), self.basedir, "*" + self.EXTENSION)
             if not fname:
                 return False
         self.central_widget.load_file(fname)
@@ -467,9 +461,7 @@ Please check the file content."""
         fname = self.filename
         if fname is None:
             fname = osp.join(self.basedir, self.DEFAULT_NAME)
-        fname, _selected_filter = getsavefilename(
-            self, _("Save as"), fname, filters="*" + self.EXTENSION
-        )
+        fname, _selected_filter = getsavefilename(self, _("Save as"), fname, filters="*" + self.EXTENSION)
         if not fname:
             return False
         return self.__save(fname)

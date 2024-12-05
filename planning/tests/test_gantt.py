@@ -13,9 +13,7 @@ from planning import gantt
 os.chdir(osp.dirname(__file__))
 
 # Change font default
-gantt.define_font_attributes(
-    fill="black", stroke="black", stroke_width=0, font_family="Verdana"
-)
+gantt.define_font_attributes(fill="black", stroke="black", stroke_width=0, font_family="Verdana")
 
 # Add vacations for everyone
 gantt.add_vacations(datetime.date(2014, 12, 25))
@@ -47,12 +45,8 @@ t1 = gantt.Task(
     resources=[rANO],
     color="#FF8080",
 )
-t2 = gantt.Task(
-    name="tache2", start=datetime.date(2014, 12, 28), duration=6, resources=[rJLS]
-)
-t7 = gantt.Task(
-    name="tache7", start=datetime.date(2014, 12, 28), duration=5, percent_done=50
-)
+t2 = gantt.Task(name="tache2", start=datetime.date(2014, 12, 28), duration=6, resources=[rJLS])
+t7 = gantt.Task(name="tache7", start=datetime.date(2014, 12, 28), duration=5, percent_done=50)
 t3 = gantt.Task(
     name="tache3",
     start=datetime.date(2014, 12, 25),
@@ -120,16 +114,10 @@ ptcm = gantt.Project(name="Test case for milestones")
 tcm11 = gantt.Task(name="tcm11", start=datetime.date(2014, 12, 25), duration=4)
 tcm12 = gantt.Task(name="tcm12", start=datetime.date(2014, 12, 26), duration=5)
 ms1 = gantt.Milestone(name=" ", depends_on=[tcm11, tcm12])
-tcm21 = gantt.Task(
-    name="tcm21", start=datetime.date(2014, 12, 30), duration=4, depends_on=[ms1]
-)
-tcm22 = gantt.Task(
-    name="tcm22", start=datetime.date(2014, 12, 30), duration=6, depends_on=[ms1]
-)
+tcm21 = gantt.Task(name="tcm21", start=datetime.date(2014, 12, 30), duration=4, depends_on=[ms1])
+tcm22 = gantt.Task(name="tcm22", start=datetime.date(2014, 12, 30), duration=6, depends_on=[ms1])
 ms2 = gantt.Milestone(name="MS2", depends_on=[ms1, tcm21, tcm22])
-tcm31 = gantt.Task(
-    name="tcm31", start=datetime.date(2014, 12, 30), duration=6, depends_on=[ms2]
-)
+tcm31 = gantt.Task(name="tcm31", start=datetime.date(2014, 12, 30), duration=6, depends_on=[ms2])
 ms3 = gantt.Milestone(name="MS3", depends_on=[ms1])
 
 

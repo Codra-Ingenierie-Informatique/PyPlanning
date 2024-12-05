@@ -158,9 +158,7 @@ def qt_app_context(exec_loop=False, enable_logs=True):
 
         def custom_excepthook(exc_type, exc_value, exc_traceback):
             "Custom exception hook"
-            logger.critical(
-                "Unhandled exception", exc_info=(exc_type, exc_value, exc_traceback)
-            )
+            logger.critical("Unhandled exception", exc_info=(exc_type, exc_value, exc_traceback))
             return sys.__excepthook__(exc_type, exc_value, exc_traceback)
 
         sys.excepthook = custom_excepthook

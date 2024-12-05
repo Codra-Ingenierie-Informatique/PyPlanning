@@ -20,9 +20,7 @@ locale.setlocale(locale.LC_TIME, "")
 
 VERSION = ".".join(__version__.split(".", 2)[0:2])
 
-gantt.define_font_attributes(
-    fill="black", stroke="black", stroke_width=0, font_family=MAIN_FONT_FAMILY
-)
+gantt.define_font_attributes(fill="black", stroke="black", stroke_width=0, font_family=MAIN_FONT_FAMILY)
 
 _T = TypeVar("_T")
 AbstractDataT = TypeVar("AbstractDataT", bound="AbstractData")
@@ -96,9 +94,7 @@ class DataItem(Generic[_T]):
         self.name = name
         self.datatype = datatype
         self.__value = value
-        self.choices: list[tuple[Any, _T]] = (
-            choices or []
-        )  # tuple of (key, value) tuples
+        self.choices: list[tuple[Any, _T]] = choices or []  # tuple of (key, value) tuples
         if datatype in (DTypes.CHOICE, DTypes.MULTIPLE_CHOICE) and choices is None:
             raise ValueError("Choices must be specified")
         self.default_choice_mode = default_choice_mode
@@ -235,10 +231,7 @@ class DataItem(Generic[_T]):
             return text
         if self.datatype in (DTypes.CHOICE, DTypes.MULTIPLE_CHOICE):
             if self.value is None:
-                if (
-                    self.default_choice_mode is DefaultChoiceMode.NONE
-                    or len(self.choices) == 0
-                ):
+                if self.default_choice_mode is DefaultChoiceMode.NONE or len(self.choices) == 0:
                     return None
                 elif self.default_choice_mode is DefaultChoiceMode.FIRST:
                     return self.choice_values[0]
@@ -447,9 +440,7 @@ class AbstractData:
 
         self._check_create_missing_project(element)
 
-        self.project: DataItem[str] = self.get_choices(
-            "project", default=None, choices=self.pdata.project_choices()
-        )
+        self.project: DataItem[str] = self.get_choices("project", default=None, choices=self.pdata.project_choices())
 
         self.id: DataItem[str] = self.get_str("id", default=self.default_id)
 
@@ -469,11 +460,7 @@ class AbstractData:
         attrib = {}
         for name in self.get_attrib_names():
             ditem = getattr(self, name, None)
-            if (
-                ditem is not None
-                and ditem.value not in (None, [])
-                and not self.is_read_only(ditem.name)
-            ):
+            if ditem is not None and ditem.value not in (None, []) and not self.is_read_only(ditem.name):
                 attrib[name] = ditem.to_text()
         return attrib
 
@@ -537,17 +524,13 @@ class AbstractData:
         choices: Optional[list] = None,
     ):
         """Create new data item"""
-        return DataItem.from_element(
-            self, self.element, name, datatype, default, choices
-        )
+        return DataItem.from_element(self, self.element, name, datatype, default, choices)
 
     def get_str(self, name: str, default: Optional[_T | type[NoDefault]] = NoDefault):
         """Get value from XML element and set its datatype"""
         return self.create_item(name, DTypes.TEXT, default=default)
 
-    def get_long_text(
-        self, name: str, default: Optional[_T | type[NoDefault]] = NoDefault
-    ):
+    def get_long_text(self, name: str, default: Optional[_T | type[NoDefault]] = NoDefault):
         """Get value from XML element and set its datatype"""
         return self.create_item(name, DTypes.LONG_TEXT, default=default)
 
@@ -677,9 +660,7 @@ class ChartData(AbstractDurationData):
         self.today = DataItem(self, "today", DTypes.DATE, None)
         self.offset = DataItem(self, "offset", DTypes.INTEGER, None)
         self.t0mode = DataItem(self, "t0mode", DTypes.BOOLEAN, None)
-        self.projects = DataItem[list[str]](
-            self, "projects", DTypes.MULTIPLE_CHOICE, None, [], DefaultChoiceMode.NONE
-        )
+        self.projects = DataItem[list[str]](self, "projects", DTypes.MULTIPLE_CHOICE, None, [], DefaultChoiceMode.NONE)
         self.is_default_name = self.set_is_default_name()
 
     def set_is_default_name(self) -> bool:
@@ -692,12 +673,8 @@ class ChartData(AbstractDurationData):
             self.is_default_name = False
             return False
         xml_prefix, _ext = osp.basename(str(self.pdata.filename)).rsplit(".", 1)
-        default_name_re = re.compile(
-            rf"^{xml_prefix}(_?\d{{2}})?(\.svg)?$", re.IGNORECASE
-        )
-        is_default_name = self.name.value is None or bool(
-            default_name_re.match(str(self.name.value))
-        )
+        default_name_re = re.compile(rf"^{xml_prefix}(_?\d{{2}})?(\.svg)?$", re.IGNORECASE)
+        is_default_name = self.name.value is None or bool(default_name_re.match(str(self.name.value)))
         self.is_default_name = is_default_name
         return is_default_name
 
@@ -709,9 +686,7 @@ class ChartData(AbstractDurationData):
         self.today = self.get_date("today")
         self.offset = self.get_int("offset")
         self.t0mode = self.get_bool("t0mode")
-        self.projects = self.get_multi_choices(
-            "projects", [], self.pdata.project_choices(), DefaultChoiceMode.NONE
-        )
+        self.projects = self.get_multi_choices("projects", [], self.pdata.project_choices(), DefaultChoiceMode.NONE)
         if self.projects.value is not None and self.project.value is not None:
             self.projects.value = [self.project.value]
             self.project.value = None
@@ -905,11 +880,7 @@ class AbstractTaskData(AbstractDurationData):
         task = self.pdata.all_tasks[self.id.value]
         if self.depends_on.value is not None:
             task.add_depends(
-                [
-                    task
-                    for tskdata_id, task in self.pdata.all_tasks.items()
-                    if tskdata_id in self.depends_on.value
-                ]
+                [task for tskdata_id, task in self.pdata.all_tasks.items() if tskdata_id in self.depends_on.value]
             )
 
     def update_depends_on_from_task_number(self):
@@ -924,8 +895,7 @@ class AbstractTaskData(AbstractDurationData):
                 or other_task is self
                 or (
                     other_task.depends_on_task_number.value is not None
-                    and self.task_number.value
-                    in other_task.depends_on_task_number.value
+                    and self.task_number.value in other_task.depends_on_task_number.value
                 )
             ):
                 wrong_values.append(value)
@@ -1015,15 +985,11 @@ class TaskData(AbstractTaskData):
         """Return True if item name is read-only"""
         if super().is_read_only(name):
             return True
-        return (self.has_duration and name == "stop") or (
-            self.has_stop and name == "duration"
-        )
+        return (self.has_duration and name == "stop") or (self.has_stop and name == "duration")
 
     def is_mode_switchable(self):
         """Return True if task mode can be switched from one to another"""
-        return self.get_mode() is not None and (
-            self.has_start or self.start_calc.value is not None
-        )
+        return self.get_mode() is not None and (self.has_start or self.start_calc.value is not None)
 
     def get_mode(self):
         """Return task mode"""
@@ -1128,9 +1094,7 @@ class TaskData(AbstractTaskData):
         # for data in self.pdata.iterate_chart_data():
         #     data.update_project_choices()
         resource_list = [
-            resource
-            for resource_id, resource in self.pdata.all_resources.items()
-            if resource_id in self.__resids
+            resource for resource_id, resource in self.pdata.all_resources.items() if resource_id in self.__resids
         ]
         percent_done = 0 if self.percent_done.value is None else self.percent_done.value
         self.gantt_object = gantt.Task(
@@ -1286,9 +1250,7 @@ class ProjectData(AbstractData):
         super().__init__(pdata, name, fullname)
 
         self.color = DataItem[str](self, "color", DTypes.COLOR, self.DEFAULT_COLOR)
-        self.show_description = DataItem[bool](
-            self, "show_description", DTypes.BOOLEAN, True
-        )
+        self.show_description = DataItem[bool](self, "show_description", DTypes.BOOLEAN, True)
 
         self.description = DataItem[str](self, "description", DTypes.LONG_TEXT, None)
 
@@ -1530,9 +1492,7 @@ class PlanningData(AbstractData):
         """Iterate over project data dictionary items"""
         yield from self.prjlist
 
-    def iterate_task_data(
-        self, only=None
-    ) -> Generator[TaskData | MilestoneData, None, None]:
+    def iterate_task_data(self, only=None) -> Generator[TaskData | MilestoneData, None, None]:
         """Iterate over task data dictionary items"""
         for data in self.tsklist:
             if only is None:
@@ -1575,26 +1535,18 @@ class PlanningData(AbstractData):
     def get_resources_from_ids(self, resids) -> list[ResourceData]:
         """Return resource list from resource data id list"""
         if resids:
-            return [
-                resdata.resource
-                for resdata in self.iterate_resource_data()
-                if resdata.id.value in resids
-            ]
+            return [resdata.resource for resdata in self.iterate_resource_data() if resdata.id.value in resids]
         return []
 
     @staticmethod
-    def __append_or_insert(
-        dlist: list[AbstractDataT], index: Optional[int], data: AbstractDataT
-    ):
+    def __append_or_insert(dlist: list[AbstractDataT], index: Optional[int], data: AbstractDataT):
         """Append or insert data to list"""
         if index is None:
             dlist.append(data)
         else:
             dlist.insert(index + 1, data)
 
-    def add_resource(
-        self, data: ResourceData, after_data: Optional[AbstractData] = None
-    ):
+    def add_resource(self, data: ResourceData, after_data: Optional[AbstractData] = None):
         """Add resource to planning"""
         index = None
         if isinstance(after_data, TaskData):
@@ -1605,9 +1557,7 @@ class PlanningData(AbstractData):
             index = self.reslist.index(after_data)
         self.__append_or_insert(self.reslist, index, data)
 
-    def add_task(
-        self, data: AbstractTaskData, after_data: Optional[AbstractData] = None
-    ):
+    def add_task(self, data: AbstractTaskData, after_data: Optional[AbstractData] = None):
         """Add task/milestone to planning"""
         index = None
         task_number_index = None
@@ -1641,8 +1591,7 @@ class PlanningData(AbstractData):
     def task_choices(self, force=False) -> list[tuple[str, str]]:
         if force or len(self._tsk_choices) != len(self.tsklist):
             self._tsk_choices = [
-                (str(data.task_number.value), str(data.name.value))
-                for data in self.iterate_task_data()
+                (str(data.task_number.value), str(data.name.value)) for data in self.iterate_task_data()
             ]
         return self._tsk_choices
 
@@ -1650,11 +1599,7 @@ class PlanningData(AbstractData):
         if force or (len(self.projects) + 1) != len(self._projects_choices):
             self._projects_choices = [(None, "")]
             self._projects_choices.extend(
-                [
-                    (proj.id.value, str(proj.name.value))
-                    for proj in self.prjlist
-                    if proj.id.value is not None
-                ]
+                [(proj.id.value, str(proj.name.value)) for proj in self.prjlist if proj.id.value is not None]
             )
         return self._projects_choices
 
@@ -1687,9 +1632,7 @@ class PlanningData(AbstractData):
             index = self.lvelist.index(after_data)
         self.__append_or_insert(self.lvelist, index, data)
 
-    def add_closing_day(
-        self, data: ClosingDayData, after_data: Optional[AbstractData] = None
-    ):
+    def add_closing_day(self, data: ClosingDayData, after_data: Optional[AbstractData] = None):
         """Add closing day to planning"""
         index = None
         if isinstance(after_data, ClosingDayData):
