@@ -956,19 +956,19 @@ class Task(object):
         elif (
             self.duration is not None and self.depends_on is not None and self.stop is None
         ):  # duration and dependencies fixed
-            prev_task_end = self.depends_on[0].end_date()
+            prev_task_end = None
             for t in self.depends_on:
                 if isinstance(t, Milestone):
-                    if t.end_date() > prev_task_end:
+                    if prev_task_end is None or t.end_date() > prev_task_end:
                         prev_task_end = t.end_date() - datetime.timedelta(days=1)
                 elif isinstance(t, Task):
-                    if t.end_date() > prev_task_end:
+                    if prev_task_end is None or t.end_date() > prev_task_end:
                         prev_task_end = t.end_date()
                 # if t.end_date() > prev_task_end:
                 #     LOG.debug('*** latest one {0} which end on {1}'.format(t.name, t.end_date()))
                 #     prev_task_end = t.end_date()
-
-            start = prev_task_end + datetime.timedelta(days=1)
+            if prev_task_end:
+                start = prev_task_end + datetime.timedelta(days=1)
 
             while self.non_working_day(start):
                 start = start + datetime.timedelta(days=1)
@@ -2566,7 +2566,7 @@ class Project(object):
 
             if nb_tasks == 0:
                 nline -= 1
-            elif nb_tasks > 0:
+            elif nb_tasks >= 0:
                 # print(r.fullname, nb_tasks)
                 if resource_on_left or show_title:
                     ldwg.add(ress)
