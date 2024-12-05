@@ -166,6 +166,10 @@ class TaskTreeDelegate(QW.QItemDelegate):
         else:
             editor.setText(value)
 
+        # Managing editor state
+        if ditem.name == "start_calc" or (ditem.name == "start" and ditem.parent.start.value is None):
+            editor.setReadOnly(True)
+
     # pylint: disable=unused-argument,invalid-name
     def setModelData(self, editor: ItemEditor, mdl, index: QC.QModelIndex):
         """Reimplement Qt method"""
@@ -741,6 +745,8 @@ class TaskTreeWidget(BaseTreeWidget):
         )
         self.task_mode_action = create_action(self, _("Duration mode"), toggled=self.enable_duration_mode)
         self.remove_start_action = create_action(self, _("Remove start date"), triggered=self.remove_start)
+        self.add_start_action = create_action(self, _("Add start date"), triggered=self.add_start)
+
         self.always_enabled_actions += [
             self.new_resource_action,
             self.new_task_action,
@@ -786,6 +792,8 @@ class TaskTreeWidget(BaseTreeWidget):
                 prevdata = data.get_previous()
                 if prevdata is not None and data.has_start and (prevdata.has_stop or prevdata.has_duration):
                     other_actions += [self.remove_start_action]
+                elif not data.has_start:
+                    other_actions += [self.add_start_action]
                 actions = other_actions + actions
         return actions
 
@@ -800,6 +808,12 @@ class TaskTreeWidget(BaseTreeWidget):
         """Remove start date"""
         data = self.get_current_data()
         data.start.value = None
+        self.repopulate()
+
+    def add_start(self):
+        """Add start date"""
+        data = self.get_current_data()
+        data.start.value = data.start_calc.value
         self.repopulate()
 
     def new_resource(self):
