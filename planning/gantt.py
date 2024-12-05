@@ -850,6 +850,15 @@ class Task(object):
             else:
                 self.depends_on.append(depends_on)
 
+        # Adapt task start date if before end of dependencies
+        if len(self.depends_on) > 0:
+            min_start_date = self.depends_on[0].end_date()
+            for dep in self.depends_on:
+                if dep.end_date() is not None and dep.end_date() < min_start_date:
+                    min_start_date = dep.end_date()
+            if min_start_date is not None and (self.start is None or self.start < min_start_date):
+                self.start = min_start_date
+
         return
 
     def start_date(self):

@@ -859,14 +859,22 @@ class AbstractTaskData(AbstractDurationData):
             prevtask = self.pdata.all_tasks[list(self.pdata.all_tasks.keys())[-1]]
             # No need to check if last task is related (same resource or no resource)
             # because model data is supposed to be valid at this stage:
-            if task.start is None and prevtask is not None:
-                if prevtask.stop is not None:
-                    task.start = prevtask.stop + datetime.timedelta(days=1)
-                elif prevtask.duration is not None and prevtask.start is not None:
-                    delta = datetime.timedelta(days=prevtask.duration)
-                    task.start = prevtask.start + delta
-                if task.depends_on is None:
-                    task.depends_on = []
+
+            # if task.start is None and prevtask is not None:
+            #     if prevtask.stop is not None:
+            #         task.start = prevtask.stop + datetime.timedelta(days=1)
+            #     elif prevtask.duration is not None and prevtask.start is not None:
+            #         delta = datetime.timedelta(days=prevtask.duration)
+            #         task.start = prevtask.start + delta
+            #     if task.depends_on is None:
+            #         task.depends_on = []
+            if task.depends_on is not None and len(task.depends_on) > 0:
+                min_start_date = task.depends_on[0].end_date()
+                for dep in task.depends_on:
+                    if dep.end_date() is not None and dep.end_date() < min_start_date:
+                        min_start_date = dep.end_date()
+                if min_start_date is not None and (task.start is None or task.start < min_start_date):
+                    task.start = min_start_date
 
         proj_id = self.project.value
         if proj_id not in self.pdata.all_projects:
