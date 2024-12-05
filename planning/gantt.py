@@ -2045,12 +2045,7 @@ class Project(object):
 
         vlines = dwg.add(svgwrite.container.Group(id="vlines", stroke="lightgray"))
         for x in range(maxx):
-            vlines.add(
-                svgwrite.shapes.Line(
-                    start=((x + offset / 10) * cm, 2 * cm),
-                    end=((x + offset / 10) * cm, (maxy + 2) * cm),
-                )
-            )
+            bold_vline = False
             if scale == DRAW_WITH_DAILY_SCALE:
                 jour = start_date + datetime.timedelta(days=x)
                 is_it_today = today == jour
@@ -2058,15 +2053,25 @@ class Project(object):
                 jour = start_date + relativedelta(weeks=x)
                 jour_dapres = start_date + relativedelta(weeks=x + 1)
                 is_it_today = today >= jour and today < jour_dapres
+                bold_vline = jour_dapres.month != jour.month
             elif scale == DRAW_WITH_MONTHLY_SCALE:
                 jour = start_date + relativedelta(months=x)
                 jour_dapres = start_date + relativedelta(months=x + 1)
                 is_it_today = today >= jour and today < jour_dapres
+                bold_vline = jour_dapres.month != jour.month
             elif scale == DRAW_WITH_QUATERLY_SCALE:
                 # how many quarter do we need to draw ?
                 message = "DRAW_WITH_QUATERLY_SCALE not implemented yet"
                 LOG.critical(message)
                 raise ValueError(message)
+
+            vlines.add(
+                svgwrite.shapes.Line(
+                    start=((x + offset / 10) * cm, 2 * cm),
+                    end=((x + offset / 10) * cm, (maxy + 2) * cm),
+                    stroke_width=8 if bold_vline else 1,
+                )
+            )
 
             if is_it_today:
                 vlines.add(
