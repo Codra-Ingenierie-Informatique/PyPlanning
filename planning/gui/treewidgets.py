@@ -761,7 +761,7 @@ class TaskTreeWidget(BaseTreeWidget):
         super().selected_indexes_changed(sel_indexes, desel_indexes)
         if self.planning is not None:
             data = self.get_current_data()
-            self.new_leave_action.setEnabled(
+            self.new_leave_action.setVisible(
                 isinstance(data, (ResourceData, LeaveData)) or (isinstance(data, TaskData) and not data.no_resource)
             )
 
