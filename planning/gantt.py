@@ -2546,9 +2546,12 @@ class Project(object):
 
                 cday += datetime.timedelta(days=1)
 
-            nb_tasks = 0
+            nb_tasks = 0  # includes all resource's tasks in chart period, although he's on leave
+            # nb_tasks_with_presence = 0
             for t in self.get_tasks():
                 if t.get_resources() is not None and r in t.get_resources():
+                    if t.start_date() >= start_date or t.end_date() <= end_date:
+                        nb_tasks += 1
                     psvg, void = t.svg(
                         prev_y=nline,
                         start=start_date,
@@ -2560,13 +2563,13 @@ class Project(object):
                     )
                     if psvg is not None:
                         ldwg.add(psvg)
-                        nb_tasks += 1
+                        # nb_tasks_with_presence += 1
                         if not one_line_for_tasks:
                             nline += 1
 
             if nb_tasks == 0:
                 nline -= 1
-            elif nb_tasks >= 0:
+            else:
                 # print(r.fullname, nb_tasks)
                 if resource_on_left or show_title:
                     ldwg.add(ress)
@@ -2574,7 +2577,7 @@ class Project(object):
                         ldwg.add(vac)
                     if show_conflicts:
                         ldwg.add(conflicts)
-                if resource_on_left or not show_title:
+                if nline > 0 and resource_on_left or not show_title:
                     nline -= 1
 
                 if not one_line_for_tasks:
