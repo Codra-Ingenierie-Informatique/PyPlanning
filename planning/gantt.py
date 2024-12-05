@@ -2141,7 +2141,7 @@ class Project(object):
                     if t0mode:
                         text = f"S{(jour-start_date).days//7+1}"
                     else:
-                        text = "{0:02}".format(jour.isocalendar()[1])
+                        text = "S{0:02}".format(jour.isocalendar()[1])
                     vlines.add(
                         svgwrite.text.Text(
                             text,
@@ -2196,7 +2196,7 @@ class Project(object):
                 if t0mode:
                     text = f"S{(jour-start_date).days//7+1}"
                 else:
-                    text = "{0:02}".format(jour.isocalendar()[1])
+                    text = "S{0:02}".format(jour.isocalendar()[1])
                 vlines.add(
                     svgwrite.text.Text(
                         text,
