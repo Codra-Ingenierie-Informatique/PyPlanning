@@ -76,6 +76,7 @@ class DataItem(Generic[_T]):
         "orange": "#fab978",
         "red": "#e47172",
         "blue": "#53ccff",
+        "brown": "#591b1b",
         "yellow": "#ffd966",
         "cyan": "#c6eeff",
         "silver": "#9c9ea0",
@@ -89,16 +90,14 @@ class DataItem(Generic[_T]):
         name: str,
         datatype: DTypes,
         value: Optional[_T],
-        choices: Optional[list[tuple[Any, Any]]] = None,
+        choices: Optional[dict[Any, Any]] = None,
         default_choice_mode=DefaultChoiceMode.FIRST,
     ):
         self.parent: AbstractDataT = parent
         self.name = name
         self.datatype = datatype
         self.__value = value
-        self.choices: list[tuple[Any, _T]] = (
-            choices or []
-        )  # tuple of (key, value) tuples
+        self.choices: dict[Any, _T] = choices or {}  # tuple of (key, value) tuples
         if datatype in (DTypes.CHOICE, DTypes.MULTIPLE_CHOICE) and choices is None:
             raise ValueError("Choices must be specified")
         self.default_choice_mode = default_choice_mode
@@ -117,25 +116,24 @@ class DataItem(Generic[_T]):
     def choice_keys(self):
         """Return choice keys"""
         if self.choices is not None:
-            return [key for key, _value in self.choices]
+            return list(self.choices.keys())
         return []
 
     @property
     def choice_values(self):
         """Return choice values"""
         if self.choices is not None:
-            return [value for _key, value in self.choices]
+            return list(self.choices.values())
         return []
 
     def get_choice_value(self) -> _T | None:
         """Return choice value"""
-        if len(self.choices) == 0:
+        if len(self.choices.keys()) == 0:
             return None
         if self.value is None:
-            return self.choices[0][1]
-        for key, value in self.choices:
-            if key == self.value:
-                return value
+            return list(self.choices.values())[0]
+        if self.value in self.choices.keys():
+            return self.choices[self.value]
         raise ValueError(f"No key {self.value} in choices")
 
     def get_choices_values(self) -> list[_T]:
@@ -143,8 +141,8 @@ class DataItem(Generic[_T]):
         if len(self.choices) == 0:
             return []
         if self.value is None:
-            return [self.choices[0][1]]
-        choices = [value for key, value in self.choices if key in self.value]
+            return [list(self.choices.values())[0]]
+        choices = [self.choices[key] for key in self.value]
         if not choices and self.value:
             raise ValueError(f"No key {self.value} in choices")
         return choices
@@ -153,7 +151,7 @@ class DataItem(Generic[_T]):
         """Set item value by choice value"""
         if len(self.choices) == 0:
             return
-        for key, val in self.choices:
+        for key, val in self.choices.items():
             if val == value:
                 self.value = key
                 break
@@ -199,7 +197,7 @@ class DataItem(Generic[_T]):
             if self.datatype == DTypes.DATE:
                 return datetime.date.today()
             if self.datatype == DTypes.CHOICE:
-                if len(self.choices) == 0:
+                if len(self.choices.keys()) == 0:
                     return ""
                 return self.choice_keys[0]
             if self.datatype == DTypes.TEXT or self.datatype == DTypes.LONG_TEXT:
@@ -212,7 +210,7 @@ class DataItem(Generic[_T]):
                 if self.value is None:
                     return None
                 for cname in self.COLORS:
-                    if cname.startswith(self.value):
+                    if cname == self.value or cname.startswith(self.value): # retrocompatibility
                         return cname
             if self.datatype == DTypes.LIST:
                 return ""
@@ -237,7 +235,7 @@ class DataItem(Generic[_T]):
             if self.value is None:
                 if (
                     self.default_choice_mode is DefaultChoiceMode.NONE
-                    or len(self.choices) == 0
+                    or len(self.choices.keys()) == 0
                 ):
                     return None
                 elif self.default_choice_mode is DefaultChoiceMode.FIRST:
@@ -265,7 +263,7 @@ class DataItem(Generic[_T]):
                 strip_val = val.strip()
                 if strip_val:
                     split_values.append(strip_val)
-            for key, ref_val in self.choices:
+            for key, ref_val in self.choices.items():
                 for val in split_values:
                     if ref_val == val:
                         self.value.append(key)
@@ -293,7 +291,7 @@ class DataItem(Generic[_T]):
         if self.datatype == DTypes.COLOR:
             for cname, cvalue in self.COLORS.items():
                 if cvalue == val:
-                    return cname[0]
+                    return cname
             return val
         if self.datatype == DTypes.DATE:
             return val.strftime("%d/%m/%y")
@@ -367,7 +365,7 @@ class AbstractData:
         self.name = DataItem[str](self, "name", DTypes.TEXT, name)
         self.fullname = DataItem[str](self, "fullname", DTypes.TEXT, fullname)
         self.color = DataItem[str](self, "color", DTypes.COLOR, color)
-        self.project = DataItem[str](self, "project", DTypes.CHOICE, None, [])
+        self.project = DataItem[str](self, "project", DTypes.CHOICE, None, {})
 
         self._default_id = ""
         self.id = DataItem[str](self, "id", DTypes.TEXT, self.default_id)
@@ -659,12 +657,12 @@ class ChartData(AbstractDurationData):
         "m": gantt.DRAW_WITH_MONTHLY_SCALE,
         "q": gantt.DRAW_WITH_QUATERLY_SCALE,  # Not supported yet actually
     }
-    SCALES = (
-        ("d", _("Days")),
-        ("w", _("Weeks")),
-        ("m", _("Months")),
-    )
-    TYPES = (("r", _("Resources")), ("t", _("Tasks")), ("m", _("Macro tasks")))
+    SCALES = {
+        "d": _("Days"),
+        "w": _("Weeks"),
+        "m": _("Months"),
+    }
+    TYPES = {"r": _("Resources"), "t": _("Tasks"), "m": _("Macro tasks")}
     TAG = "CHART"
     DEFAULT_ICON_NAME = "chart.svg"
     READ_ONLY_ITEMS = ("fullname", "color")
@@ -678,7 +676,7 @@ class ChartData(AbstractDurationData):
         self.offset = DataItem(self, "offset", DTypes.INTEGER, None)
         self.t0mode = DataItem(self, "t0mode", DTypes.BOOLEAN, None)
         self.projects = DataItem[list[str]](
-            self, "projects", DTypes.MULTIPLE_CHOICE, None, [], DefaultChoiceMode.NONE
+            self, "projects", DTypes.MULTIPLE_CHOICE, None, {}, DefaultChoiceMode.NONE
         )
         self.is_default_name = self.set_is_default_name()
 
@@ -825,7 +823,9 @@ class ChartData(AbstractDurationData):
         if self.pdata is None:
             return
         available_choices = self.pdata.project_choices(force)
-        self.projects.choices = available_choices[1:]
+        self.projects.choices = {
+            key: val for key, val in available_choices.items() if key is not None
+        }
 
         if self.projects.value is None:
             return
@@ -1342,8 +1342,8 @@ class PlanningData(AbstractData):
         self.reslist: list[ResourceData] = []
         self.tsklist: list[AbstractTaskData] = []
         self.tsk_num_to_tsk: dict[str, AbstractTaskData] = {}
-        self._tsk_choices: list[tuple[str, str]] = []
-        self._projects_choices: list[tuple[str | None, str]] = []
+        self._tsk_choices: dict[str, str] = {}
+        self._projects_choices: dict[str | None, str] = {}
         self.projects: dict[str, ProjectData] = {}
         self.lvelist: list[LeaveData] = []
         self.clolist: list[ClosingDayData] = []
@@ -1655,24 +1655,22 @@ class PlanningData(AbstractData):
         index = self.prjlist.index(after_data) if after_data else None
         self.__append_or_insert(self.prjlist, index, project)
 
-    def task_choices(self, force=False) -> list[tuple[str, str]]:
-        if force or len(self._tsk_choices) != len(self.tsklist):
-            self._tsk_choices = [
-                (str(data.task_number.value), str(data.name.value))
+    def task_choices(self, force=False) -> list[dict[str, str]]:
+        if force or len(self._tsk_choices.keys()) != len(self.tsklist):
+            self._tsk_choices = {
+                str(data.task_number.value): str(data.name.value)
                 for data in self.iterate_task_data()
-            ]
+            }
         return self._tsk_choices
 
-    def project_choices(self, force=False) -> list[tuple[str | None, str]]:
-        if force or (len(self.projects) + 1) != len(self._projects_choices):
-            self._projects_choices = [(None, "")]
-            self._projects_choices.extend(
-                [
-                    (proj.id.value, str(proj.name.value))
-                    for proj in self.prjlist
-                    if proj.id.value is not None
-                ]
-            )
+    def project_choices(self, force=False) -> list[dict[str | None, str]]:
+        if force or (len(self.projects.keys()) + 1) != len(
+            self._projects_choices.keys()
+        ):
+            self._projects_choices = {None: ""}
+            for proj in self.prjlist:
+                if proj.id.value is not None:
+                    self._projects_choices[proj.id.value] = str(proj.name.value)
         return self._projects_choices
 
     def update_task_number(self, index: Optional[int] = None, force=False):
