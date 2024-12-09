@@ -791,6 +791,7 @@ class ChartData(AbstractDurationData):
             scale = self.GANTT_SCALES[scale_key]
         except KeyError as exc:
             raise ValueError(f"Unknown scale '{scale_key}'") from exc
+
         if ptype == "r":
             project.make_svg_for_resources(
                 start=self.start.value,
@@ -1484,7 +1485,7 @@ class PlanningData(AbstractData):
             return
 
         index = dlist.index(data)
-        if index + delta_index >= len(dlist):
+        if index + delta_index >= len(dlist) or index + delta_index < 0:
             return
         dlist[index], dlist[index + delta_index] = (
             dlist[index + delta_index],

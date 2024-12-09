@@ -236,6 +236,10 @@ msgstr "Nom"
 msgid "Start"
 msgstr "Début"
 
+# Manually added
+msgid "Real start"
+msgstr "Début réel"
+
 #: planning\gui\treewidgets.py:655
 msgid "Duration"
 msgstr "Durée"
@@ -243,6 +247,10 @@ msgstr "Durée"
 #: planning\gui\treewidgets.py:656 planning\gui\treewidgets.py:990
 msgid "End"
 msgstr "Fin"
+
+# Manually added
+msgid "Real end"
+msgstr "Fin réelle"
 
 #: planning\gui\treewidgets.py:658 planning\gui\treewidgets.py:1115
 msgid "Color"

@@ -2193,7 +2193,7 @@ class Project(object):
                             fill="gray",
                             stroke="lightgray",
                             stroke_width=1,
-                            opacity=0.7,
+                            opacity=0.9,
                         )
                     )
 
@@ -2981,7 +2981,7 @@ class Project(object):
                         offset=offset,
                         show_start_end_dates=False,
                         macro_mode=macro_mode,
-                        opacity=0.8,
+                        opacity=0.9,
                     )
                     if lrepr is not None:
                         prj.add(lrepr)
