@@ -84,7 +84,10 @@ class _my_svgwrite_drawing_wrapper(svgwrite.Drawing):
         self["width"] = width
 
         if sys.version_info[0] == 2:
-            test = type(self.filename) == types.FileType or type(self.filename) == types.InstanceType
+            test = (
+                type(self.filename) == types.FileType
+                or type(self.filename) == types.InstanceType
+            )
         elif sys.version_info[0] == 3:
             test = type(self.filename) == io.TextIOWrapper
 
@@ -195,7 +198,9 @@ FONT_ATTR = {
 }
 
 
-def define_font_attributes(fill="black", stroke="black", stroke_width=0, font_family="Verdana"):
+def define_font_attributes(
+    fill="black", stroke="black", stroke_width=0, font_family="Verdana"
+):
     """
     Define font attributes
 
@@ -252,7 +257,9 @@ def add_vacations(start_date, end_date=None):
     start_date -- datetime.date begining of vacation
     end_date -- datetime.date end of vacation of vacation
     """
-    LOG.debug("** add_vacations {0}".format({"start_date": start_date, "end_date": end_date}))
+    LOG.debug(
+        "** add_vacations {0}".format({"start_date": start_date, "end_date": end_date})
+    )
 
     global VACATIONS
 
@@ -266,7 +273,11 @@ def add_vacations(start_date, end_date=None):
 
             start_date += datetime.timedelta(days=1)
 
-    LOG.debug("** add_vacations {0}".format({"start_date": start_date, "end_date": end_date, "vac": VACATIONS}))
+    LOG.debug(
+        "** add_vacations {0}".format(
+            {"start_date": start_date, "end_date": end_date, "vac": VACATIONS}
+        )
+    )
 
     return
 
@@ -354,7 +365,11 @@ class GroupOfResources(object):
         dfrom -- datetime.date begining of vacation
         dto -- datetime.date end of vacation of vacation
         """
-        LOG.debug("** Resource::add_vacations {0}".format({"name": self.name, "dfrom": dfrom, "dto": dto}))
+        LOG.debug(
+            "** Resource::add_vacations {0}".format(
+                {"name": self.name, "dfrom": dfrom, "dto": dto}
+            )
+        )
         if dto is None:
             self.vacations.append((dfrom, dfrom))
         else:
@@ -400,11 +415,17 @@ class GroupOfResources(object):
         for r in self.resources:
             if r.is_available(date):
                 LOG.debug(
-                    "** GroupOfResources::is_available {0} : True {1}".format({"name": self.name, "date": date}, r.name)
+                    "** GroupOfResources::is_available {0} : True {1}".format(
+                        {"name": self.name, "date": date}, r.name
+                    )
                 )
                 return True
 
-        LOG.debug("** GroupOfResources::is_available {0} : False".format({"name": self.name, "date": date}))
+        LOG.debug(
+            "** GroupOfResources::is_available {0} : False".format(
+                {"name": self.name, "date": date}
+            )
+        )
         return False
 
     def add_task(self, task):
@@ -526,7 +547,11 @@ class Resource(object):
         dfrom -- datetime.date begining of vacation
         dto -- datetime.date end of vacation of vacation
         """
-        LOG.debug("** Resource::add_vacations {0}".format({"name": self.name, "dfrom": dfrom, "dto": dto}))
+        LOG.debug(
+            "** Resource::add_vacations {0}".format(
+                {"name": self.name, "dfrom": dfrom, "dto": dto}
+            )
+        )
         if dto is None:
             self.vacations.append((dfrom, dfrom))
         else:
@@ -551,7 +576,9 @@ class Resource(object):
         # global VACATIONS
         if date in VACATIONS:
             LOG.debug(
-                "** Resource::is_available {0} : False (global vacation)".format({"name": self.name, "date": date})
+                "** Resource::is_available {0} : False (global vacation)".format(
+                    {"name": self.name, "date": date}
+                )
             )
             return False
 
@@ -571,9 +598,17 @@ class Resource(object):
         for h in self.vacations:
             dfrom, dto = h
             if date >= dfrom and date <= dto:
-                LOG.debug("** Resource::is_available {0} : False".format({"name": self.name, "date": date}))
+                LOG.debug(
+                    "** Resource::is_available {0} : False".format(
+                        {"name": self.name, "date": date}
+                    )
+                )
                 return False
-        LOG.debug("** Resource::is_available {0} : True".format({"name": self.name, "date": date}))
+        LOG.debug(
+            "** Resource::is_available {0} : True".format(
+                {"name": self.name, "date": date}
+            )
+        )
         return True
 
     def add_group(self, groupofresources):
@@ -630,7 +665,9 @@ class Resource(object):
             if len(affected_days[d]) > 1:
                 overcharged_days[d] = affected_days[d]
                 LOG.warning(
-                    '** Resource "{2}" has more than one task on day {0} / {1}'.format(d, affected_days[d], self.name)
+                    '** Resource "{2}" has more than one task on day {0} / {1}'.format(
+                        d, affected_days[d], self.name
+                    )
                 )
 
         return overcharged_days
@@ -649,7 +686,11 @@ class Resource(object):
         while cday <= to_date:
             if cday.weekday() not in _not_worked_days():
                 if not self.is_available(cday):
-                    LOG.debug('** Ressource "{0}" is not available on day {1} (vacation)'.format(self.name, cday))
+                    LOG.debug(
+                        '** Ressource "{0}" is not available on day {1} (vacation)'.format(
+                            self.name, cday
+                        )
+                    )
                     return []
                 if cday in non_vacant_days:
                     LOG.debug(
@@ -856,7 +897,9 @@ class Task(object):
             for dep in self.depends_on:
                 if dep.end_date() is not None and dep.end_date() < min_start_date:
                     min_start_date = dep.end_date()
-            if min_start_date is not None and (self.start is None or self.start < min_start_date):
+            if min_start_date is not None and (
+                self.start is None or self.start < min_start_date
+            ):
                 self.start = min_start_date
 
         return
@@ -954,7 +997,9 @@ class Task(object):
             return self._cache_start_date
 
         elif (
-            self.duration is not None and self.depends_on is not None and self.stop is None
+            self.duration is not None
+            and self.depends_on is not None
+            and self.stop is None
         ):  # duration and dependencies fixed
             prev_task_end = None
             for t in self.depends_on:
@@ -1075,9 +1120,13 @@ class Task(object):
                     else:
                         real_duration = real_duration + 1
 
-                    current_day = self.start_date() + datetime.timedelta(days=real_duration)
+                    current_day = self.start_date() + datetime.timedelta(
+                        days=real_duration
+                    )
 
-                self._cache_end_date = self.start_date() + datetime.timedelta(days=real_duration)
+                self._cache_end_date = self.start_date() + datetime.timedelta(
+                    days=real_duration
+                )
                 LOG.warning(
                     '** task "{0}" will not be finished on time : end_date is changed from {1} to {2}'.format(
                         self.fullname, self.stop, self._cache_end_date
@@ -1108,7 +1157,9 @@ class Task(object):
 
                 current_day = self.start_date() + datetime.timedelta(days=real_duration)
 
-            self._cache_end_date = self.start_date() + datetime.timedelta(days=real_duration)
+            self._cache_end_date = self.start_date() + datetime.timedelta(
+                days=real_duration
+            )
             return self._cache_end_date
 
         raise (ValueError)
@@ -1126,6 +1177,7 @@ class Task(object):
         offset=0,
         show_start_end_dates=False,
         macro_mode=False,
+        opacity=0.8,
     ):
         """
         Return SVG for drawing this task.
@@ -1241,7 +1293,7 @@ class Task(object):
                 fill=color,
                 stroke=color,
                 stroke_width=2,
-                opacity=0.85,
+                opacity=opacity,
             )
         )
         svg.add(
@@ -1251,7 +1303,7 @@ class Task(object):
                 fill="#909090",
                 stroke=color,
                 stroke_width=1,
-                opacity=0.2,
+                opacity=opacity / 4.0,
             )
         )
 
@@ -1263,7 +1315,7 @@ class Task(object):
                     fill="#0000FF",
                     stroke=color,
                     stroke_width=1,
-                    opacity=0.35,
+                    opacity=opacity / 1.5,
                 )
             )
 
@@ -1275,7 +1327,7 @@ class Task(object):
                     fill="#0000FF",
                     stroke=color,
                     stroke_width=1,
-                    opacity=0.35,
+                    opacity=opacity / 1.5,
                 )
             )
 
@@ -1287,7 +1339,7 @@ class Task(object):
                     fill="#000000",
                     stroke=color,
                     stroke_width=1,
-                    opacity=0.2,
+                    opacity=opacity / 2.0,
                 )
             )
         if add_end_mark:
@@ -1298,7 +1350,7 @@ class Task(object):
                     fill="#000000",
                     stroke=color,
                     stroke_width=1,
-                    opacity=0.2,
+                    opacity=opacity / 2.0,
                 )
             )
 
@@ -1311,7 +1363,7 @@ class Task(object):
                     fill="#F08000",
                     stroke=color,
                     stroke_width=1,
-                    opacity=0.35,
+                    opacity=opacity / 3.0,
                 )
             )
 
@@ -1381,7 +1433,9 @@ class Task(object):
         Keyword arguments:
         prj -- Project object to check against
         """
-        LOG.debug("** Task::svg_dependencies ({0})".format({"name": self.name, "prj": prj}))
+        LOG.debug(
+            "** Task::svg_dependencies ({0})".format({"name": self.name, "prj": prj})
+        )
         if self.depends_on is None:
             return None
         else:
@@ -1389,7 +1443,9 @@ class Task(object):
             for t in self.depends_on:
                 if isinstance(t, Milestone):
                     if not (
-                        t.drawn_x_end_coord is None or t.drawn_y_coord is None or self.drawn_x_begin_coord is None
+                        t.drawn_x_end_coord is None
+                        or t.drawn_y_coord is None
+                        or self.drawn_x_begin_coord is None
                     ) and prj.is_in_project(t):
                         if t.drawn_x_end_coord < self.drawn_x_begin_coord:
                             # horizontal line
@@ -1408,7 +1464,9 @@ class Task(object):
                                 )
                             )
 
-                            marker = svgwrite.container.Marker(insert=(5, 5), size=(10, 10))
+                            marker = svgwrite.container.Marker(
+                                insert=(5, 5), size=(10, 10)
+                            )
                             marker.add(
                                 svgwrite.shapes.Circle(
                                     (5, 5),
@@ -1482,7 +1540,9 @@ class Task(object):
                                 )
                             )
 
-                            marker = svgwrite.container.Marker(insert=(5, 5), size=(10, 10))
+                            marker = svgwrite.container.Marker(
+                                insert=(5, 5), size=(10, 10)
+                            )
                             marker.add(
                                 svgwrite.shapes.Circle(
                                     (5, 5),
@@ -1511,7 +1571,9 @@ class Task(object):
 
                 elif isinstance(t, Task):
                     if not (
-                        t.drawn_x_end_coord is None or t.drawn_y_coord is None or self.drawn_x_begin_coord is None
+                        t.drawn_x_end_coord is None
+                        or t.drawn_y_coord is None
+                        or self.drawn_x_begin_coord is None
                     ) and prj.is_in_project(t):
                         # horizontal line
                         svg.add(
@@ -1530,7 +1592,11 @@ class Task(object):
                         )
 
                         marker = svgwrite.container.Marker(insert=(5, 5), size=(10, 10))
-                        marker.add(svgwrite.shapes.Circle((5, 5), r=5, fill="#000000", opacity=0.5, stroke_width=0))
+                        marker.add(
+                            svgwrite.shapes.Circle(
+                                (5, 5), r=5, fill="#000000", opacity=0.5, stroke_width=0
+                            )
+                        )
                         svg.add(marker)
                         # vertical line
                         eline = svgwrite.shapes.Line(
@@ -1576,7 +1642,9 @@ class Task(object):
         Keyword arguments:
         task -- Task object
         """
-        LOG.debug("** Task::is_in_project ({0})".format({"name": self.name, "task": task}))
+        LOG.debug(
+            "** Task::is_in_project ({0})".format({"name": self.name, "task": task})
+        )
         if task is self:
             return True
 
@@ -1601,8 +1669,12 @@ class Task(object):
         for r in self.get_resources():
             cday = self.start_date()
             while cday <= self.end_date():
-                if cday.weekday() not in _not_worked_days() and not r.is_available(cday):
-                    conflicts.append({"resource": r.name, "date": cday, "task": self.name})
+                if cday.weekday() not in _not_worked_days() and not r.is_available(
+                    cday
+                ):
+                    conflicts.append(
+                        {"resource": r.name, "date": cday, "task": self.name}
+                    )
                     LOG.warning(
                         '** Caution resource "{0}" is affected on task "{2}" during vacations on day {1}'.format(
                             r.name, cday, self.fullname
@@ -1642,7 +1714,9 @@ class Milestone(Task):
     Class for manipulating Milestones
     """
 
-    def __init__(self, name, start=None, depends_on=None, color=None, fullname=None, display=True):
+    def __init__(
+        self, name, start=None, depends_on=None, color=None, fullname=None, display=True
+    ):
         """
         Initialize milestone object. Two of start, stop or duration may be given.
         This milestone can rely on other milestone and will be completed with resources.
@@ -1657,7 +1731,11 @@ class Milestone(Task):
         color -- string, html color, default None
         display -- boolean, display this milestone, default True
         """
-        LOG.debug("** Milestone::__init__ {0}".format({"name": name, "start": start, "depends_on": depends_on}))
+        LOG.debug(
+            "** Milestone::__init__ {0}".format(
+                {"name": name, "start": start, "depends_on": depends_on}
+            )
+        )
         self.name = name
         if fullname is not None:
             self.fullname = fullname
@@ -1843,7 +1921,11 @@ class Milestone(Task):
         Keyword arguments:
         prj -- Project object to check against
         """
-        LOG.debug("** Milestone::svg_dependencies ({0})".format({"name": self.name, "prj": prj}))
+        LOG.debug(
+            "** Milestone::svg_dependencies ({0})".format(
+                {"name": self.name, "prj": prj}
+            )
+        )
         if self.depends_on is None:
             return None
         else:
@@ -1851,7 +1933,9 @@ class Milestone(Task):
             for t in self.depends_on:
                 if isinstance(t, Milestone):
                     if not (
-                        t.drawn_x_end_coord is None or t.drawn_y_coord is None or self.drawn_x_begin_coord is None
+                        t.drawn_x_end_coord is None
+                        or t.drawn_y_coord is None
+                        or self.drawn_x_begin_coord is None
                     ) and prj.is_in_project(t):
                         # horizontal line
                         svg.add(
@@ -1870,7 +1954,11 @@ class Milestone(Task):
                         )
 
                         marker = svgwrite.container.Marker(insert=(5, 5), size=(10, 10))
-                        marker.add(svgwrite.shapes.Circle((5, 5), r=5, fill="#000000", opacity=0.5, stroke_width=0))
+                        marker.add(
+                            svgwrite.shapes.Circle(
+                                (5, 5), r=5, fill="#000000", opacity=0.5, stroke_width=0
+                            )
+                        )
                         svg.add(marker)
                         # vertical line
                         eline = svgwrite.shapes.Line(
@@ -1890,7 +1978,9 @@ class Milestone(Task):
 
                 elif isinstance(t, Task):
                     if not (
-                        t.drawn_x_end_coord is None or t.drawn_y_coord is None or self.drawn_x_begin_coord is None
+                        t.drawn_x_end_coord is None
+                        or t.drawn_y_coord is None
+                        or self.drawn_x_begin_coord is None
                     ) and prj.is_in_project(t):
                         # horizontal line
                         svg.add(
@@ -1909,7 +1999,11 @@ class Milestone(Task):
                         )
 
                         marker = svgwrite.container.Marker(insert=(5, 5), size=(10, 10))
-                        marker.add(svgwrite.shapes.Circle((5, 5), r=5, fill="#000000", opacity=0.5, stroke_width=0))
+                        marker.add(
+                            svgwrite.shapes.Circle(
+                                (5, 5), r=5, fill="#000000", opacity=0.5, stroke_width=0
+                            )
+                        )
                         svg.add(marker)
                         # vertical line
                         eline = svgwrite.shapes.Line(
@@ -2087,7 +2181,9 @@ class Project(object):
 
             if scale == DRAW_WITH_DAILY_SCALE:
                 # draw vacations
-                if (start_date + datetime.timedelta(days=x)).weekday() in _not_worked_days() or (
+                if (
+                    start_date + datetime.timedelta(days=x)
+                ).weekday() in _not_worked_days() or (
                     start_date + datetime.timedelta(days=x)
                 ) in VACATIONS:
                     vlines.add(
@@ -2134,7 +2230,9 @@ class Project(object):
                 # Month name
                 if jour.day == 1:
                     if t0mode:
-                        delta = (jour.year - start_date.year) * 12 + (jour.month - start_date.month)
+                        delta = (jour.year - start_date.year) * 12 + (
+                            jour.month - start_date.month
+                        )
                         text = f"Mois M{delta+1}"
                     else:
                         text = "{0}".format(jour.strftime("%B"))
@@ -2191,7 +2289,9 @@ class Project(object):
                 # Month name
                 if jour.day <= 7:
                     if t0mode:
-                        delta = (jour.year - start_date.year) * 12 + (jour.month - start_date.month)
+                        delta = (jour.year - start_date.year) * 12 + (
+                            jour.month - start_date.month
+                        )
                         text = f"Mois M{delta+1}"
                     else:
                         text = "{0}".format(jour.strftime("%B"))
@@ -2227,7 +2327,9 @@ class Project(object):
             elif scale == DRAW_WITH_MONTHLY_SCALE:
                 # Month number
                 if t0mode:
-                    delta = (jour.year - start_date.year) * 12 + (jour.month - start_date.month)
+                    delta = (jour.year - start_date.year) * 12 + (
+                        jour.month - start_date.month
+                    )
                     text = f"M{delta+1}"
                 else:
                     text = "{0}".format(jour.strftime("%m"))
@@ -2341,7 +2443,6 @@ class Project(object):
         self._reset_coord()
 
         start_date = self.start_date() if start is None else start
-
         end_date = self.end_date() if end is None else end
 
         if start_date > end_date:
@@ -2376,11 +2477,14 @@ class Project(object):
                 size=((maxx + 1 + offset / 10) * cm, (pheight + 3) * cm),
                 fill="white",
                 stroke_width=0,
-                opacity=1,
             )
         )
 
-        dwg.add(self._svg_calendar(maxx, pheight, start_date, today, scale, offset=offset, t0mode=t0mode))
+        dwg.add(
+            self._svg_calendar(
+                maxx, pheight, start_date, today, scale, offset=offset, t0mode=t0mode
+            )
+        )
         dwg.add(ldwg)
         dwg.save(width=(maxx + 1 + offset / 10) * cm, height=(pheight + 3) * cm)
         return
@@ -2454,7 +2558,9 @@ class Project(object):
         # detect conflicts between resources and holidays
         conflicts_vacations = []
         for t in self.get_tasks():
-            conflicts_vacations.append(t.check_conflicts_between_task_and_resources_vacations())
+            conflicts_vacations.append(
+                t.check_conflicts_between_task_and_resources_vacations()
+            )
 
         conflicts_vacations = _flatten(conflicts_vacations)
 
@@ -2516,7 +2622,11 @@ class Project(object):
                 opacity = 0.65
                 if scale == DRAW_WITH_WEEKLY_SCALE:
                     opacity /= 4.0
-                if cday.weekday() not in _not_worked_days() and cday not in VACATIONS and not r.is_available(cday):
+                if (
+                    cday.weekday() not in _not_worked_days()
+                    and cday not in VACATIONS
+                    and not r.is_available(cday)
+                ):
                     width = 4 * mm if show_conflicts else 8 * mm
                     vac.add(
                         svgwrite.shapes.Rect(
@@ -2533,7 +2643,11 @@ class Project(object):
                     )
 
                 # Overcharge
-                if cday.weekday() not in _not_worked_days() and cday not in VACATIONS and cday in overcharged_days:
+                if (
+                    cday.weekday() not in _not_worked_days()
+                    and cday not in VACATIONS
+                    and cday in overcharged_days
+                ):
                     width = 4 * mm if show_vacations else 8 * mm
                     conflicts.add(
                         svgwrite.shapes.Rect(
@@ -2624,7 +2738,11 @@ class Project(object):
             )
         )
 
-        dwg.add(self._svg_calendar(maxx, nline - 1, start_date, today, scale, offset=offset, t0mode=t0mode))
+        dwg.add(
+            self._svg_calendar(
+                maxx, nline - 1, start_date, today, scale, offset=offset, t0mode=t0mode
+            )
+        )
         dwg.add(ldwg)
         dwg.save(width=(maxx + 1 + offset / 10) * cm, height=(nline + 1) * cm)
         return {
@@ -2683,7 +2801,9 @@ class Project(object):
 
         title_capital_chars = sum(1 for char in self.name if char.isupper())
         title_lower_chars = len(self.name) - title_capital_chars
-        title_width = title_capital_chars * font_size / 1.5 + title_lower_chars * font_size / 2
+        title_width = (
+            title_capital_chars * font_size / 1.5 + title_lower_chars * font_size / 2
+        )
         max_line_char_count = max(len(line) for line in text_lines)
         width = int(max(title_width, max_line_char_count * font_size / 2) + 2 * margin)
         width = min(avail_width, width)
@@ -2756,6 +2876,7 @@ class Project(object):
         t0mode=False,
         show_start_end_dates=None,
         macro_mode=False,
+        show_leaves=True,
     ) -> tuple[svgwrite.container.Group | None, int]:
         """
         Return (SVG code, number of lines drawn) for the project. Draws all
@@ -2788,7 +2909,13 @@ class Project(object):
 
         is_macro_project = macro_mode and level > 0
         macro_drawn = False
+
+        res_leaves = {}
+
         for t in self.tasks:
+
+            t_res_leaves = []
+
             if is_macro_project and type(t) is Task:
                 if macro_drawn:
                     continue
@@ -2798,6 +2925,36 @@ class Project(object):
                     self.macro_task.color = self.color
                     t = self.macro_task
                     macro_drawn = True
+
+            if show_leaves and t.get_resources():
+                for r in t.get_resources():
+                    for v in r.vacations:
+
+                        v_start, v_end = (None, None)
+
+                        if type(v) is tuple:  # Period
+                            leave_key = f"{r.name}-{v[0].strftime('%d-%m-%Y')}-{v[1].strftime('%d-%m-%Y')}"
+                            v_start = v[0]
+                            v_end = v[1]
+                        else:  # Single day
+                            leave_key = f"{r.name}-{v.strftime('%d-%m-%Y')}"
+                            v_start = v
+                            v_end = v
+
+                        if (
+                            (v_start < t.start_date() and v_end < t.start_date())
+                            or (v_start > t.end_date() and v_end > t.end_date())
+                            or leave_key in res_leaves.keys()
+                        ):
+                            continue
+
+                        res_leaves[leave_key] = Task(
+                            " ",
+                            start=v_start,
+                            stop=v_end,
+                            color=COLORS.VACATIONS.value,
+                        )
+                        t_res_leaves.append(leave_key)
 
             trepr, theight = t.svg(
                 cy,
@@ -2810,8 +2967,24 @@ class Project(object):
                 show_start_end_dates=show_start_end_dates,
                 macro_mode=macro_mode,
             )
+
             if trepr is not None:
                 prj.add(trepr)
+                for lk in t_res_leaves:
+                    lrepr, _ = res_leaves[lk].svg(
+                        cy,
+                        start=start,
+                        end=end,
+                        level=level + 1,
+                        scale=scale,
+                        title_align_on_left=title_align_on_left,
+                        offset=offset,
+                        show_start_end_dates=False,
+                        macro_mode=macro_mode,
+                        opacity=0.8,
+                    )
+                    if lrepr is not None:
+                        prj.add(lrepr)
                 cy += theight
 
         fprj = svgwrite.container.Group()
@@ -2856,7 +3029,9 @@ class Project(object):
 
             if is_project_in_interval and level >= 1 and self.show_description:
                 x = _time_diff(scale, start, end, False) * 10
-                desc_box, px_desc_height = self.desc_svg(400, color, x, prev_y, font_size=font_size)
+                desc_box, px_desc_height = self.desc_svg(
+                    400, color, x, prev_y, font_size=font_size
+                )
                 if desc_box is not None:
                     prj.add(desc_box)
 
