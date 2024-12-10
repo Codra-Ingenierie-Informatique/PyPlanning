@@ -210,7 +210,9 @@ class DataItem(Generic[_T]):
                 if self.value is None:
                     return None
                 for cname in self.COLORS:
-                    if cname == self.value or cname.startswith(self.value): # retrocompatibility
+                    if cname == self.value or cname.startswith(
+                        self.value
+                    ):  # retrocompatibility
                         return cname
             if self.datatype == DTypes.LIST:
                 return ""
@@ -901,10 +903,16 @@ class AbstractTaskData(AbstractDurationData):
             elif task.start is None and prevtask is not None:
 
                 if prevtask.stop is not None:
-                    task.start = prevtask.stop + datetime.timedelta(days=1)
+                    task.start = prevtask.stop
                 elif prevtask.duration is not None and prevtask.start is not None:
-                    delta = datetime.timedelta(days=prevtask.duration)
-                    task.start = prevtask.start + delta
+                    # delta = datetime.timedelta(days=prevtask.duration)
+                    # task.start = prevtask.start + delta
+                    task.start = prevtask.end_date()
+
+                if task.start:
+                    while task.non_working_day(task.start):
+                        task.start += datetime.timedelta(days=1)
+
                 if task.depends_on is None:
                     task.depends_on = []
 
@@ -1016,8 +1024,8 @@ class TaskData(AbstractTaskData):
 
     def __init__(self, pdata, name=None, fullname=None):
         super().__init__(pdata, name, fullname)
-        self.start_calc = DataItem(self, "start", DTypes.DATE, None)
-        self.stop_calc = DataItem(self, "stop", DTypes.DATE, None)
+        self.start_calc = DataItem(self, "start_calc", DTypes.DATE, None)
+        self.stop_calc = DataItem(self, "stop_calc", DTypes.DATE, None)
         self.percent_done = DataItem(self, "percent_done", DTypes.INTEGER, None)
         self.__resids = []
 
@@ -1351,15 +1359,15 @@ class PlanningData(AbstractData):
         self.prjlist: list[ProjectData] = []
         self.__lists: tuple[
             list[ResourceData],
-            list[AbstractTaskData],
             list[LeaveData],
+            list[AbstractTaskData],
             list[ClosingDayData],
             list[ChartData],
             list[ProjectData],
         ] = (
             self.reslist,
-            self.tsklist,
             self.lvelist,
+            self.tsklist,
             self.clolist,
             self.chtlist,
             self.prjlist,

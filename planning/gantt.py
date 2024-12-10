@@ -2142,16 +2142,20 @@ class Project(object):
             bold_vline = False
             if scale == DRAW_WITH_DAILY_SCALE:
                 jour = start_date + datetime.timedelta(days=x)
-                is_it_today = today == jour
+                is_it_today = today == jour if today else False
             elif scale == DRAW_WITH_WEEKLY_SCALE:
                 jour = start_date + relativedelta(weeks=x)
                 jour_dapres = start_date + relativedelta(weeks=x + 1)
-                is_it_today = today >= jour and today < jour_dapres
+                is_it_today = (
+                    (today >= jour and today < jour_dapres) if today else False
+                )
                 bold_vline = jour_dapres.month != jour.month
             elif scale == DRAW_WITH_MONTHLY_SCALE:
                 jour = start_date + relativedelta(months=x)
                 jour_dapres = start_date + relativedelta(months=x + 1)
-                is_it_today = today >= jour and today < jour_dapres
+                is_it_today = (
+                    (today >= jour and today < jour_dapres) if today else False
+                )
                 bold_vline = jour_dapres.month != jour.month
             elif scale == DRAW_WITH_QUATERLY_SCALE:
                 # how many quarter do we need to draw ?
@@ -2969,7 +2973,6 @@ class Project(object):
             )
 
             if trepr is not None:
-                prj.add(trepr)
                 for lk in t_res_leaves:
                     lrepr, _ = res_leaves[lk].svg(
                         cy,
@@ -2981,10 +2984,11 @@ class Project(object):
                         offset=offset,
                         show_start_end_dates=False,
                         macro_mode=macro_mode,
-                        opacity=0.9,
+                        opacity=1,
                     )
                     if lrepr is not None:
                         prj.add(lrepr)
+                prj.add(trepr)
                 cy += theight
 
         fprj = svgwrite.container.Group()

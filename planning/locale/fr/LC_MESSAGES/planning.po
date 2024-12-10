@@ -293,12 +293,12 @@ msgid "Duration mode"
 msgstr "Tâche en mode durée"
 
 #: planning\gui\treewidgets.py:767
-msgid "Remove start date"
-msgstr "Supprimer la date de début"
+msgid "Remove independant start date"
+msgstr "Supprimer la date de début indépendante"
 
 # Manually added
-msgid "Add start date"
-msgstr "Ajouter une date de début"
+msgid "Add independant start date"
+msgstr "Ajouter une date de début indépendante"
 
 #: planning\gui\treewidgets.py:985
 msgid "Chart tree"

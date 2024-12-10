@@ -173,12 +173,6 @@ class TaskTreeDelegate(QW.QItemDelegate):
         else:
             editor.setText(value)
 
-        # Managing editor state
-        if ditem.name in getattr(ditem.parent, "READ_ONLY_ITEMS", []):
-            editor.setReadOnly(True)
-        elif ditem.name == "start" and ditem.parent.start.value is None:
-            editor.setReadOnly(True)
-
     # pylint: disable=unused-argument,invalid-name
     def setModelData(self, editor: ItemEditor, mdl, index: QC.QModelIndex):
         """Reimplement Qt method"""
@@ -193,10 +187,10 @@ class TaskTreeDelegate(QW.QItemDelegate):
             qdate = editor.date()
             value = datetime.date(qdate.year(), qdate.month(), qdate.day())
             data = ditem.parent
-            if ditem.name == "start":
+            if ditem.name == "start" and value and data.stop.value:
                 if value > data.stop.value:
                     value = data.start.value
-                elif data.start.value is not None and data.stop.value is not None:
+                elif data.start.value:
                     data.stop.value += value - data.start.value
         elif ditem.datatype == DTypes.CHOICE or ditem.datatype == DTypes.COLOR:
             value = editor.currentText()
@@ -217,9 +211,10 @@ class TaskTreeDelegate(QW.QItemDelegate):
             elif value == "":
                 value = None
 
-        if ditem.name in getattr(ditem.parent, "READ_ONLY_ITEMS", []) or (
+        if ditem.parent.is_read_only(ditem.name) or (
             validator is not None and not validator(value)
         ):
+            print("not validated")
             return
 
         if ditem.datatype == DTypes.CHOICE:
@@ -594,8 +589,13 @@ class BaseTreeWidget(QW.QTreeView):
                     font.setBold(True)
                     item.setFont(font)
 
-                if ditem is not None and data.is_read_only(ditem.name):
-                    item.setForeground(QG.QBrush(QC.Qt.GlobalColor.gray))
+                # Managing editor states
+                if ditem is not None:
+                    if data.is_read_only(ditem.name) or (
+                        (ditem.name in ("start", "stop") and not ditem.value)
+                    ):
+                        item.setEditable(False)
+                        item.setForeground(QG.QBrush(QC.Qt.GlobalColor.gray))
 
                 item.setEditable(
                     ditem is not None and not data.is_read_only(ditem.name)
@@ -661,11 +661,11 @@ class TaskTreeWidget(BaseTreeWidget):
     TITLE = _("Task tree")
     NAMES = (
         _("Name"),
-        _("Start"),
         _("Real start"),
+        _("Real end"),
+        _("Start"),
         _("Duration"),
         _("End"),
-        _("Real end"),
         "%",
         _("Color"),
         _("#"),
@@ -674,11 +674,11 @@ class TaskTreeWidget(BaseTreeWidget):
     )
     ATTRS = (
         ("fullname", "name"),
-        "start",
         "start_calc",
+        "stop_calc",
+        "start",
         "duration",
         "stop",
-        "stop_calc",
         "percent_done",
         "color",
         "task_number",
@@ -689,8 +689,8 @@ class TaskTreeWidget(BaseTreeWidget):
         DTypes.TEXT,
         DTypes.DATE,
         DTypes.DATE,
-        DTypes.DAYS,
         DTypes.DATE,
+        DTypes.DAYS,
         DTypes.DATE,
         DTypes.INTEGER,
         DTypes.COLOR,
@@ -698,7 +698,7 @@ class TaskTreeWidget(BaseTreeWidget):
         DTypes.MULTIPLE_CHOICE,
         DTypes.CHOICE,
     )
-    COLUMNS_TO_RESIZE = (0, 1, 2, 4, 5, 7, 8)
+    COLUMNS_TO_RESIZE = (0, 1, 2, 3, 5, 7, 8, 9)
     COLUMNS_TO_EDIT_ON_CLICK = ()
     FIELD_CHANGE_SIGNALS = {}
 
@@ -780,10 +780,14 @@ class TaskTreeWidget(BaseTreeWidget):
             self, _("Duration mode"), toggled=self.enable_duration_mode
         )
         self.remove_start_action = create_action(
-            self, _("Remove start date"), triggered=self.remove_start
+            self,
+            _("Remove independant start date"),
+            triggered=self.remove_start,
         )
         self.add_start_action = create_action(
-            self, _("Add start date"), triggered=self.add_start
+            self,
+            _("Add independant start date"),
+            triggered=self.add_start,
         )
 
         self.always_enabled_actions += [
@@ -851,13 +855,20 @@ class TaskTreeWidget(BaseTreeWidget):
     def remove_start(self):
         """Remove start date"""
         data = self.get_current_data()
-        data.start.value = None
+        if isinstance(data, TaskData):
+            prev_task = data.get_previous()
+            if prev_task:
+                data.start.value = None
+                data.update_calc_start_end_dates()
         self.repopulate()
 
     def add_start(self):
         """Add start date"""
         data = self.get_current_data()
-        data.start.value = data.start_calc.value
+        if isinstance(data, TaskData) and not data.start.value:
+            if not data.start_calc.value:
+                data.update_calc_start_end_dates()
+            data.start.value = data.start_calc.value
         self.repopulate()
 
     def new_resource(self):
