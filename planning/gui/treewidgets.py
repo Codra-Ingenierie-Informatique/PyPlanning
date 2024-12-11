@@ -419,17 +419,18 @@ class BaseTreeWidget(QW.QTreeView):
         """Selection has changed"""
         self.selected_indexes_changed(selected.indexes(), deselected.indexes())
 
-    # pylint: disable=unused-argument
+    # pylint: disable=unused-argument, consider-iterating-dictionary
     def selected_indexes_changed(self, sel_indexes, desel_indexes):
         """Selected indexes have changed"""
         self.set_specific_actions_state(True)
         if sel_indexes:
             item = self.get_item_from_index(sel_indexes[0])
-            parent = self.get_item_parent(item)
-            self.up_action.setEnabled(item.row() > 0)
-            # FIXME: The next condition is not sufficient for a task data because
-            # down_action should be disabled if the next data is "LeaveData"
-            self.down_action.setEnabled(item.row() < parent.rowCount() - 1)
+            item_next = self.get_item_from_index(self.indexBelow(sel_indexes[0]))
+            # parent = self.get_item_parent(item)
+            self.up_action.setVisible(item.row() > 0)
+            self.down_action.setVisible(
+                item_next is not None and item_next.text() != "Leave"
+            )
 
     def update_menu(self):
         """Update context menu"""

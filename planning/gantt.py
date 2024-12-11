@@ -2147,7 +2147,12 @@ class Project(object):
                 jour = start_date + relativedelta(weeks=x)
                 jour_dapres = start_date + relativedelta(weeks=x + 1)
                 is_it_today = (
-                    (today >= jour and today < jour_dapres) if today else False
+                    (
+                        jour.isocalendar().week == today.isocalendar().week
+                        and jour.isocalendar().year == today.isocalendar().year
+                    )
+                    if today
+                    else False
                 )
                 bold_vline = jour_dapres.month != jour.month
             elif scale == DRAW_WITH_MONTHLY_SCALE:
