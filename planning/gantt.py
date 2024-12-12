@@ -2161,7 +2161,6 @@ class Project(object):
                 is_it_today = (
                     (today >= jour and today < jour_dapres) if today else False
                 )
-                bold_vline = jour_dapres.month != jour.month
             elif scale == DRAW_WITH_QUATERLY_SCALE:
                 # how many quarter do we need to draw ?
                 message = "DRAW_WITH_QUATERLY_SCALE not implemented yet"

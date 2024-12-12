@@ -662,8 +662,8 @@ class TaskTreeWidget(BaseTreeWidget):
     TITLE = _("Task tree")
     NAMES = (
         _("Name"),
-        _("Real start"),
-        _("Real end"),
+        _("Calculated start"),
+        _("Calculated end"),
         _("Start"),
         _("Duration"),
         _("End"),
