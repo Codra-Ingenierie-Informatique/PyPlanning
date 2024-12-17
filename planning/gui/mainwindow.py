@@ -29,6 +29,7 @@ from planning import __version__
 from planning.config import APP_DESC, APP_NAME, DEBUG, DEBUG_VAR_STR, Conf, _
 from planning.gantt import LOG
 from planning.gui.centralwidget import PlanningCentralWidget
+from planning.gui.closing_days_dialog import ClosingDaysDialog
 from planning.gui.logviewer import exec_logviewer_dialog
 from planning.utils import qthelpers as qth
 
@@ -85,6 +86,7 @@ class PlanningMainWindow(QW.QMainWindow):
         self.open_act = None
         self.open_recent_menu = None
         self.diropen_act = None
+        self.edit_closing_days_act = None
         self.save_act = None
         self.save_as_act = None
         self.exit_act = None
@@ -95,6 +97,8 @@ class PlanningMainWindow(QW.QMainWindow):
         self.tasks_menu = None
         self.projects_menu = None
         self.help_menu = None
+
+        self.closing_days_dialog = ClosingDaysDialog()
 
         self.create_actions()
         self.create_menus()
@@ -120,7 +124,9 @@ class PlanningMainWindow(QW.QMainWindow):
 
     def check_for_previous_crash(self):  # pragma: no cover
         """Check for previous crash"""
-        if Conf.main.faulthandler_log_available.get(False) or Conf.main.traceback_log_available.get(False):
+        if Conf.main.faulthandler_log_available.get(
+            False
+        ) or Conf.main.traceback_log_available.get(False):
             txt = "<br>".join(
                 [
                     _("Log files were generated during last session."),
@@ -214,7 +220,9 @@ Thanks for your patience."""
         self.separator_act = create_action(self, "")
         self.separator_act.setSeparator(True)
 
-        self.xmlmode_act = create_action(self, _("Advanced XML mode"), toggled=self.switch_xml_mode)
+        self.xmlmode_act = create_action(
+            self, _("Advanced XML mode"), toggled=self.switch_xml_mode
+        )
         self.xmlmode_act.setChecked(Conf.main.xml_mode.get(False))
 
         self.new_act = create_action(
@@ -236,6 +244,12 @@ Thanks for your patience."""
             _("Open working directory"),
             icon=get_icon("libre-gui-folder.svg"),
             triggered=self.open_workdir,
+        )
+        self.edit_closing_days_act = create_action(
+            self,
+            _("Edit closing days"),
+            icon=get_icon("closing-days.svg"),
+            triggered=self.edit_closing_days,
         )
         self.save_act = create_action(
             self,
@@ -282,6 +296,8 @@ Thanks for your patience."""
                 None,
                 self.save_act,
                 self.save_as_act,
+                None,
+                self.edit_closing_days_act,
                 None,
                 self.xmlmode_act,
                 None,
@@ -337,6 +353,8 @@ Thanks for your patience."""
                 self.open_act,
                 None,
                 self.save_act,
+                None,
+                self.edit_closing_days_act,
                 None,
                 self.diropen_act,
                 None,
@@ -411,7 +429,9 @@ Please check the file content."""
         if not self.maybe_save(_("Open file")):
             return False
         if fname is None:
-            fname, _selected_filter = getopenfilename(self, _("Open"), self.basedir, "*" + self.EXTENSION)
+            fname, _selected_filter = getopenfilename(
+                self, _("Open"), self.basedir, "*" + self.EXTENSION
+            )
             if not fname:
                 return False
         self.central_widget.load_file(fname)
@@ -439,6 +459,31 @@ Please check the file content."""
             self.recent_files.pop(-1)
         Conf.main.recent_files.set(self.recent_files)
 
+    def edit_closing_days(self):
+        """Open closing days editor dialog"""
+        if self.central_widget.planning:
+            if self.central_widget.is_in_xml_mode:
+                QW.QMessageBox.warning(
+                    self,
+                    _("Warning"),
+                    _(
+                        "To edit closing days via the user interface, please exit XML advanced mode first."
+                    ),
+                )
+                return
+            result = self.closing_days_dialog.exec_(self.central_widget.planning)
+            if result == QW.QDialog.Accepted:
+                self.set_modified(True)
+                if self.maybe_save(_("Closing days edition")):
+                    self.central_widget.load_file(self.central_widget.path)
+            self.closing_days_dialog = ClosingDaysDialog()
+        else:
+            QW.QMessageBox.warning(
+                self,
+                _("Warning"),
+                _("You must open a file first to edit its projects' closing days."),
+            )
+
     def __save(self, fname):
         """Save current file"""
         self.filename = fname
@@ -461,7 +506,9 @@ Please check the file content."""
         fname = self.filename
         if fname is None:
             fname = osp.join(self.basedir, self.DEFAULT_NAME)
-        fname, _selected_filter = getsavefilename(self, _("Save as"), fname, filters="*" + self.EXTENSION)
+        fname, _selected_filter = getsavefilename(
+            self, _("Save as"), fname, filters="*" + self.EXTENSION
+        )
         if not fname:
             return False
         return self.__save(fname)

@@ -247,6 +247,11 @@ class PlanningCentralWidget(QSplitter):
         """Return PlanningData instance"""
         self.editor.trees.planning = planning
 
+    @property
+    def is_in_xml_mode(self) -> bool:
+        """Return True if XML mode is enabled"""
+        return self.editor.xml_mode
+
     def get_toolbars(self):
         """Return toolbars"""
         return self.editor.trees.toolbars
