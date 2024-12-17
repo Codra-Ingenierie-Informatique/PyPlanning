@@ -56,6 +56,7 @@ class DTypes(Enum):
     MULTIPLE_CHOICE = 7
     BOOLEAN = "🗸"
     LONG_TEXT = 9
+    FLOAT = 10
 
 
 class DefaultChoiceMode(Enum):
@@ -313,6 +314,8 @@ class DataItem(Generic[_T]):
             self.value = None if len(text) == 0 else text.strip()
         elif self.datatype == DTypes.INTEGER:
             self.value = None if text == "" else int(text)
+        elif self.datatype == DTypes.FLOAT:
+            self.value = None if text == "" else float(text)
         elif self.datatype == DTypes.LIST:
             if text == "":
                 self.value = []
@@ -567,6 +570,10 @@ class AbstractData:
         """Get integer value from XML attribute"""
         return self.create_item(name, DTypes.INTEGER, default=default)
 
+    def get_float(self, name, default: Optional[_T | type[NoDefault]] = NoDefault):
+        """Get float value from XML attribute"""
+        return self.create_item(name, DTypes.FLOAT, default=default)
+
     def get_list(self, name, default: Optional[_T | type[NoDefault]] = NoDefault):
         """Get list value from XML attribute"""
         return self.create_item(name, DTypes.LIST, default=default)
@@ -778,6 +785,8 @@ class ChartData(AbstractDurationData):
         one_line_for_tasks,
         show_title=False,
         show_conflicts=False,
+        tu_width=1.0,
+        tu_fraction=True,
     ):
         """Make chart SVG"""
         filename = self.fullname.value
@@ -806,6 +815,8 @@ class ChartData(AbstractDurationData):
                 t0mode=t0mode,
                 resource_on_left=True,
                 scale=scale,
+                # tu_width=tu_width,
+                # tu_fraction=tu_fraction,
             )
         elif ptype == "t" or ptype == "m":
             project.make_svg_for_tasks(
@@ -816,6 +827,8 @@ class ChartData(AbstractDurationData):
                 scale=scale,
                 t0mode=t0mode,
                 macro_mode=(ptype == "m"),
+                # tu_width=tu_width,
+                # tu_fraction=tu_fraction,
             )
         else:
             raise ValueError(f"Invalid planning type '{ptype}'")
@@ -1372,6 +1385,8 @@ class PlanningData(AbstractData):
             self.chtlist,
             self.prjlist,
         )
+        self.tu_width = DataItem[float](self, "tu_width", DTypes.FLOAT, 1.0)
+        self.tu_fraction = DataItem[bool](self, "tu_fraction", DTypes.BOOLEAN, True)
         gantt.VACATIONS = []
         self.process_gantt()
 
@@ -1389,6 +1404,14 @@ class PlanningData(AbstractData):
     def _init_from_element(self, element: ET.Element):
         """Init instance from XML element"""
         super()._init_from_element(element)
+
+        self.tu_width = self.get_float("tu_width", 1.0)
+        if self.tu_width.value < 1.0:
+            self.tu_width.value = 1.0
+        elif self.tu_width.value > 10.0:
+            self.tu_width.value = 10.0
+        self.tu_fraction = self.get_bool("tu_fraction", True)
+
         charts_tag = "CHARTS"
         tasks_tag = "TASKS"
         projects_tag = "PROJECTS"
@@ -1445,6 +1468,8 @@ class PlanningData(AbstractData):
         """Serialize model to XML element"""
         base_elt = ET.Element("PLANNING", attrib=self.get_attrib_dict())
         base_elt.set("version", VERSION)
+        base_elt.set("tu_width", str(self.tu_width.value))
+        base_elt.set("tu_fraction", str(self.tu_fraction.value))
         charts_elt = ET.SubElement(base_elt, "CHARTS")
         for data in self.iterate_chart_data():
             data.to_element(charts_elt)
@@ -1741,6 +1766,12 @@ class PlanningData(AbstractData):
         """Return chart filenames"""
         return [str(data.fullname.value) for data in self.iterate_chart_data()]
 
+    def toggle_tu_fraction(self, state: bool):
+        """Toggle display of time unit fractions on charts"""
+        assert isinstance(state, bool)
+        self.tu_fraction.value = state
+        self.generate_charts()
+
     def process_gantt(self):
         """Create or update Gantt objects and add them to dictionaries"""
         self.all_projects.clear()
@@ -1795,7 +1826,12 @@ class PlanningData(AbstractData):
                     project.add_task(proj)
                     # for task in proj.get_tasks():
                     #     project.add_task(task)
-            chart.make_svg(project, one_line_for_tasks)
+            chart.make_svg(
+                project,
+                one_line_for_tasks,
+                # tu_width=self.tu_width.value,
+                # tu_fraction=self.tu_fraction.value,
+            )
 
             # if wrong_pnames and chart.projects.value is not None:
             #     for pname in wrong_pnames:
@@ -1827,5 +1863,10 @@ class PlanningData(AbstractData):
                     continue
                 project.add_task(proj)
 
-        chart.make_svg(project, one_line_for_tasks)
+        chart.make_svg(
+            project,
+            one_line_for_tasks,
+            # tu_width=self.tu_width.value,
+            # tu_fraction=self.tu_fraction.value,
+        )
         self.update_task_calc_dates()

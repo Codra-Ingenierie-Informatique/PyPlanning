@@ -393,6 +393,7 @@ class BaseTreeWidget(QW.QTreeView):
             icon=get_icon("libre-gui-refresh.svg"),
             triggered=self.repopulate,
         )
+
         return [
             self.edit_action,
             self.remove_action,
@@ -1054,6 +1055,8 @@ class ChartTreeWidget(BaseTreeWidget):
     def __init__(self, parent=None, debug=False):
         self.new_chart_action = None
         self.set_today_action = None
+        self.toggle_tu_fraction_action = None
+
         BaseTreeWidget.__init__(self, parent, debug)
         self.setSelectionMode(QW.QTreeView.ExtendedSelection)
         self.VALIDATORS["name"] = self.validate_chart_name
@@ -1090,9 +1093,22 @@ class ChartTreeWidget(BaseTreeWidget):
             icon=get_icon("new_chart.svg"),
             triggered=self.new_chart,
         )
-        self.always_enabled_actions += [self.new_chart_action]
+        self.toggle_tu_fraction_action = create_action(
+            self,
+            _("(not implemented) Show time fractions on chart"),
+            icon=get_icon("divide.svg"),
+            toggled=self.toggle_tu_fraction,
+        )
+        if self.planning:
+            self.toggle_tu_fraction_action.setChecked(self.planning.tu_fraction.value)
+
+        self.always_enabled_actions += [
+            self.new_chart_action,
+            # self.toggle_tu_fraction_action,
+        ]
         return [
             self.set_today_action,
+            self.toggle_tu_fraction_action,
             None,
             self.new_chart_action,
         ] + super().setup_specific_actions()
@@ -1119,6 +1135,12 @@ class ChartTreeWidget(BaseTreeWidget):
         self.__add_chartitem(data)
         self.set_current_id(data.id.value)
         self.repopulate()
+
+    def toggle_tu_fraction(self, state):
+        """Set display of time unit fractions on charts"""
+        if self.planning:
+            self.planning.toggle_tu_fraction(state)
+            self.repopulate()
 
     def __add_chartitem(self, data: ChartData):
         """Add chart item to tree"""
