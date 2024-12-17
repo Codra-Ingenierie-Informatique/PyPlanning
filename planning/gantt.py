@@ -2220,9 +2220,23 @@ class Project(object):
             )
 
             if is_it_today:
+
+                x = tu_middle_x
+                if scale == DRAW_WITH_WEEKLY_SCALE:
+                    x = round(
+                        tu_start_x
+                        + (today.weekday() * ((tu_end_x - tu_start_x) / 7.0)),
+                        2,
+                    )
+                elif scale == DRAW_WITH_MONTHLY_SCALE:
+                    _, mtdays = calendar.monthrange(today.year, today.month)
+                    x = round(
+                        tu_start_x + (today.day * ((tu_end_x - tu_start_x) / mtdays)), 2
+                    )
+
                 vlines.add(
                     svgwrite.shapes.Rect(
-                        insert=(tu_middle_x, 1 * cm),
+                        insert=(x, 1 * cm),
                         size=(0.2 * cm, (maxy + 1) * cm),
                         fill=COLORS.TODAY.value,
                         stroke="lightgray",
