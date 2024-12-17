@@ -792,7 +792,7 @@ class ChartData(AbstractDurationData):
         filename = self.fullname.value
         if filename is None:
             return
-        offset = 55 if self.offset.value is None else self.offset.value
+        offset = 5.5 if self.offset.value is None else self.offset.value
         ptype = "r" if self.type.value is None else self.type.value
         scale_key = "d" if self.scale.value is None else self.scale.value
         t0mode = False if self.t0mode.value is None else self.t0mode.value
@@ -815,8 +815,8 @@ class ChartData(AbstractDurationData):
                 t0mode=t0mode,
                 resource_on_left=True,
                 scale=scale,
-                # tu_width=tu_width,
-                # tu_fraction=tu_fraction,
+                tu_width=tu_width,
+                tu_fraction=tu_fraction,
             )
         elif ptype == "t" or ptype == "m":
             project.make_svg_for_tasks(
@@ -827,8 +827,8 @@ class ChartData(AbstractDurationData):
                 scale=scale,
                 t0mode=t0mode,
                 macro_mode=(ptype == "m"),
-                # tu_width=tu_width,
-                # tu_fraction=tu_fraction,
+                tu_width=tu_width,
+                tu_fraction=tu_fraction,
             )
         else:
             raise ValueError(f"Invalid planning type '{ptype}'")
@@ -1829,8 +1829,8 @@ class PlanningData(AbstractData):
             chart.make_svg(
                 project,
                 one_line_for_tasks,
-                # tu_width=self.tu_width.value,
-                # tu_fraction=self.tu_fraction.value,
+                tu_width=self.tu_width.value,
+                tu_fraction=self.tu_fraction.value,
             )
 
             # if wrong_pnames and chart.projects.value is not None:
@@ -1866,7 +1866,7 @@ class PlanningData(AbstractData):
         chart.make_svg(
             project,
             one_line_for_tasks,
-            # tu_width=self.tu_width.value,
-            # tu_fraction=self.tu_fraction.value,
+            tu_width=self.tu_width.value,
+            tu_fraction=self.tu_fraction.value,
         )
         self.update_task_calc_dates()
