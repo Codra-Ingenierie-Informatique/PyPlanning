@@ -154,6 +154,7 @@ def qt_app_context(exec_loop=False, enable_logs=True):
             level=logging.CRITICAL,
             format=fmt,
             datefmt=DATETIME_FORMAT,
+            encoding="utf-8",
         )
 
         def custom_excepthook(exc_type, exc_value, exc_traceback):
