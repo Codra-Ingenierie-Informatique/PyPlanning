@@ -104,7 +104,8 @@ class PlanningEditor(QStackedWidget):
             if isinstance(chart.fullname.value, str) and chart.is_default_name
         ]
         for chart_path in default_charts_paths:
-            shutil.copy(chart_path, osp.join(chart_path + ".tmp"))
+            if osp.exists(chart_path):
+                shutil.copy(chart_path, osp.join(chart_path + ".tmp"))
 
         if self.xml_mode:
             text = self.code.toPlainText()
@@ -117,7 +118,8 @@ class PlanningEditor(QStackedWidget):
 
         for chart_path in default_charts_paths:
             if not osp.exists(chart_path):
-                os.rename(osp.join(chart_path + ".tmp"), chart_path)
+                if osp.exists(osp.join(chart_path + ".tmp")):
+                    os.rename(osp.join(chart_path + ".tmp"), chart_path)
             else:
                 os.remove(osp.join(chart_path + ".tmp"))
 
