@@ -9,17 +9,21 @@ The `config` module handles `planning` configuration.
 
 import os
 import os.path as osp
+import sys
 
 from guidata import configtools
 
 from planning.utils import conf
 
-_ = configtools.get_translation("planning")
-
-configtools.add_image_module_path("planning", "data")
-
 CONF_VERSION = "1.0.0"
-APP_NAME = _("PyPlanning")
+
+APP_NAME = "PyPlanning"
+MOD_NAME = "planning"
+
+_ = configtools.get_translation(MOD_NAME)
+
+configtools.add_image_module_path(MOD_NAME, "data")
+
 APP_DESC = _(
     """Manage team schedules and quickly create simple project plannings.
 """
@@ -35,8 +39,45 @@ MAIN_FONT_FAMILY = "Yu Gothic UI"  # "Bahnschrift Light"
 DATETIME_FORMAT = "%d/%m/%Y - %H:%M:%S"
 
 
-DATAPATH = configtools.get_module_data_path("planning", relpath="data")
-TESTPATH = configtools.get_module_data_path("planning", relpath="tests")
+DATAPATH = configtools.get_module_data_path(MOD_NAME, relpath="data")
+TESTPATH = configtools.get_module_data_path(MOD_NAME, relpath="tests")
+
+
+# Copyright (c) DataLab Platform Developers, BSD 3-Clause license.
+# https://datalab-platform.com
+def is_frozen(module_name: str) -> bool:
+    """Test if module has been frozen (py2exe/cx_Freeze/pyinstaller)
+
+    Args:
+        module_name (str): module name
+
+    Returns:
+        bool: True if module has been frozen (py2exe/cx_Freeze/pyinstaller)
+    """
+    datapath = configtools.get_module_path(module_name)
+    parentdir = osp.normpath(osp.join(datapath, osp.pardir))
+    return not osp.isfile(__file__) or osp.isfile(parentdir)  # library.zip
+
+
+IS_FROZEN = is_frozen(MOD_NAME)
+
+
+# Copyright (c) DataLab Platform Developers, BSD 3-Clause license.
+# https://datalab-platform.com
+def get_mod_source_dir() -> str | None:
+    """Return module source directory
+
+    Returns:
+        str | None: module source directory, or None if not found
+    """
+    if IS_FROZEN:
+        devdir = osp.abspath(osp.join(sys.prefix, os.pardir, os.pardir))
+    else:
+        devdir = osp.abspath(osp.join(osp.dirname(__file__), os.pardir))
+    if osp.isfile(osp.join(devdir, MOD_NAME, "__init__.py")):
+        return devdir
+    # Unhandled case (this should not happen, but just in case):
+    return None
 
 
 class MainSection(conf.Section, metaclass=conf.SectionMeta):
@@ -66,6 +107,17 @@ class TreeSection(conf.Section, metaclass=conf.SectionMeta):
     small = conf.FontOption()
 
 
+class ConsoleSection(conf.Section, metaclass=conf.SectionMeta):
+    """Classs defining the console configuration section structure.
+    Each class attribute is an option (metaclass is automatically affecting
+    option names in .INI file based on class attribute names)."""
+
+    console_enabled = conf.Option()
+    max_line_count = conf.Option()
+    external_editor_path = conf.Option()
+    external_editor_args = conf.Option()
+
+
 # Usage (example): Conf.console.enable.get(True)
 class Conf(conf.Configuration, metaclass=conf.ConfMeta):
     """Class defining CodraFT configuration structure.
@@ -74,6 +126,7 @@ class Conf(conf.Configuration, metaclass=conf.ConfMeta):
 
     main = MainSection()
     tree = TreeSection()
+    console = ConsoleSection()
 
 
 def get_old_log_fname(fname):
@@ -84,8 +137,11 @@ def get_old_log_fname(fname):
 def initialize():
     """Initialize application configuration"""
     Conf.initialize(APP_NAME, CONF_VERSION, load=not DEBUG)
-    Conf.main.traceback_log_path.set(f".{APP_NAME}_traceback.log")
-    Conf.main.faulthandler_log_path.set(f".{APP_NAME}_faulthandler.log")
+    Conf.main.traceback_log_path.get(f".{APP_NAME}_traceback.log")
+    Conf.main.faulthandler_log_path.get(f".{APP_NAME}_faulthandler.log")
+    Conf.console.console_enabled.get(True)
+    Conf.console.external_editor_path.get("code")
+    Conf.console.external_editor_args.get("-g {path}:{line_number}")
 
 
 def reset():

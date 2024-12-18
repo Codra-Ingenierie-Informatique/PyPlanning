@@ -32,6 +32,7 @@ from planning.gui.centralwidget import PlanningCentralWidget
 from planning.gui.closing_days_dialog import ClosingDaysDialog
 from planning.gui.logviewer import exec_logviewer_dialog
 from planning.utils import qthelpers as qth
+from planning.utils.misc import go_to_error
 
 
 class PlanningMainWindow(QW.QMainWindow):
@@ -64,6 +65,7 @@ class PlanningMainWindow(QW.QMainWindow):
                 debug=DEBUG >= 1,
                 multithreaded=False,
             )
+            self.console.go_to_error.connect(go_to_error)
             if DEBUG >= 1:
                 LOG.initialize(stream=self.console)
             dockwidget, location = self.console.create_dockwidget("Console")
