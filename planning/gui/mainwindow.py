@@ -490,10 +490,7 @@ Please check the file content."""
         """Save current file"""
         self.filename = fname
         self.add_to_recent_files(fname)
-        try:
-            self.central_widget.save_file(fname)
-        except OSError:
-            return False
+        self.central_widget.save_file(fname)
         self.set_modified(False)
         return True
 
