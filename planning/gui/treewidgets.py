@@ -1093,14 +1093,14 @@ class ChartTreeWidget(BaseTreeWidget):
             icon=get_icon("new_chart.svg"),
             triggered=self.new_chart,
         )
-        self.toggle_tu_fraction_action = create_action(
-            self,
-            _("(not implemented) Show time fractions on chart"),
-            icon=get_icon("divide.svg"),
-            toggled=self.toggle_tu_fraction,
-        )
-        if self.planning:
-            self.toggle_tu_fraction_action.setChecked(self.planning.tu_fraction.value)
+        # self.toggle_tu_fraction_action = create_action(
+        #     self,
+        #     _("(not implemented) Show time fractions on chart"),
+        #     icon=get_icon("divide.svg"),
+        #     toggled=self.toggle_tu_fraction,
+        # )
+        # if self.planning:
+        #     self.toggle_tu_fraction_action.setChecked(self.planning.tu_fraction.value)
 
         self.always_enabled_actions += [
             self.new_chart_action,
@@ -1108,7 +1108,7 @@ class ChartTreeWidget(BaseTreeWidget):
         ]
         return [
             self.set_today_action,
-            self.toggle_tu_fraction_action,
+            # self.toggle_tu_fraction_action,
             None,
             self.new_chart_action,
         ] + super().setup_specific_actions()
