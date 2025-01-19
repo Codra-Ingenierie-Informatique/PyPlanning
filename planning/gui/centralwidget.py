@@ -78,19 +78,15 @@ class PlanningEditor(QStackedWidget):
     def clear_all(self):
         """Clear all contents"""
         self.trees.blockSignals(True)
-        if self.xml_mode:
-            self.code.setPlainText(PlanningData().to_text())
-        else:
-            self.trees.setup(PlanningData())
+        self.code.setPlainText(PlanningData().to_text())
+        self.trees.setup(PlanningData())
         self.trees.blockSignals(False)
 
     def load_file(self, path):
         """Load data from file"""
-        if self.xml_mode:
-            self.code.set_text_from_file(path)
-        else:
-            planning = PlanningData.from_filename(path)
-            self.trees.setup(planning)
+        self.code.set_text_from_file(path)
+        planning = PlanningData.from_filename(path)
+        self.trees.setup(planning)
 
     def save_file(self, path):
         """Save data to file"""
@@ -104,7 +100,8 @@ class PlanningEditor(QStackedWidget):
             if isinstance(chart.fullname.value, str) and chart.is_default_name
         ]
         for chart_path in default_charts_paths:
-            shutil.copy(chart_path, osp.join(chart_path + ".tmp"))
+            if osp.exists(chart_path):
+                shutil.copy(chart_path, osp.join(chart_path + ".tmp"))
 
         if self.xml_mode:
             text = self.code.toPlainText()
@@ -117,7 +114,8 @@ class PlanningEditor(QStackedWidget):
 
         for chart_path in default_charts_paths:
             if not osp.exists(chart_path):
-                os.rename(osp.join(chart_path + ".tmp"), chart_path)
+                if osp.exists(osp.join(chart_path + ".tmp")):
+                    os.rename(osp.join(chart_path + ".tmp"), chart_path)
             else:
                 os.remove(osp.join(chart_path + ".tmp"))
 
@@ -250,6 +248,11 @@ class PlanningCentralWidget(QSplitter):
     def planning(self, planning: PlanningData):
         """Return PlanningData instance"""
         self.editor.trees.planning = planning
+
+    @property
+    def is_in_xml_mode(self) -> bool:
+        """Return True if XML mode is enabled"""
+        return self.editor.xml_mode
 
     def get_toolbars(self):
         """Return toolbars"""

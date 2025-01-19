@@ -25,11 +25,7 @@ class OldSVGViewer(QLabel):
     def update_scale(self, size):
         """Update scale"""
         if self.__cached_pixmap is not None:
-            self.setPixmap(
-                self.__cached_pixmap.scaled(
-                    size, Qt.KeepAspectRatio, Qt.SmoothTransformation
-                )
-            )
+            self.setPixmap(self.__cached_pixmap.scaled(size, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
     def load(self, fname):
         """Load from filename"""

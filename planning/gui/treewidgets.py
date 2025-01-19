@@ -151,10 +151,13 @@ class TaskTreeDelegate(QW.QItemDelegate):
         self.commitData.emit(editor)
         self.closeEditor.emit(editor)
 
-    def setEditorData(self, editor: ItemEditor, index: QC.QModelIndex):  # pylint: disable=invalid-name
+    def setEditorData(
+        self, editor: ItemEditor, index: QC.QModelIndex
+    ):  # pylint: disable=invalid-name
         """Reimplement Qt method"""
         ditem = self.dataitem_from_index(index)
         value = ditem.to_widget_value()
+
         if ditem.datatype == DTypes.DAYS:
             editor.setValue(value)
         elif ditem.datatype == DTypes.DATE:
@@ -184,12 +187,11 @@ class TaskTreeDelegate(QW.QItemDelegate):
             qdate = editor.date()
             value = datetime.date(qdate.year(), qdate.month(), qdate.day())
             data = ditem.parent
-            if (
-                ditem.name == "start"
-                and data.start.value is not None
-                and data.stop.value is not None
-            ):
-                data.stop.value += value - data.start.value
+            if ditem.name == "start" and value and data.stop.value:
+                if value > data.stop.value:
+                    value = data.start.value
+                elif data.start.value:
+                    data.stop.value += value - data.start.value
         elif ditem.datatype == DTypes.CHOICE or ditem.datatype == DTypes.COLOR:
             value = editor.currentText()
         elif ditem.datatype == DTypes.BOOLEAN:
@@ -208,7 +210,11 @@ class TaskTreeDelegate(QW.QItemDelegate):
                 value = EMPTY_NAME
             elif value == "":
                 value = None
-        if validator is not None and not validator(value):
+
+        if ditem.parent.is_read_only(ditem.name) or (
+            validator is not None and not validator(value)
+        ):
+            print("not validated")
             return
 
         if ditem.datatype == DTypes.CHOICE:
@@ -387,6 +393,7 @@ class BaseTreeWidget(QW.QTreeView):
             icon=get_icon("libre-gui-refresh.svg"),
             triggered=self.repopulate,
         )
+
         return [
             self.edit_action,
             self.remove_action,
@@ -413,17 +420,18 @@ class BaseTreeWidget(QW.QTreeView):
         """Selection has changed"""
         self.selected_indexes_changed(selected.indexes(), deselected.indexes())
 
-    # pylint: disable=unused-argument
+    # pylint: disable=unused-argument, consider-iterating-dictionary
     def selected_indexes_changed(self, sel_indexes, desel_indexes):
         """Selected indexes have changed"""
         self.set_specific_actions_state(True)
         if sel_indexes:
             item = self.get_item_from_index(sel_indexes[0])
-            parent = self.get_item_parent(item)
-            self.up_action.setEnabled(item.row() > 0)
-            # FIXME: The next condition is not sufficient for a task data because
-            # down_action should be disabled if the next data is "LeaveData"
-            self.down_action.setEnabled(item.row() < parent.rowCount() - 1)
+            item_next = self.get_item_from_index(self.indexBelow(sel_indexes[0]))
+            # parent = self.get_item_parent(item)
+            self.up_action.setVisible(item.row() > 0)
+            self.down_action.setVisible(
+                item_next is not None and item_next.text() != "Leave"
+            )
 
     def update_menu(self):
         """Update context menu"""
@@ -583,8 +591,13 @@ class BaseTreeWidget(QW.QTreeView):
                     font.setBold(True)
                     item.setFont(font)
 
-                if ditem is not None and data.is_read_only(ditem.name):
-                    item.setForeground(QG.QBrush(QC.Qt.GlobalColor.gray))
+                # Managing editor states
+                if ditem is not None:
+                    if data.is_read_only(ditem.name) or (
+                        (ditem.name in ("start", "stop") and not ditem.value)
+                    ):
+                        item.setEditable(False)
+                        item.setForeground(QG.QBrush(QC.Qt.GlobalColor.gray))
 
                 item.setEditable(
                     ditem is not None and not data.is_read_only(ditem.name)
@@ -650,6 +663,8 @@ class TaskTreeWidget(BaseTreeWidget):
     TITLE = _("Task tree")
     NAMES = (
         _("Name"),
+        _("Calculated start"),
+        _("Calculated end"),
         _("Start"),
         _("Duration"),
         _("End"),
@@ -661,9 +676,11 @@ class TaskTreeWidget(BaseTreeWidget):
     )
     ATTRS = (
         ("fullname", "name"),
-        ("start", "start_calc"),
+        "start_calc",
+        "stop_calc",
+        "start",
         "duration",
-        ("stop", "stop_calc"),
+        "stop",
         "percent_done",
         "color",
         "task_number",
@@ -673,6 +690,8 @@ class TaskTreeWidget(BaseTreeWidget):
     TYPES = (
         DTypes.TEXT,
         DTypes.DATE,
+        DTypes.DATE,
+        DTypes.DATE,
         DTypes.DAYS,
         DTypes.DATE,
         DTypes.INTEGER,
@@ -681,7 +700,7 @@ class TaskTreeWidget(BaseTreeWidget):
         DTypes.MULTIPLE_CHOICE,
         DTypes.CHOICE,
     )
-    COLUMNS_TO_RESIZE = (0, 1, 3, 4, 5, 6, 7)
+    COLUMNS_TO_RESIZE = (0, 1, 2, 3, 5, 7, 8, 9)
     COLUMNS_TO_EDIT_ON_CLICK = ()
     FIELD_CHANGE_SIGNALS = {}
 
@@ -763,8 +782,16 @@ class TaskTreeWidget(BaseTreeWidget):
             self, _("Duration mode"), toggled=self.enable_duration_mode
         )
         self.remove_start_action = create_action(
-            self, _("Remove start date"), triggered=self.remove_start
+            self,
+            _("Remove independant start date"),
+            triggered=self.remove_start,
         )
+        self.add_start_action = create_action(
+            self,
+            _("Add independant start date"),
+            triggered=self.add_start,
+        )
+
         self.always_enabled_actions += [
             self.new_resource_action,
             self.new_task_action,
@@ -785,7 +812,7 @@ class TaskTreeWidget(BaseTreeWidget):
         super().selected_indexes_changed(sel_indexes, desel_indexes)
         if self.planning is not None:
             data = self.get_current_data()
-            self.new_leave_action.setEnabled(
+            self.new_leave_action.setVisible(
                 isinstance(data, (ResourceData, LeaveData))
                 or (isinstance(data, TaskData) and not data.no_resource)
             )
@@ -815,6 +842,8 @@ class TaskTreeWidget(BaseTreeWidget):
                     and (prevdata.has_stop or prevdata.has_duration)
                 ):
                     other_actions += [self.remove_start_action]
+                elif not data.has_start:
+                    other_actions += [self.add_start_action]
                 actions = other_actions + actions
         return actions
 
@@ -828,7 +857,20 @@ class TaskTreeWidget(BaseTreeWidget):
     def remove_start(self):
         """Remove start date"""
         data = self.get_current_data()
-        data.start.value = None
+        if isinstance(data, TaskData):
+            prev_task = data.get_previous()
+            if prev_task:
+                data.start.value = None
+                data.update_calc_start_end_dates()
+        self.repopulate()
+
+    def add_start(self):
+        """Add start date"""
+        data = self.get_current_data()
+        if isinstance(data, TaskData) and not data.start.value:
+            if not data.start_calc.value:
+                data.update_calc_start_end_dates()
+            data.start.value = data.start_calc.value
         self.repopulate()
 
     def new_resource(self):
@@ -1013,6 +1055,8 @@ class ChartTreeWidget(BaseTreeWidget):
     def __init__(self, parent=None, debug=False):
         self.new_chart_action = None
         self.set_today_action = None
+        self.toggle_tu_fraction_action = None
+
         BaseTreeWidget.__init__(self, parent, debug)
         self.setSelectionMode(QW.QTreeView.ExtendedSelection)
         self.VALIDATORS["name"] = self.validate_chart_name
@@ -1049,9 +1093,22 @@ class ChartTreeWidget(BaseTreeWidget):
             icon=get_icon("new_chart.svg"),
             triggered=self.new_chart,
         )
-        self.always_enabled_actions += [self.new_chart_action]
+        # self.toggle_tu_fraction_action = create_action(
+        #     self,
+        #     _("(not implemented) Show time fractions on chart"),
+        #     icon=get_icon("divide.svg"),
+        #     toggled=self.toggle_tu_fraction,
+        # )
+        # if self.planning:
+        #     self.toggle_tu_fraction_action.setChecked(self.planning.tu_fraction.value)
+
+        self.always_enabled_actions += [
+            self.new_chart_action,
+            # self.toggle_tu_fraction_action,
+        ]
         return [
             self.set_today_action,
+            # self.toggle_tu_fraction_action,
             None,
             self.new_chart_action,
         ] + super().setup_specific_actions()
@@ -1078,6 +1135,12 @@ class ChartTreeWidget(BaseTreeWidget):
         self.__add_chartitem(data)
         self.set_current_id(data.id.value)
         self.repopulate()
+
+    def toggle_tu_fraction(self, state):
+        """Set display of time unit fractions on charts"""
+        if self.planning:
+            self.planning.toggle_tu_fraction(state)
+            self.repopulate()
 
     def __add_chartitem(self, data: ChartData):
         """Add chart item to tree"""

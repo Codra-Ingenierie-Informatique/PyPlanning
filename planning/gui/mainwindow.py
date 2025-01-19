@@ -29,6 +29,7 @@ from planning import __version__
 from planning.config import APP_DESC, APP_NAME, DEBUG, DEBUG_VAR_STR, Conf, _
 from planning.gantt import LOG
 from planning.gui.centralwidget import PlanningCentralWidget
+from planning.gui.closing_days_dialog import ClosingDaysDialog
 from planning.gui.logviewer import exec_logviewer_dialog
 from planning.utils import qthelpers as qth
 from planning.utils.misc import go_to_error
@@ -87,6 +88,7 @@ class PlanningMainWindow(QW.QMainWindow):
         self.open_act = None
         self.open_recent_menu = None
         self.diropen_act = None
+        self.edit_closing_days_act = None
         self.save_act = None
         self.save_as_act = None
         self.exit_act = None
@@ -97,6 +99,8 @@ class PlanningMainWindow(QW.QMainWindow):
         self.tasks_menu = None
         self.projects_menu = None
         self.help_menu = None
+
+        self.closing_days_dialog = ClosingDaysDialog()
 
         self.create_actions()
         self.create_menus()
@@ -243,6 +247,12 @@ Thanks for your patience."""
             icon=get_icon("libre-gui-folder.svg"),
             triggered=self.open_workdir,
         )
+        self.edit_closing_days_act = create_action(
+            self,
+            _("Edit closing days"),
+            icon=get_icon("closing-days.svg"),
+            triggered=self.edit_closing_days,
+        )
         self.save_act = create_action(
             self,
             _("&Save"),
@@ -288,6 +298,8 @@ Thanks for your patience."""
                 None,
                 self.save_act,
                 self.save_as_act,
+                None,
+                self.edit_closing_days_act,
                 None,
                 self.xmlmode_act,
                 None,
@@ -343,6 +355,8 @@ Thanks for your patience."""
                 self.open_act,
                 None,
                 self.save_act,
+                None,
+                self.edit_closing_days_act,
                 None,
                 self.diropen_act,
                 None,
@@ -446,6 +460,31 @@ Please check the file content."""
         while len(self.recent_files) > self.MAX_RECENT_FILES:
             self.recent_files.pop(-1)
         Conf.main.recent_files.set(self.recent_files)
+
+    def edit_closing_days(self):
+        """Open closing days editor dialog"""
+        if self.central_widget.planning:
+            if self.central_widget.is_in_xml_mode:
+                QW.QMessageBox.warning(
+                    self,
+                    _("Warning"),
+                    _(
+                        "To edit closing days via the user interface, please exit XML advanced mode first."
+                    ),
+                )
+                return
+            result = self.closing_days_dialog.exec_(self.central_widget.planning)
+            if result == QW.QDialog.Accepted:
+                self.set_modified(True)
+                if self.maybe_save(_("Closing days edition")):
+                    self.central_widget.load_file(self.central_widget.path)
+            self.closing_days_dialog = ClosingDaysDialog()
+        else:
+            QW.QMessageBox.warning(
+                self,
+                _("Warning"),
+                _("You must open a file first to edit its projects' closing days."),
+            )
 
     def __save(self, fname):
         """Save current file"""

@@ -53,10 +53,7 @@ class CheckableComboBox(QComboBox, Generic[T]):
                 return True
             return False
 
-        if (
-            obj == self.view().viewport()
-            and event.type() == QEvent.Type.MouseButtonRelease
-        ):
+        if obj == self.view().viewport() and event.type() == QEvent.Type.MouseButtonRelease:
             index = self.view().indexAt(event.pos())
             item = self.model().item(index.row())
 
