@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Run PyPlanning",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/planning/app.py",
             "console": "integratedTerminal",
@@ -25,7 +25,7 @@
         },
         {
             "name": "Run current file",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
