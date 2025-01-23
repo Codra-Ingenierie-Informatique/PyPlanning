@@ -146,7 +146,6 @@
 * New default colors for project tasks (light cyan)
 * New default colors for vacations (silver)
 
-
 ## Version 1.5.6 ##
 
 🛠️ Bug fixes:
@@ -157,7 +156,6 @@
 💥 Changes:
 
 * New default colors for tasks and resources
-
 
 ## Version 1.5.5 ##
 
