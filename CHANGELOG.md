@@ -1,5 +1,27 @@
 # PyPlanning Releases #
 
+## Version 2.1.0 ##
+
+💥 New features:
+
+* [Issue #44](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/44) - Modulate time scale on charts (variable time unit width editable in XML)
+* [Issue #46](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/46) - Edit closing dates via GUI
+* [Issue #47](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/47) - Set leaves by duration in complement of date periods
+
+🛠️ Bug fixes:
+
+* [Issue #21](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/21) - DataItems of type DTypes.MULTIPLE_CHOICE and DTypes.CHOICE cannot handle duplicate values approprietly
+* [Issue #29](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/29) - Ressource graph missing bottom line
+* [Issue #40](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/40) - Chart: show resources even if on leave during the period
+  * Proposed fix:
+    * For resource chart, count resource if his task is in the period, even if he's on leave.
+    * For task chart, when processing task draw, create temp "tasks" on resources' leaves periods and print them above the task.
+  * May draw resources' leaves on another level according to #43 enhancement
+* [Issue #41](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/41) - Undefined dates causing ValueErrors
+* [Issue #42](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/42) - Modifications are not saved when planning is opened in XML advanced mode
+* [Issue #45](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/45) - Today mark isn't always exact
+* [Issue #49](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/49) - Possible incorrect calculated start date when toggling duration mode of given dep-free task
+
 ## Version 2.0.1 ##
 
 🛠️ Bug fixes:
