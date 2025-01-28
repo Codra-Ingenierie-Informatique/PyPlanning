@@ -10,6 +10,9 @@
 
 🛠️ Bug fixes:
 
+* Prevent set of task's start date before last end of its deps
+* Homogenized calculated dates display in tree, in dedicated columns
+* [Issue #38](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/38) - It shouldn't be possible to add a "leave" task under a global task
 * [Issue #21](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/21) - DataItems of type DTypes.MULTIPLE_CHOICE and DTypes.CHOICE cannot handle duplicate values approprietly
 * [Issue #29](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/29) - Ressource graph missing bottom line
 * [Issue #40](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/40) - Chart: show resources even if on leave during the period
