@@ -2422,7 +2422,7 @@ class Project(object):
                     vlines.add(
                         svgwrite.text.Text(
                             text,
-                            insert=(tu_start_x, 0.5 * cm),
+                            insert=(tu_start_x + 2, 0.5 * cm),
                             fill=COLORS.YEARS.value,
                             stroke=COLORS.YEARS.value,
                             stroke_width=0,
@@ -2437,7 +2437,8 @@ class Project(object):
                             end=(tu_start_x, (maxy + 2) * cm),
                             stroke=COLORS.YEARS.value,
                             stroke_dasharray="2,2",
-                            stroke_width=8,
+                            stroke_width=4,
+                            opacity=0.8
                         )
                     )
 
