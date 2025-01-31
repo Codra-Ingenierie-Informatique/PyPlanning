@@ -52,6 +52,21 @@ class ErrorMessageBox(QW.QDialog):
         self.setLayout(layout)
         self.resize(800, 350)
 
+def show_long_msgbox(parent, title, message, text):
+    """Show a message box with a long text in dedicated read-only field"""
+    msg_box = QW.QMessageBox(parent)
+    msg_box.setWindowTitle(title)
+    msg_box.setText(message)
+
+    text_edit = QW.QTextEdit()
+    text_edit.setPlainText(text)
+    text_edit.setReadOnly(True)
+    text_edit.setFixedSize(500, 500)
+
+    msg_box.layout().addWidget(text_edit, 1, 0, 1, 2)
+    msg_box.setStandardButtons(QW.QMessageBox.Ok)
+    msg_box.exec_()
+
 
 def qt_try_except():
     """Try...except Qt widget method decorator"""

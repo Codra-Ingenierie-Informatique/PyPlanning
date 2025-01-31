@@ -1,5 +1,15 @@
 # PyPlanning Releases #
 
+## Version 2.1.1 ##
+
+💥 New features:
+
+* Merge multiple planning files into one
+
+🛠️ Bug fixes:
+
+* [Issue #51](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/51) - No version check when opening a file
+
 ## Version 2.1.0 ##
 
 💥 New features:

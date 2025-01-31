@@ -83,6 +83,7 @@ class DataItem(Generic[_T]):
         "silver": "#9c9ea0",
         "green": "#b0d184",
         "magenta": "#aa5ae6",
+        "_merge_warn": "#ff0000",
     }
 
     def __init__(
@@ -376,10 +377,13 @@ class AbstractData:
         self.id = DataItem[str](self, "id", DTypes.TEXT, self.default_id)
         self.__gantt_object = None
 
-    def create_id(self) -> str:
-        new_id = f"{self.DEFAULT_ID_PREFIX}-{uuid.uuid4().hex[:6]}"
-        while self.pdata.get_data_from_id(new_id):
-            new_id = f"{self.DEFAULT_ID_PREFIX}-{uuid.uuid4().hex[:6]}"
+    def create_id(self, custom_prefix=None, forbidden_ids=None) -> str:
+        if forbidden_ids is None:
+            forbidden_ids = []
+        prefix = custom_prefix or self.DEFAULT_ID_PREFIX
+        new_id = f"{prefix}-{uuid.uuid4().hex[:6]}"
+        while self.pdata.get_data_from_id(new_id) or new_id in forbidden_ids:
+            new_id = f"{prefix}-{uuid.uuid4().hex[:6]}"
         return new_id
 
     @property
@@ -1347,6 +1351,14 @@ class ProjectData(AbstractData):
             "show_description",
         ]
 
+    def get_project_tasks(self) -> list[TaskData | MilestoneData]:
+        """Returns project's tasks"""
+        tasks = []
+        for task in self.pdata.iterate_task_data():
+            if task.project is not None and task.project.value == self.id.value:
+                tasks.append(task)
+        return tasks
+
 
 class PlanningData(AbstractData):
     """Planning data set"""
@@ -1385,6 +1397,7 @@ class PlanningData(AbstractData):
             self.chtlist,
             self.prjlist,
         )
+        self.version = DataItem[float](self, "version", DTypes.FLOAT, VERSION)
         self.tu_width = DataItem[float](self, "tu_width", DTypes.FLOAT, 1.0)
         self.tu_fraction = DataItem[bool](self, "tu_fraction", DTypes.BOOLEAN, True)
         gantt.VACATIONS = []
@@ -1405,6 +1418,8 @@ class PlanningData(AbstractData):
         """Init instance from XML element"""
         super()._init_from_element(element)
 
+        # Global settings
+        self.version = self.get_float("version", VERSION)
         self.tu_width = self.get_float("tu_width", 1.0)
         if self.tu_width.value < 1.0:
             self.tu_width.value = 1.0
@@ -1461,8 +1476,243 @@ class PlanningData(AbstractData):
         with open(fname, "rb") as fdesc:
             xmlcode = fdesc.read().decode("utf-8")
         instance = cls.from_element(cls(), ET.fromstring(xmlcode))
+        if instance.version.value > float(VERSION):
+            raise ValueError(_("This file was made with a newer version of PyPlanning"))
         instance.set_filename(fname)
         return instance
+
+    @classmethod
+    def merge_files(cls, fnames: list[str]) -> tuple["PlanningData", list[str]]:
+        """Merge multiple plannings files into one planning object"""
+
+        CONFLICT_COLOR = DataItem.COLORS["_merge_warn"]
+        warnings = []
+
+        def __validate_value(values, defaultVal, warning=None):
+            val = defaultVal
+            if len(values) <= 0 or all(values[0] == v for v in values):
+                val = values[0]
+            else:
+                if warning:
+                    warnings.append(_(warning))
+            return val
+
+        def __is_attr_conflict(mrg, pln, entity, attr):
+            mrg_val = getattr(getattr(mrg, attr, None), "value", None)
+            pln_val = getattr(getattr(pln, attr, None), "value", None)
+            if pln_val is None or pln_val == mrg_val:
+                return False
+            else:
+                warnings.append(
+                    _(
+                        f"Conflict on %s '%s', attribute '%s'. {'' if attr == 'color' else 'First value encountered was kept.'}"
+                        % (entity, mrg.name.value, attr)
+                    )
+                )
+                if getattr(mrg, "color", None):
+                    mrg.color.value = CONFLICT_COLOR
+                return True
+
+        plannings = [cls.from_filename(fname) for fname in fnames]
+
+        merge = PlanningData(__validate_value([p.name.value for p in plannings], "Merged planning", "Planning names are different"))
+
+        if any([p.version.value is None or p.version.value > float(VERSION) for p in plannings]):
+            return None, [_("Some plannings are made with a newer PyPlanning version")]
+
+        tu_width = 1.0
+        tu_fraction = False
+        try: # We have to handle lack of these values, because inexistant on ver < 2.1
+            tu_width = max([p.tu_width.value for p in plannings])
+            tu_fraction = any([p.tu_fraction.value for p in plannings])
+        except Exception:
+            pass
+        merge.tu_width.value = tu_width
+        merge.tu_fraction.value = tu_fraction
+
+        # Regenerate internal duplicated IDs
+        # all_ids = [p.get_all_ids() for p in plannings]
+        # all_dup_ids = set(all_ids[0])
+        # for id_list in all_ids[1:]:
+        #     all_dup_ids.intersection_update(id_list)
+
+        # keyed_dup_ids = [[i for i in id_list if i in all_dup_ids] for id_list in all_ids]
+        # all_dup_ids = list(all_dup_ids)
+        # for p_index in range(len(all_ids)):
+        #     for dup_id in keyed_dup_ids[p_index]:
+        #         if dup_id.startswith("task"):
+        #             plannings[p_index].regenerate_task_id(dup_id, all_dup_ids)
+        #         elif dup_id.startswith("project"):
+        #             plannings[p_index].regenerate_project_id(dup_id, all_dup_ids)
+
+        res_names = []
+        prj_names = []
+        tsk_names = []
+        tsk_corr = {}
+        for p in plannings:
+
+            for clo_day in p.iterate_closing_days_data():
+                merge.add_closing_day(clo_day)
+
+            for pln_res in p.iterate_resource_data():
+
+                if pln_res.name.value is None:
+                    continue
+                if pln_res.id.value is None:
+                    pln_res.id.value = pln_res.create_id()
+
+                mrg_res: ResourceData = None
+
+                if pln_res.name.value in res_names:
+
+                    mrg_res = merge.get_resource_from_name(pln_res.name.value)
+
+                    for attr in ["fullname", "color"]:
+                        __is_attr_conflict(mrg_res, pln_res, _("resource"), attr)
+
+                else:
+
+                    mrg_res = ResourceData(merge, pln_res.name.value)
+
+                    mrg_res.fullname.value = pln_res.fullname.value
+                    mrg_res.color.value = pln_res.color.value
+                    mrg_res.collapsed.value = False
+
+                    merge.add_resource(mrg_res)
+                    res_names.append(pln_res.name)
+
+            for pln_lve in p.iterate_leave_data():
+
+                pln_lve_res_id = pln_lve.get_resource_id()
+                pln_lve_res = p.get_resources_from_ids([pln_lve_res_id])[0]
+                mrg_res = merge.get_resource_from_name(pln_lve_res.name.value)
+
+                mrg_lve = LeaveData(merge, pln_lve.name.value, pln_lve.fullname.value)
+                mrg_lve.start.value = pln_lve.start.value
+                mrg_lve.stop.value = pln_lve.stop.value
+                mrg_lve.set_resource_id(mrg_res.id.value)
+                merge.add_leave(mrg_lve)
+
+            for pln_prj in p.iterate_project_data():
+
+                if pln_prj.name.value is None:
+                    continue
+
+                mrg_prj: ProjectData = None
+
+                if pln_prj.name.value in prj_names:
+
+                    mrg_prj = merge.get_project_from_name(pln_prj.name.value)
+
+                    for attr in ["description", "color"]:
+                        __is_attr_conflict(mrg_prj, pln_prj, _("project"), attr)
+
+                else:
+
+                    mrg_prj = ProjectData(merge, pln_prj.name.value)
+
+                    mrg_prj.description.value = pln_prj.description.value
+                    mrg_prj.color.value = pln_prj.color.value
+                    mrg_prj.show_description.value = True
+
+                    merge.add_project(mrg_prj, None)
+                    prj_names.append(pln_prj.name)
+
+            for pln_tsk in p.iterate_task_data():
+
+                if pln_tsk.name.value is None:
+                    continue
+
+                pln_tsk_key = f"{pln_tsk.name.value}-[{pln_tsk.project.value}]"
+                mrg_tsk: AbstractTaskData = None
+
+                attrs = ["fullname", "color", "start"]
+                if isinstance(pln_tsk, TaskData):
+                    attrs.extend([ "percent_done", "duration", "stop"])
+
+                if pln_tsk_key in tsk_names:
+
+                    pln_tsk_prjname = "<Global>"
+                    if pln_tsk.project.value is not None:
+                        pln_tsk_prjname = p.get_data_from_id(pln_tsk.project.value).name.value
+
+                    # warnings.append(_("Duplicate task '%s' in project '%s'. Duplicates were ignored and dependancies were linked to the first occurence." % (pln_tsk.name.value, pln_tsk_prjname)))
+
+                    # Update link dict for dependancies
+
+                    mrg_prj_tasks = []
+                    mrg_tsk_id = None
+                    if pln_tsk.project.value is None:
+                        mrg_prj_tasks = merge.get_global_tasks()
+                    else:
+                        mrg_prj = merge.get_project_from_name(p.get_data_from_id(pln_tsk.project.value).name.value)
+                        mrg_prj_tasks = mrg_prj.get_project_tasks()
+
+                    for t in mrg_prj_tasks:
+                        if t.name.value == pln_tsk.name.value:
+                            mrg_tsk_id = t.id.value
+                            break
+
+                    mrg_tsk = merge.get_data_from_id(mrg_tsk_id)
+                    for attr in attrs:
+                        __is_attr_conflict(mrg_tsk, pln_tsk, f"project '{pln_tsk_prjname}', task", attr)
+
+                    tsk_corr[pln_tsk.id.value] = mrg_tsk_id
+                    merge.get_data_from_id(mrg_tsk_id).color.value = CONFLICT_COLOR
+
+                    continue
+
+                else:
+
+                    if isinstance(pln_tsk, TaskData):
+                        mrg_tsk = TaskData(merge, pln_tsk.name.value)
+                    else:
+                        mrg_tsk = MilestoneData(merge, pln_tsk.name.value)
+
+                    for attr in attrs:
+                        setattr(mrg_tsk, attr, getattr(pln_tsk, attr))
+
+                    # Update project and resources
+
+                    if pln_tsk.has_project:
+                        mrg_tsk.project.value = merge.get_project_from_name(p.projects[pln_tsk.project.value].name.value).id.value
+
+                    if isinstance(pln_tsk, TaskData) and not pln_tsk.no_resource:
+                        pln_tsk_res_ids = pln_tsk.get_resource_ids()
+                        mrg_tsk_res_ids = []
+                        for pln_res_id in pln_tsk_res_ids:
+                            pln_res = p.get_resources_from_ids([pln_res_id])[0]
+                            mrg_res = merge.get_resource_from_name(pln_res.name.value)
+                            mrg_tsk_res_ids.append(mrg_res.id.value)
+                        mrg_tsk.set_resource_ids(mrg_tsk_res_ids)
+
+                    mrg_tsk.update_project_choice()
+                    tsk_names.append(pln_tsk_key)
+                    tsk_corr[pln_tsk.id.value] = mrg_tsk.id.value
+                    merge.add_task(mrg_tsk)
+
+            # 2nd round: update task dependencies
+
+            for pln_tsk in p.iterate_task_data():
+
+                mrg_tsk = merge.get_data_from_id(tsk_corr[pln_tsk.id.value])
+
+                if pln_tsk.depends_on.value is None:
+                    continue
+
+                for pln_dep_id in pln_tsk.depends_on.value:
+                    mrg_dep_tsk = merge.get_data_from_id(tsk_corr[pln_dep_id])
+                    if mrg_tsk.depends_on.value is None:
+                        mrg_tsk.depends_on.value = []
+                    mrg_tsk.depends_on.value.append(mrg_dep_tsk.id.value)
+
+        for t in merge.iterate_task_data():
+            t.update_task_choices()
+            t.update_depends_on_from_ids()
+
+        merge.update_task_number()
+
+        return merge, warnings
 
     def to_element(self, parent=None):
         """Serialize model to XML element"""
@@ -1568,6 +1818,14 @@ class PlanningData(AbstractData):
                 pnames.append(data.project.value)
         return tuple(set(pnames))
 
+    def get_global_tasks(self) -> list[TaskData | MilestoneData]:
+        """Returns tasks without linked project"""
+        tasks = []
+        for task in self.pdata.iterate_task_data():
+            if task.project is None or task.project.value is None:
+                tasks.append(task)
+        return tasks
+
     def iterate_chart_data(self) -> Generator[ChartData, None, None]:
         """Iterate over chart data dictionary items"""
         yield from self.chtlist
@@ -1581,7 +1839,7 @@ class PlanningData(AbstractData):
         yield from self.prjlist
 
     def iterate_task_data(
-        self, only=None
+        self, only=None,
     ) -> Generator[TaskData | MilestoneData, None, None]:
         """Iterate over task data dictionary items"""
         for data in self.tsklist:
@@ -1626,11 +1884,71 @@ class PlanningData(AbstractData):
         """Return resource list from resource data id list"""
         if resids:
             return [
-                resdata.resource
+                resdata
                 for resdata in self.iterate_resource_data()
                 if resdata.id.value in resids
             ]
         return []
+
+    def get_resource_from_name(self, resname) -> Optional[ResourceData]:
+        """Return resource data from name"""
+        for data in self.iterate_resource_data():
+            if data.name.value == resname:
+                return data
+        return None
+
+    def get_project_from_name(self, prjname) -> Optional[ResourceData]:
+        """Return project data from name"""
+        for data in self.iterate_project_data():
+            if data.name.value == prjname:
+                return data
+        return None
+
+    def get_all_ids(self) -> list[str]:
+        """Retrieve all existing ids of the planning"""
+        return [data.id.value for data in self.iterate_all_data() if data.id.value is not None]
+
+    def regenerate_project_id(self, project_id, forbidden_ids=None) -> str:
+        """Regenerate new project id outside of forbidden ones and update its tasks"""
+        project = self.get_data_from_id(project_id)
+        if project is self or project is None:
+            return None
+
+        new_id = self.create_id("project", forbidden_ids)
+
+        project.id.value = new_id
+        if project_id in self.all_projects.keys():
+            self.all_projects[new_id] = self.all_projects.pop(project_id)
+        self.projects[new_id] = self.projects.pop(project_id)
+
+        for t in self.iterate_task_data():
+            if t.project.value is None:
+                continue
+            if t.project.value == project_id:
+                t.project.value = new_id
+
+        return new_id
+
+    def regenerate_task_id(self, task_id, forbidden_ids=None) -> str:
+        """Regenerate new task id outside of forbidden ones and update its dependancies"""
+        task = self.get_data_from_id(task_id)
+        if task is self or task is None:
+            return None
+
+        new_id = self.create_id("task", forbidden_ids)
+
+        task.id.value = new_id
+        if task_id in self.all_tasks.keys():
+            self.all_tasks[new_id] = self.all_tasks.pop(task_id)
+
+        # Update dependancies
+        for t in self.iterate_task_data():
+            if t.depends_on.value is None:
+                continue
+            if task_id in t.depends_on.value:
+                t.depends_on.value[t.depends_on.value.index(task_id)] = new_id
+
+        return new_id
 
     @staticmethod
     def __append_or_insert(

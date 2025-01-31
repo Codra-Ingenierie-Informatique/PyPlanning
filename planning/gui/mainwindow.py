@@ -22,7 +22,7 @@ from guidata.widgets.console import DockableConsole
 from qtpy import QtCore as QC
 from qtpy import QtGui as QG
 from qtpy import QtWidgets as QW
-from qtpy.compat import getopenfilename, getsavefilename
+from qtpy.compat import getopenfilename, getopenfilenames, getsavefilename
 
 #  Local imports
 from planning import __version__
@@ -31,6 +31,7 @@ from planning.gantt import LOG
 from planning.gui.centralwidget import PlanningCentralWidget
 from planning.gui.closing_days_dialog import ClosingDaysDialog
 from planning.gui.logviewer import exec_logviewer_dialog
+from planning.model import PlanningData
 from planning.utils import qthelpers as qth
 from planning.utils.misc import go_to_error
 
@@ -88,6 +89,7 @@ class PlanningMainWindow(QW.QMainWindow):
         self.open_act = None
         self.open_recent_menu = None
         self.diropen_act = None
+        self.merge_act = None
         self.edit_closing_days_act = None
         self.save_act = None
         self.save_as_act = None
@@ -247,6 +249,12 @@ Thanks for your patience."""
             icon=get_icon("libre-gui-folder.svg"),
             triggered=self.open_workdir,
         )
+        self.merge_act = create_action(
+            self,
+            _("Merge with..."),
+            icon=get_icon("merge.svg"),
+            triggered=self.merge_files,
+        )
         self.edit_closing_days_act = create_action(
             self,
             _("Edit closing days"),
@@ -294,6 +302,7 @@ Thanks for your patience."""
                 self.new_act,
                 self.open_act,
                 self.diropen_act,
+                self.merge_act,
                 self.open_recent_menu,
                 None,
                 self.save_act,
@@ -446,6 +455,54 @@ Please check the file content."""
         """Open current work directory"""
         if self.filename:
             os.startfile(osp.normpath(osp.dirname(self.filename)))
+
+    def merge_files(self):
+        """Merge multiple planning files"""
+
+        filePaths = []
+
+        if self.filename:
+            QW.QMessageBox.warning(
+                    self,
+                    _("Warning"),
+                    _(
+                        "Merge operation will include the current planning, and replace it with the result. After the merge, you can replace the current file or save new planning in another file (via 'Save as...' command). Please save your work before proceeding."
+                    ),
+                )
+            if not self.maybe_save(_("Merge files")):
+                return
+            filePaths.append(self.filename)
+
+        filePaths.extend(getopenfilenames(self, _("Merge files"), self.basedir, "*" + self.EXTENSION)[0])
+        if len(filePaths) < 2:
+            return False
+
+        planning, warnings = PlanningData.merge_files(filePaths)
+
+        if planning is None:
+            QW.QMessageBox.warning(
+                self,
+                _("Merge error"),
+                _("The merge wasn't successful.")
+                + "\n"
+                + "\n\n".join(warnings),
+            )
+        else:
+            if len(warnings) > 0:
+                qth.show_long_msgbox(
+                    self,
+                    _("Merge conflicts"),
+                    _(
+                        "There was %s conflicts during the merge, which are described below. Please check and correct the planning carefully before use. Impacted elements are marked with a warning color ('_merge_warn')."
+                        % len(warnings)
+                    ),
+                    "\n".join(warnings),
+                )
+            self.central_widget.load_object(planning)
+            self.central_widget.planning = planning
+            self.set_modified(True)
+
+        return planning is not None
 
     def check_recent_files(self):
         """Check if recent files still exist"""

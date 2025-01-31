@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run PyPlanning",
+            "name": "Run PyPlanning (debug)",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/planning/app.py",
@@ -17,11 +17,32 @@
                 // "examples/project_planning-detailed.xml",
                 // "examples/team_schedule.xml",
             ],
+            "pythonArgs": ["-Xfrozen_modules=off"],
             "env": {
-                // "PLANNINGDEBUG": "1",
+                "PLANNINGDEBUG": "1",
+                "PYTHONFAULTHANDLER": "1",
+                "QT_DEBUG_PLUGINS": "1"
                 // "LANG": "en",
                 // "QT_COLOR_MODE": "light",
-            },
+            }
+        },
+        {
+            "name": "Run PyPlanning (production)",
+            "request": "launch",
+            "program": "${workspaceFolder}/planning/app.py",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            // "python": "${config:python.defaultInterpreterPath}",
+            "args": [
+                // "examples/project_planning.xml",
+                // "examples/project_planning-detailed.xml",
+                // "examples/team_schedule.xml",
+            ],
+            "env": {
+                "PLANNINGDEBUG": "0"
+                // "LANG": "en",
+                // "QT_COLOR_MODE": "light",
+            }
         },
         {
             "name": "Run current file",
@@ -32,8 +53,8 @@
             "envFile": "${workspaceFolder}/.env",
             // "python": "${config:python.defaultInterpreterPath}",
             "env": {
-                "PLANNINGDEBUG": "1",
-            },
+                "PLANNINGDEBUG": "1"
+            }
         }
     ]
 }

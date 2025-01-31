@@ -88,6 +88,11 @@ class PlanningEditor(QStackedWidget):
         planning = PlanningData.from_filename(path)
         self.trees.setup(planning)
 
+    def load_object(self, planning: PlanningData):
+        """Load data from a memory planning object"""
+        self.code.setPlainText(planning.to_text())
+        self.trees.setup(planning)
+
     def save_file(self, path):
         """Save data to file"""
         planning = self.trees.planning
@@ -339,6 +344,13 @@ class PlanningCentralWidget(QSplitter):
         self.editor.clear_all()
         self.preview.clear_all_tabs()
         self.editor.load_file(path)
+        self.__adjust_sizes()
+
+    def load_object(self, planning: PlanningData):
+        """Load planning object"""
+        self.editor.clear_all()
+        self.preview.clear_all_tabs()
+        self.editor.load_object(planning)
         self.__adjust_sizes()
 
     def save_file(self, path: str):
