@@ -1579,7 +1579,7 @@ class PlanningData(AbstractData):
                     mrg_res.collapsed.value = False
 
                     merge.add_resource(mrg_res)
-                    res_names.append(pln_res.name)
+                    res_names.append(pln_res.name.value)
 
             for pln_lve in p.iterate_leave_data():
 

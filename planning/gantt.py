@@ -814,6 +814,7 @@ class Task(object):
         fullname=None,
         display=True,
         state="",
+        is_project=False
     ):
         """
         Initialize task object. Two of start, stop or duration may be given.
@@ -867,11 +868,11 @@ class Task(object):
                 nonecount += 1
 
         # check limits (2 must be set on 4) or scheduling is defined by duration and dependencies
-        if nonecount != 1 and (self.duration is None or depends_on is None):
+        if (not is_project) and (nonecount != 1) and (self.duration is None or depends_on is None):
             LOG.error(
                 '** Task "{1}" must be defined by two of three limits ({0})'.format(
                     {"start": self.start, "stop": self.stop, "duration": self.duration},
-                    fullname,
+                    self.fullname,
                 )
             )
             # Bug ? may be defined later
@@ -2133,8 +2134,7 @@ class Project(object):
         self.cache_nb_elements = None
         self.description = description
         self.show_description = show_description
-        self.macro_task = Task(self.name, color=self.color)
-        return
+        self.macro_task = Task(self.name, color=self.color, is_project=True)
 
     def add_task(self, task):
         """
