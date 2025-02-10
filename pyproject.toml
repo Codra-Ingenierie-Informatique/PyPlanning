@@ -52,7 +52,3 @@ include = ["planning*"]
 
 [tool.setuptools.dynamic]
 version = { attr = "planning.__version__" }
-
-line-length = 120
-indent-width = 4
-disable = ["C0301", "C0302"]
