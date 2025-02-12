@@ -69,6 +69,10 @@ class COLORS(enum.Enum):
     TODAY = "#76e9ff"
     START_END_DATES = "#9b9b9b"
 
+class TYPE(enum.Enum):
+    RESOURCE = "resource"
+    TASK = "task"
+
 
 class _my_svgwrite_drawing_wrapper(svgwrite.Drawing):
     """
@@ -814,7 +818,8 @@ class Task(object):
         fullname=None,
         display=True,
         state="",
-        is_project=False
+        is_project=False,
+        project=None
     ):
         """
         Initialize task object. Two of start, stop or duration may be given.
@@ -834,6 +839,8 @@ class Task(object):
         color -- string, html color, default None
         display -- boolean, display this task, default True
         state -- string, state of the task
+        is_project -- boolean, disable check on beginning and end dates
+        project -- name of the project associated to the task
         """
         LOG.debug(
             "** Task::__init__ {0}".format(
@@ -845,6 +852,7 @@ class Task(object):
                     "depends_on": depends_on,
                     "resources": resources,
                     "percent_done": percent_done,
+                    "project": project
                 }
             )
         )
@@ -860,6 +868,7 @@ class Task(object):
         self.color = color
         self.display = display
         self.state = state
+        self.project = project
 
         ends = (self.start, self.stop, self.duration)
         nonecount = 0
@@ -899,7 +908,6 @@ class Task(object):
             for r in resources:
                 r.add_task(self)
 
-        return
 
     def add_depends(self, depends_on):
         """
@@ -1204,6 +1212,7 @@ class Task(object):
         title_align_on_left=False,
         offset=0,
         show_start_end_dates=False,
+        gantt_type=TYPE.TASK,
         macro_mode=False,
         opacity=0.8,
         tu_width=1.0,
@@ -1444,7 +1453,20 @@ class Task(object):
                 )
             )
 
-        if self.resources is not None:
+        if gantt_type == TYPE.RESOURCE and self.project is not None:
+            t = self.project
+            svg.add(
+                svgwrite.text.Text(
+                    "{0}".format(t),
+                    insert=((tx + offset) * cm, (y + 0.85) * cm),
+                    fill="purple",
+                    stroke=_font_attributes()["stroke"],
+                    stroke_width=_font_attributes()["stroke_width"],
+                    font_family=_font_attributes()["font_family"],
+                    font_size=15 - 5,
+                )
+            )
+        elif gantt_type == TYPE.TASK and self.resources is not None:
             t = " / ".join(["{0}".format(r.name) for r in self.resources])
             svg.add(
                 svgwrite.text.Text(
@@ -1825,6 +1847,7 @@ class Milestone(Task):
         title_align_on_left=False,
         offset=0,
         show_start_end_dates=False,
+        gantt_type=TYPE.TASK,
         macro_mode=False,
         tu_width=1.0,
         tu_fraction=False,
@@ -2757,30 +2780,113 @@ class Project(object):
 
             nb_tasks = 0  # includes all resource's tasks in chart period, although he's on leave
             # nb_tasks_with_presence = 0
+            project_task: Task = None
+
             for t in self.get_tasks():
                 if t.get_resources() is not None and r in t.get_resources():
                     if t.start_date() <= end_date and start_date <= t.end_date():
                         nb_tasks += 1
-                    psvg, _ = t.svg(
+
+                        if one_line_for_tasks and project_task is None:
+                            project_task = Task(t.project, color=t.color, is_project=True)
+                            project_task.start = t.start_date()
+
+                            x = _time_diff(scale, t.start_date(), t.end_date(), True)
+                            # TODO: make it a common code
+                            title_capital_chars = sum(1 for char in t.project if char.isupper())
+                            title_lower_chars = len(t.project) - title_capital_chars
+                            font_size=15
+                            title_width = round((
+                                title_capital_chars * font_size / 1.5 + title_lower_chars * font_size / 2
+                            ) / cm)
+
+                            if title_width + 2 > x:
+                                project_task.stop = t.start_date() + relativedelta(days=title_width+2) #HACK: +2 is take some margin with weekends
+                            else:
+                                project_task.stop = t.end_date()
+
+                        elif project_task is not None and t.project in project_task.name and t.end_date() > project_task.stop:
+                            project_task.stop = t.end_date()
+                            project_task._reset_coord()
+                        elif project_task is not None and not (t.project in project_task.name):
+                            if t.start_date() > project_task.end_date():
+                                psvg, _ = project_task.svg(
+                                    prev_y=nline,
+                                    start=start_date,
+                                    end=end_date,
+                                    scale=scale,
+                                    title_align_on_left=title_align_on_left,
+                                    offset=offset,
+                                    gantt_type=TYPE.RESOURCE,
+                                    show_start_end_dates=False,
+                                    tu_width=tu_width,
+                                    tu_fraction=tu_fraction,
+                                )
+                                if psvg is not None:
+                                    ldwg.add(psvg)
+                                    # nline += 1
+
+                                project_task = Task(t.project, color=t.color, is_project=True)
+                                project_task.start = t.start_date()
+                                project_task.stop = t.end_date()
+                            else:
+                                project_task.name = project_task.name + " / " + t.project
+                                project_task.fullname = project_task.name
+                                x = _time_diff(scale, project_task.start_date(), project_task.end_date(), True) * tu_width
+                                # TODO: make it a common code
+                                title_capital_chars = sum(1 for char in project_task.name if char.isupper())
+                                title_lower_chars = len(project_task.name) - title_capital_chars
+                                font_size=15
+                                title_width = round((
+                                    title_capital_chars * font_size / 1.5 + title_lower_chars * font_size / 2
+                                ) / cm)
+
+                                if title_width + 2 > x:
+                                    project_task.stop = project_task.start_date() + relativedelta(days=title_width+2)
+                                elif t.end_date() > project_task.stop:
+                                    project_task.stop = t.end_date()
+                                project_task._reset_coord()
+
+
+
+                    if not one_line_for_tasks:
+                        psvg, _ = t.svg(
+                            prev_y=nline,
+                            start=start_date,
+                            end=end_date,
+                            scale=scale,
+                            title_align_on_left=title_align_on_left,
+                            offset=offset,
+                            gantt_type=TYPE.RESOURCE,
+                            show_start_end_dates=False,
+                            tu_width=tu_width,
+                            tu_fraction=tu_fraction,
+                        )
+                        if psvg is not None:
+                            ldwg.add(psvg)
+                            # nb_tasks_with_presence += 1
+                            if not one_line_for_tasks:
+                                nline += 1
+
+            if nb_tasks == 0:
+                nline -= 1
+            else:
+                if one_line_for_tasks and project_task is not None:
+                    psvg, _ = project_task.svg(
                         prev_y=nline,
                         start=start_date,
                         end=end_date,
                         scale=scale,
                         title_align_on_left=title_align_on_left,
                         offset=offset,
+                        gantt_type=TYPE.RESOURCE,
                         show_start_end_dates=False,
                         tu_width=tu_width,
                         tu_fraction=tu_fraction,
                     )
                     if psvg is not None:
                         ldwg.add(psvg)
-                        # nb_tasks_with_presence += 1
-                        if not one_line_for_tasks:
-                            nline += 1
 
-            if nb_tasks == 0:
-                nline -= 1
-            else:
                 # print(r.fullname, nb_tasks)
                 if resource_on_left or show_title:
                     ldwg.add(ress)
@@ -2792,12 +2898,13 @@ class Project(object):
                     nline -= 1
 
                 if not one_line_for_tasks:
+                    # nline += 1
                     ldwg.add(
                         svgwrite.shapes.Line(
-                            start=((0) * cm, (nline) * cm),
+                            start=((0) * cm, (nline + 1) * cm),
                             end=(
                                 (((maxx + 1) * tu_width) + 1 + offset) * cm,
-                                (nline) * cm,
+                                (nline+1) * cm,
                             ),
                             stroke="black",
                         )
@@ -2908,6 +3015,7 @@ class Project(object):
         if not self.name:
             return None, 0.0
 
+        # TODO: make it a common code
         title_capital_chars = sum(1 for char in self.name if char.isupper())
         title_lower_chars = len(self.name) - title_capital_chars
         title_width = (
@@ -2918,7 +3026,9 @@ class Project(object):
         width = min(avail_width, width)
         height = line_count * font_size + 2 * margin
 
-        x_top_left = x * cm - width / 10
+        # HACK: Removed the divided by 10 and added 1 cm
+        # Need to check if it works when the tu_width is modified
+        x_top_left = x * cm - width + 1 * cm
         y_top_left = (prev_y + 0.5) * cm
         desc_box = svgwrite.container.Group()
 
@@ -2984,6 +3094,7 @@ class Project(object):
         offset=0,
         t0mode=False,
         show_start_end_dates=None,
+        gantt_type=TYPE.TASK,
         macro_mode=False,
         show_leaves=True,
         tu_width=1.0,
@@ -3076,6 +3187,7 @@ class Project(object):
                 title_align_on_left=title_align_on_left,
                 offset=offset,
                 show_start_end_dates=show_start_end_dates,
+                gantt_type=gantt_type,
                 macro_mode=macro_mode,
                 tu_width=tu_width,
                 tu_fraction=tu_fraction,
@@ -3092,6 +3204,7 @@ class Project(object):
                         title_align_on_left=title_align_on_left,
                         offset=offset,
                         show_start_end_dates=False,
+                        gantt_type=gantt_type,
                         macro_mode=macro_mode,
                         opacity=1,
                         tu_width=tu_width,

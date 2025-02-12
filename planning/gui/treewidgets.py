@@ -198,7 +198,10 @@ class TaskTreeDelegate(QW.QItemDelegate):
             value = editor.isChecked()
         elif ditem.datatype == DTypes.INTEGER:
             txt = editor.text()
-            value = None if txt == "" else int(editor.text())
+            # Remove percentage in case people type it
+            # Check that the string is a numeric
+            txt = txt.strip("%")
+            value = None if txt == "" or not txt.isnumeric() else int(txt)
         elif ditem.datatype == DTypes.LIST:
             value = editor.text().split(",")
             value = [v for val in value if (v := val.strip())]

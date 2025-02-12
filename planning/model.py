@@ -675,7 +675,7 @@ class ChartData(AbstractDurationData):
         "w": _("Weeks"),
         "m": _("Months"),
     }
-    TYPES = {"r": _("Resources"), "t": _("Tasks"), "m": _("Macro tasks")}
+    TYPES = {"r": _("Resources"), "g": _("Macro resources"), "t": _("Tasks"), "m": _("Macro tasks")}
     TAG = "CHART"
     DEFAULT_ICON_NAME = "chart.svg"
     READ_ONLY_ITEMS = ("fullname", "color")
@@ -800,19 +800,20 @@ class ChartData(AbstractDurationData):
         ptype = "r" if self.type.value is None else self.type.value
         scale_key = "d" if self.scale.value is None else self.scale.value
         t0mode = False if self.t0mode.value is None else self.t0mode.value
+        one_line_task = False if ptype =="r" else True
         try:
             scale = self.GANTT_SCALES[scale_key]
         except KeyError as exc:
             raise ValueError(f"Unknown scale '{scale_key}'") from exc
 
-        if ptype == "r":
+        if ptype == "r" or ptype == "g":
             project.make_svg_for_resources(
                 start=self.start.value,
                 end=self.stop.value,
                 filename=filename,
                 today=self.today.value,
                 resources=self.pdata.all_resources.values(),
-                one_line_for_tasks=one_line_for_tasks,
+                one_line_for_tasks=(ptype == "g"),
                 show_title=show_title,
                 show_conflicts=show_conflicts,
                 offset=offset,
@@ -1173,6 +1174,7 @@ class TaskData(AbstractTaskData):
             if resource_id in self.__resids
         ]
         percent_done = 0 if self.percent_done.value is None else self.percent_done.value
+        project_name = self.project.choices[self.project.value]
         self.gantt_object = gantt.Task(
             self.name.value,
             start=self.start.value,
@@ -1181,6 +1183,7 @@ class TaskData(AbstractTaskData):
             percent_done=percent_done,
             resources=resource_list,
             color=self.color.value or DataItem.COLORS["cyan"],
+            project=project_name
         )
         super().process_gantt()
 
@@ -1701,10 +1704,14 @@ class PlanningData(AbstractData):
                     continue
 
                 for pln_dep_id in pln_tsk.depends_on.value:
-                    mrg_dep_tsk = merge.get_data_from_id(tsk_corr[pln_dep_id])
-                    if mrg_tsk.depends_on.value is None:
-                        mrg_tsk.depends_on.value = []
-                    mrg_tsk.depends_on.value.append(mrg_dep_tsk.id.value)
+                    # Check that the 'id' in depends_on exists
+                    # since the field can be set on task without needing a task
+                    # with this id declared (it's ignored when the project is loaded)
+                    if pln_dep_id in tsk_corr:
+                        mrg_dep_tsk = merge.get_data_from_id(tsk_corr[pln_dep_id])
+                        if mrg_tsk.depends_on.value is None:
+                            mrg_tsk.depends_on.value = []
+                        mrg_tsk.depends_on.value.append(mrg_dep_tsk.id.value)
 
         for t in merge.iterate_task_data():
             t.update_task_choices()
