@@ -2642,6 +2642,36 @@ class Project(object):
         tu_fraction -- boolean, whether to show task duration fraction under time unit
         """
 
+        def update_project_task(project_task, scale, start_date, end_date):
+            x = _time_diff(scale, start_date, end_date, True)
+            # TODO: make it a common code
+
+            title_capital_chars = sum(1 for char in project_task.name if char.isupper())
+            title_lower_chars = len(project_task.name) - title_capital_chars
+            font_size=15
+            title_width = round((
+                title_capital_chars * font_size / 1.5 + title_lower_chars * font_size / 2) / cm)
+            #HACK: +2 to take some margin with weekends
+
+            delta = 1
+            # if scale == DRAW_WITH_DAILY_SCALE:
+            #     title_end_date = start_date + datetime.timedelta(days=title_width)
+            #     if title_end_date.weekday() == 5:
+            #         delta = 2
+            #     elif title_end_date.weekday() == 4:
+            #         delta = 3
+
+            if title_width + delta > x:
+                # project_task.stop = start_date + relativedelta(days=title_width+2) #HACK: +2 is take some margin with weekends
+                if scale == DRAW_WITH_DAILY_SCALE:
+                    project_task.stop = start_date + relativedelta(days=title_width)
+                if scale == DRAW_WITH_WEEKLY_SCALE:
+                    project_task.stop = start_date + relativedelta(weeks=title_width)
+                if scale == DRAW_WITH_MONTHLY_SCALE:
+                    project_task.stop = start_date + relativedelta(months=title_width)
+            elif project_task.stop is None or end_date > project_task.stop:
+                project_task.stop = end_date
+
         if scale not in (DRAW_WITH_DAILY_SCALE, DRAW_WITH_WEEKLY_SCALE):
             show_conflicts = show_vacations = False
 
@@ -2692,7 +2722,19 @@ class Project(object):
         nline = 2 if show_title else 1
         conflicts_tasks = []
         conflict_display_line = 1
-        for r in resources:
+
+        ressources_tasks: dict[Resource, Task] = {}
+        for t in self.get_tasks():
+            for r in t.get_resources():
+                if r in ressources_tasks:
+                    ressources_tasks[r].append(t)
+                else:
+                    ressources_tasks[r] = [t]
+
+        for resource in ressources_tasks:
+            ressources_tasks[resource] = sorted(ressources_tasks[resource], key=lambda task: task.start_date())
+
+        for r in ressources_tasks:
             # do stuff for each resource
             if filter != "" and r.name not in filter:
                 continue
@@ -2782,28 +2824,28 @@ class Project(object):
             # nb_tasks_with_presence = 0
             project_task: Task = None
 
-            for t in self.get_tasks():
-                if t.get_resources() is not None and r in t.get_resources():
+            if r in ressources_tasks:
+                for t in ressources_tasks[r]:
+                    # if t.get_resources() is not None and r in t.get_resources():
                     if t.start_date() <= end_date and start_date <= t.end_date():
                         nb_tasks += 1
-
                         if one_line_for_tasks and project_task is None:
                             project_task = Task(t.project, color=t.color, is_project=True)
                             project_task.start = t.start_date()
-
-                            x = _time_diff(scale, t.start_date(), t.end_date(), True)
-                            # TODO: make it a common code
-                            title_capital_chars = sum(1 for char in t.project if char.isupper())
-                            title_lower_chars = len(t.project) - title_capital_chars
-                            font_size=15
-                            title_width = round((
-                                title_capital_chars * font_size / 1.5 + title_lower_chars * font_size / 2
-                            ) / cm)
-
-                            if title_width + 2 > x:
-                                project_task.stop = t.start_date() + relativedelta(days=title_width+2) #HACK: +2 is take some margin with weekends
-                            else:
-                                project_task.stop = t.end_date()
+                            # x = _time_diff(scale, t.start_date(), t.end_date(), True)
+                            # # TODO: make it a common code
+                            # title_capital_chars = sum(1 for char in t.project if char.isupper())
+                            # title_lower_chars = len(t.project) - title_capital_chars
+                            # font_size=15
+                            # title_width = round((
+                            #     title_capital_chars * font_size / 1.5 + title_lower_chars * font_size / 2
+                            # ) / cm)
+                            # #HACK: +2 to take some margin with weekends
+                            # if title_width + 2 > x:
+                            #     project_task.stop = t.start_date() + relativedelta(days=title_width+2) #HACK: +2 is take some margin with weekends
+                            # else:
+                            #     project_task.stop = t.end_date()
+                            update_project_task(project_task, scale, t.start_date(), t.end_date())
 
                         elif project_task is not None and t.project in project_task.name and t.end_date() > project_task.stop:
                             project_task.stop = t.end_date()
@@ -2825,30 +2867,28 @@ class Project(object):
                                 if psvg is not None:
                                     ldwg.add(psvg)
                                     # nline += 1
-
                                 project_task = Task(t.project, color=t.color, is_project=True)
                                 project_task.start = t.start_date()
                                 project_task.stop = t.end_date()
                             else:
                                 project_task.name = project_task.name + " / " + t.project
                                 project_task.fullname = project_task.name
-                                x = _time_diff(scale, project_task.start_date(), project_task.end_date(), True) * tu_width
-                                # TODO: make it a common code
-                                title_capital_chars = sum(1 for char in project_task.name if char.isupper())
-                                title_lower_chars = len(project_task.name) - title_capital_chars
-                                font_size=15
-                                title_width = round((
-                                    title_capital_chars * font_size / 1.5 + title_lower_chars * font_size / 2
-                                ) / cm)
+                                # x = _time_diff(scale, project_task.start_date(), project_task.end_date(), True) * tu_width
+                                # # TODO: make it a common code
+                                # title_capital_chars = sum(1 for char in project_task.name if char.isupper())
+                                # title_lower_chars = len(project_task.name) - title_capital_chars
+                                # font_size=15
+                                # title_width = round((
+                                #     title_capital_chars * font_size / 1.5 + title_lower_chars * font_size / 2
+                                # ) / cm)
+                                # #HACK: +2 to take some margin with weekends
+                                # if title_width + 2 > x:
+                                #     project_task.stop = project_task.start_date() + relativedelta(days=title_width+2)
+                                # elif t.end_date() > project_task.stop:
+                                #     project_task.stop = t.end_date()
 
-                                if title_width + 2 > x:
-                                    project_task.stop = project_task.start_date() + relativedelta(days=title_width+2)
-                                elif t.end_date() > project_task.stop:
-                                    project_task.stop = t.end_date()
+                                update_project_task(project_task, scale, project_task.start_date(), t.end_date())
                                 project_task._reset_coord()
-
-
-
                     if not one_line_for_tasks:
                         psvg, _ = t.svg(
                             prev_y=nline,
