@@ -1660,7 +1660,9 @@ class PlanningData(AbstractData):
                     for attr in attrs:
                         __is_attr_conflict(mrg_tsk, pln_tsk, f"project '{pln_tsk_prjname}', task", attr)
 
-                    tsk_corr[pln_tsk.id.value] = mrg_tsk_id
+                    # Commented : Task is was being checked for the depends
+                    # when it's not in the list of task of the project
+                    # tsk_corr[pln_tsk.id.value] = mrg_tsk_id
                     merge.get_data_from_id(mrg_tsk_id).color.value = CONFLICT_COLOR
 
                     continue
@@ -1698,20 +1700,29 @@ class PlanningData(AbstractData):
 
             for pln_tsk in p.iterate_task_data():
 
-                mrg_tsk = merge.get_data_from_id(tsk_corr[pln_tsk.id.value])
+                if pln_tsk.id.value in tsk_corr:
+                    mrg_tsk = merge.get_data_from_id(tsk_corr[pln_tsk.id.value])
 
-                if pln_tsk.depends_on.value is None:
-                    continue
+                    if pln_tsk.depends_on.value is None:
+                        continue
 
-                for pln_dep_id in pln_tsk.depends_on.value:
-                    # Check that the 'id' in depends_on exists
-                    # since the field can be set on task without needing a task
-                    # with this id declared (it's ignored when the project is loaded)
-                    if pln_dep_id in tsk_corr:
-                        mrg_dep_tsk = merge.get_data_from_id(tsk_corr[pln_dep_id])
-                        if mrg_tsk.depends_on.value is None:
-                            mrg_tsk.depends_on.value = []
-                        mrg_tsk.depends_on.value.append(mrg_dep_tsk.id.value)
+                    for pln_dep_id in pln_tsk.depends_on.value:
+                        # Check that the 'id' in depends_on exists
+                        # since the field can be set on task without needing a task
+                        # with this id declared (it's ignored when the project is loaded)
+                        if pln_dep_id in tsk_corr:
+                            mrg_dep_tsk = merge.get_data_from_id(tsk_corr[pln_dep_id])
+                            if mrg_dep_tsk is not None:
+                                if mrg_tsk.depends_on.value is None:
+                                    mrg_tsk.depends_on.value = []
+                                mrg_tsk.depends_on.value.append(mrg_dep_tsk.id.value)
+                            else:
+                                warnings.append(
+                                    _(
+                                        f"Task with %s depends on a none existing one with ID '%s''." % (pln_tsk.name.value, pln_dep_id)
+                                    )
+                                )
+
 
         for t in merge.iterate_task_data():
             t.update_task_choices()
