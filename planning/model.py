@@ -9,7 +9,7 @@ import re
 import uuid
 import xml.etree.ElementTree as ET
 from copy import deepcopy
-from enum import Enum, IntEnum, StrEnum
+from enum import Enum
 from io import StringIO
 from typing import Any, Generator, Generic, Optional, TypeVar, Union
 
@@ -1509,7 +1509,7 @@ class PlanningData(AbstractData):
                 warnings.append(
                     _(
                         f"Conflict on %s '%s', attribute '%s'. {'' if attr == 'color' else 'First value encountered was kept.'}"
-                        % (entity, mrg.name.value, attr)
+                        % (entity, pln.name.value, attr)
                     )
                 )
                 if getattr(mrg, "color", None):
@@ -1520,7 +1520,7 @@ class PlanningData(AbstractData):
 
         merge = PlanningData(__validate_value([p.name.value for p in plannings], "Merged planning", "Planning names are different"))
 
-        if any([p.version.value is None or p.version.value > float(VERSION) for p in plannings]):
+        if any([pln.version.value is None or pln.version.value > float(VERSION) for pln in plannings]):
             return None, [_("Some plannings are made with a newer PyPlanning version")]
 
         tu_width = 1.0
@@ -1533,31 +1533,17 @@ class PlanningData(AbstractData):
         merge.tu_width.value = tu_width
         merge.tu_fraction.value = tu_fraction
 
-        # Regenerate internal duplicated IDs
-        # all_ids = [p.get_all_ids() for p in plannings]
-        # all_dup_ids = set(all_ids[0])
-        # for id_list in all_ids[1:]:
-        #     all_dup_ids.intersection_update(id_list)
-
-        # keyed_dup_ids = [[i for i in id_list if i in all_dup_ids] for id_list in all_ids]
-        # all_dup_ids = list(all_dup_ids)
-        # for p_index in range(len(all_ids)):
-        #     for dup_id in keyed_dup_ids[p_index]:
-        #         if dup_id.startswith("task"):
-        #             plannings[p_index].regenerate_task_id(dup_id, all_dup_ids)
-        #         elif dup_id.startswith("project"):
-        #             plannings[p_index].regenerate_project_id(dup_id, all_dup_ids)
-
         res_names = []
         prj_names = []
         tsk_names = []
-        tsk_corr = {}
-        for p in plannings:
+        tsk_corr = {}  # Links prev task id to new id in merged planning
+        tsk_plns = {}  # Links task key to planning filename
+        for pln in plannings:
 
-            for clo_day in p.iterate_closing_days_data():
-                merge.add_closing_day(clo_day)
+            for pln_clo in pln.iterate_closing_days_data():
+                merge.add_closing_day(pln_clo)
 
-            for pln_res in p.iterate_resource_data():
+            for pln_res in pln.iterate_resource_data():
 
                 if pln_res.name.value is None:
                     continue
@@ -1584,10 +1570,10 @@ class PlanningData(AbstractData):
                     merge.add_resource(mrg_res)
                     res_names.append(pln_res.name.value)
 
-            for pln_lve in p.iterate_leave_data():
+            for pln_lve in pln.iterate_leave_data():
 
                 pln_lve_res_id = pln_lve.get_resource_id()
-                pln_lve_res = p.get_resources_from_ids([pln_lve_res_id])[0]
+                pln_lve_res = pln.get_resources_from_ids([pln_lve_res_id])[0]
                 mrg_res = merge.get_resource_from_name(pln_lve_res.name.value)
 
                 mrg_lve = LeaveData(merge, pln_lve.name.value, pln_lve.fullname.value)
@@ -1596,7 +1582,7 @@ class PlanningData(AbstractData):
                 mrg_lve.set_resource_id(mrg_res.id.value)
                 merge.add_leave(mrg_lve)
 
-            for pln_prj in p.iterate_project_data():
+            for pln_prj in pln.iterate_project_data():
 
                 if pln_prj.name.value is None:
                     continue
@@ -1621,34 +1607,49 @@ class PlanningData(AbstractData):
                     merge.add_project(mrg_prj, None)
                     prj_names.append(pln_prj.name)
 
-            for pln_tsk in p.iterate_task_data():
+            for pln_tsk in pln.iterate_task_data():
 
                 if pln_tsk.name.value is None:
                     continue
 
-                pln_tsk_key = f"{pln_tsk.name.value}-[{pln_tsk.project.value}]"
                 mrg_tsk: AbstractTaskData = None
+                pln_tsk_key = f"{pln_tsk.name.value}-[{pln_tsk.project.value}]"
 
                 attrs = ["fullname", "color", "start"]
                 if isinstance(pln_tsk, TaskData):
                     attrs.extend([ "percent_done", "duration", "stop"])
 
+                pln_tsk_prjname = "<Global>"
+                if pln_tsk.project.value is not None:
+                    pln_tsk_prjname = pln.get_data_from_id(pln_tsk.project.value).name.value
+
+                # Treat tasks with same name and project in same planning as different tasks (splited in periods and/or resources)
+                if pln_tsk_key in tsk_plns.keys() and tsk_plns[pln_tsk_key] == pln.filename:
+
+                    suffix = 2
+                    while (
+                        f"{pln_tsk.name.value} ({suffix})-[{pln_tsk.project.value}]"
+                        in tsk_names
+                    ):
+                        suffix += 1
+
+                    if suffix == 2:
+                        warnings.append(_("Duplicate(s) of element '%s' in project '%s' in the same planning. They were kept and differentiated via suffixes." % (pln_tsk.name.value, pln_tsk_prjname)))
+
+                    pln_tsk_key = f"{pln_tsk.name.value} ({suffix})-[{pln_tsk.project.value}]"
+                    pln_tsk.name.value = pln_tsk.name.value + f" ({suffix})"
+                    pln_tsk.color.value = CONFLICT_COLOR
+
                 if pln_tsk_key in tsk_names:
 
-                    pln_tsk_prjname = "<Global>"
-                    if pln_tsk.project.value is not None:
-                        pln_tsk_prjname = p.get_data_from_id(pln_tsk.project.value).name.value
-
-                    # warnings.append(_("Duplicate task '%s' in project '%s'. Duplicates were ignored and dependancies were linked to the first occurence." % (pln_tsk.name.value, pln_tsk_prjname)))
-
-                    # Update link dict for dependancies
+                    # Update link dict for dependencies
 
                     mrg_prj_tasks = []
                     mrg_tsk_id = None
                     if pln_tsk.project.value is None:
                         mrg_prj_tasks = merge.get_global_tasks()
                     else:
-                        mrg_prj = merge.get_project_from_name(p.get_data_from_id(pln_tsk.project.value).name.value)
+                        mrg_prj = merge.get_project_from_name(pln.get_data_from_id(pln_tsk.project.value).name.value)
                         mrg_prj_tasks = mrg_prj.get_project_tasks()
 
                     for t in mrg_prj_tasks:
@@ -1669,6 +1670,8 @@ class PlanningData(AbstractData):
 
                 else:
 
+                    tsk_plns[pln_tsk_key] = pln.filename
+
                     if isinstance(pln_tsk, TaskData):
                         mrg_tsk = TaskData(merge, pln_tsk.name.value)
                     else:
@@ -1680,13 +1683,14 @@ class PlanningData(AbstractData):
                     # Update project and resources
 
                     if pln_tsk.has_project:
-                        mrg_tsk.project.value = merge.get_project_from_name(p.projects[pln_tsk.project.value].name.value).id.value
+                        mrg_tsk.project.value = merge.get_project_from_name(pln.projects[pln_tsk.project.value].name.value).id.value
 
                     if isinstance(pln_tsk, TaskData) and not pln_tsk.no_resource:
+
                         pln_tsk_res_ids = pln_tsk.get_resource_ids()
                         mrg_tsk_res_ids = []
                         for pln_res_id in pln_tsk_res_ids:
-                            pln_res = p.get_resources_from_ids([pln_res_id])[0]
+                            pln_res = pln.get_resources_from_ids([pln_res_id])[0]
                             mrg_res = merge.get_resource_from_name(pln_res.name.value)
                             mrg_tsk_res_ids.append(mrg_res.id.value)
                         mrg_tsk.set_resource_ids(mrg_tsk_res_ids)
@@ -1698,7 +1702,7 @@ class PlanningData(AbstractData):
 
             # 2nd round: update task dependencies
 
-            for pln_tsk in p.iterate_task_data():
+            for pln_tsk in pln.iterate_task_data():
 
                 if pln_tsk.id.value in tsk_corr:
                     mrg_tsk = merge.get_data_from_id(tsk_corr[pln_tsk.id.value])

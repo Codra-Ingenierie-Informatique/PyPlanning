@@ -17,11 +17,14 @@
                 // "examples/project_planning-detailed.xml",
                 // "examples/team_schedule.xml",
             ],
-            "pythonArgs": ["-Xfrozen_modules=off"],
+            "pythonArgs": [
+                "-Xfrozen_modules=off"
+            ],
             "env": {
+                "PYTHONPATH": "${workspaceFolder}",
                 "PLANNINGDEBUG": "1",
                 "PYTHONFAULTHANDLER": "1",
-                "QT_DEBUG_PLUGINS": "1"
+                "QT_DEBUG_PLUGINS": "1",
                 // "LANG": "en",
                 // "QT_COLOR_MODE": "light",
             }
@@ -39,7 +42,8 @@
                 // "examples/team_schedule.xml",
             ],
             "env": {
-                "PLANNINGDEBUG": "0"
+                "PYTHONPATH": "${workspaceFolder}",
+                "PLANNINGDEBUG": "0",
                 // "LANG": "en",
                 // "QT_COLOR_MODE": "light",
             }
