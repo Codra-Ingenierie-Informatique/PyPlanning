@@ -459,7 +459,8 @@ Please check the file content."""
     def merge_files(self):
         """Merge multiple planning files"""
 
-        filePaths = []
+        file_paths = []
+        keep_charts = False
 
         if self.filename:
             QW.QMessageBox.warning(
@@ -471,13 +472,14 @@ Please check the file content."""
                 )
             if not self.maybe_save(_("Merge files")):
                 return
-            filePaths.append(self.filename)
+            file_paths.append(self.filename)
+            keep_charts = True
 
-        filePaths.extend(getopenfilenames(self, _("Merge files"), self.basedir, "*" + self.EXTENSION)[0])
-        if len(filePaths) < 2:
+        file_paths.extend(getopenfilenames(self, _("Merge files"), self.basedir, "*" + self.EXTENSION)[0])
+        if len(file_paths) < 2:
             return False
 
-        planning, warnings = PlanningData.merge_files(filePaths)
+        planning, warnings = PlanningData.merge_files(file_paths, keep_charts)
 
         if planning is None:
             QW.QMessageBox.warning(

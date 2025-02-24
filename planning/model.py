@@ -681,8 +681,8 @@ class ChartData(AbstractDurationData):
     READ_ONLY_ITEMS = ("fullname", "color")
     DEFAULT_ID_PREFIX = "chart"
 
-    def __init__(self, name=None, fullname=None):
-        super().__init__(name, fullname)
+    def __init__(self, pdata, name=None, fullname=None):
+        super().__init__(pdata, name, fullname)
         self.scale = DataItem(self, "scale", DTypes.CHOICE, None, self.SCALES)
         self.type = DataItem(self, "type", DTypes.CHOICE, None, self.TYPES)
         self.today = DataItem(self, "today", DTypes.DATE, None)
@@ -1485,7 +1485,7 @@ class PlanningData(AbstractData):
         return instance
 
     @classmethod
-    def merge_files(cls, fnames: list[str]) -> tuple["PlanningData", list[str]]:
+    def merge_files(cls, fnames: list[str], keep_charts = False) -> tuple["PlanningData", list[str]]:
         """Merge multiple plannings files into one planning object"""
 
         CONFLICT_COLOR = DataItem.COLORS["_merge_warn"]
@@ -1518,7 +1518,7 @@ class PlanningData(AbstractData):
 
         plannings = [cls.from_filename(fname) for fname in fnames]
 
-        merge = PlanningData(__validate_value([p.name.value for p in plannings], "Merged planning", "Planning names are different"))
+        merge = PlanningData(__validate_value([p.name.value for p in plannings], _("Merged planning"), "Planning names are different"))
 
         if any([pln.version.value is None or pln.version.value > float(VERSION) for pln in plannings]):
             return None, [_("Some plannings are made with a newer PyPlanning version")]
@@ -1605,7 +1605,7 @@ class PlanningData(AbstractData):
                     mrg_prj.show_description.value = True
 
                     merge.add_project(mrg_prj, None)
-                    prj_names.append(pln_prj.name)
+                    prj_names.append(pln_prj.name.value)
 
             for pln_tsk in pln.iterate_task_data():
 
@@ -1727,12 +1727,37 @@ class PlanningData(AbstractData):
                                     )
                                 )
 
-
         for t in merge.iterate_task_data():
             t.update_task_choices()
             t.update_depends_on_from_ids()
 
         merge.update_task_number()
+
+        # Copy charts from the open/first planning file
+        if keep_charts:
+            first_planning = plannings[0]
+            for chart in first_planning.chtlist:
+                mrg_chart = ChartData(merge, chart.name.value, chart.fullname.value)
+                mrg_chart.start = chart.start
+                mrg_chart.stop = chart.stop
+                mrg_chart.today = chart.today
+                mrg_chart.t0mode = chart.t0mode
+                mrg_chart.color = chart.color
+                mrg_chart.scale = chart.scale
+                mrg_chart.type = chart.type
+                mrg_chart.update_project_choices()
+
+                if chart.projects.value is not None:
+                    for project_id in chart.projects.value:
+                        prj_name = chart.projects.choices[project_id]
+                        if prj_name in prj_names:
+                            mrg_proj = merge.get_project_from_name(prj_name)
+                            if mrg_chart.projects.value is not None:
+                                mrg_chart.projects.value.append(mrg_proj.default_id)
+                            else:
+                                mrg_chart.projects.value = [mrg_proj.default_id]
+                merge.add_chart(mrg_chart)
+
 
         return merge, warnings
 
