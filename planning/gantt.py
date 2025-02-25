@@ -2694,6 +2694,7 @@ class Project(object):
         conflicts_tasks = []
         conflict_display_line = 1
 
+        # Create a dictionnary of task per ressource to optimize the creation of the SVG
         ressources_tasks: dict[Resource, Task] = { key: [] for key in resources }
         for t in self.get_tasks():
             for r in t.get_resources():
@@ -2828,7 +2829,6 @@ class Project(object):
                         # Get the maximum in between two and calculate a max end date
                         max_end_date = project_task.end_date()
                         if title_width > x:
-                        # project_task.stop = start_date + relativedelta(days=title_width+2) #HACK: +2 is take some margin with weekends
                             if scale == DRAW_WITH_DAILY_SCALE:
                                 max_end_date = project_task.start + relativedelta(days=title_width)
                             if scale == DRAW_WITH_WEEKLY_SCALE:
