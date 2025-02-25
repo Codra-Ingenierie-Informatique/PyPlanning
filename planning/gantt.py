@@ -68,6 +68,7 @@ class COLORS(enum.Enum):
     PROJECTS = "#9c9ea0"
     TODAY = "#76e9ff"
     START_END_DATES = "#9b9b9b"
+    RESSOURCES = "#c6eeff"
 
 class TYPE(enum.Enum):
     RESOURCE = "resource"
@@ -2642,36 +2643,6 @@ class Project(object):
         tu_fraction -- boolean, whether to show task duration fraction under time unit
         """
 
-        def update_project_task(project_task, scale, start_date, end_date):
-            x = _time_diff(scale, start_date, end_date, True)
-            # TODO: make it a common code
-
-            title_capital_chars = sum(1 for char in project_task.name if char.isupper())
-            title_lower_chars = len(project_task.name) - title_capital_chars
-            font_size=15
-            title_width = round((
-                title_capital_chars * font_size / 1.5 + title_lower_chars * font_size / 2) / cm)
-            #HACK: +2 to take some margin with weekends
-
-            delta = 1
-            # if scale == DRAW_WITH_DAILY_SCALE:
-            #     title_end_date = start_date + datetime.timedelta(days=title_width)
-            #     if title_end_date.weekday() == 5:
-            #         delta = 2
-            #     elif title_end_date.weekday() == 4:
-            #         delta = 3
-
-            if title_width + delta > x:
-                # project_task.stop = start_date + relativedelta(days=title_width+2) #HACK: +2 is take some margin with weekends
-                if scale == DRAW_WITH_DAILY_SCALE:
-                    project_task.stop = start_date + relativedelta(days=title_width)
-                if scale == DRAW_WITH_WEEKLY_SCALE:
-                    project_task.stop = start_date + relativedelta(weeks=title_width)
-                if scale == DRAW_WITH_MONTHLY_SCALE:
-                    project_task.stop = start_date + relativedelta(months=title_width)
-            elif project_task.stop is None or end_date > project_task.stop:
-                project_task.stop = end_date
-
         if scale not in (DRAW_WITH_DAILY_SCALE, DRAW_WITH_WEEKLY_SCALE):
             show_conflicts = show_vacations = False
 
@@ -2723,10 +2694,10 @@ class Project(object):
         conflicts_tasks = []
         conflict_display_line = 1
 
-        ressources_tasks: dict[Resource, Task] = {}
+        ressources_tasks: dict[Resource, Task] = { key: [] for key in resources }
         for t in self.get_tasks():
             for r in t.get_resources():
-                if r in ressources_tasks:
+                if r in ressources_tasks and ressources_tasks[r] is not None:
                     ressources_tasks[r].append(t)
                 else:
                     ressources_tasks[r] = [t]
@@ -2734,7 +2705,7 @@ class Project(object):
         for resource in ressources_tasks:
             ressources_tasks[resource] = sorted(ressources_tasks[resource], key=lambda task: task.start_date())
 
-        for r in ressources_tasks:
+        for r in resources:
             # do stuff for each resource
             if filter != "" and r.name not in filter:
                 continue
@@ -2823,90 +2794,96 @@ class Project(object):
             nb_tasks = 0  # includes all resource's tasks in chart period, although he's on leave
             # nb_tasks_with_presence = 0
             project_task: Task = None
+            project_color = r.color or COLORS.RESSOURCES.value
 
-            if r in ressources_tasks:
-                for t in ressources_tasks[r]:
-                    # if t.get_resources() is not None and r in t.get_resources():
-                    if t.start_date() <= end_date and start_date <= t.end_date():
-                        nb_tasks += 1
-                        if one_line_for_tasks and project_task is None:
-                            project_task = Task(t.project, color=t.color, is_project=True)
+            for t in ressources_tasks[r]:
+                # if t.get_resources() is not None and r in t.get_resources():
+                if t.start_date() <= end_date and start_date <= t.end_date():
+
+                    nb_tasks += 1
+                    project_task_name = t.project or t.name
+                    # Create a project task with the ressource color
+                    if one_line_for_tasks and project_task is None:
+                        project_task = Task(project_task_name, color=project_color, is_project=True)
+                        project_task.start = t.start_date()
+                        project_task.stop = t.end_date()
+                    # Update the end date
+                    elif project_task is not None and project_task_name in project_task.name and t.end_date() > project_task.stop:
+                        project_task.stop = t.end_date()
+                        project_task._reset_coord()
+                    # Task linked to a new project, check if we add it to the current project task if the name is too
+                    # or if we can create a new dedicated project task
+                    elif project_task is not None and not (project_task_name in project_task.name):
+
+                        # Calculate the length of the project of the graph based on its start and stop dates
+                        x = _time_diff(scale, project_task.start, project_task.stop, True)
+
+                        # Calculate the length of the title of the project
+                        title_capital_chars = sum(1 for char in project_task.name if char.isupper())
+                        title_lower_chars = len(project_task.name) - title_capital_chars
+                        font_size=15
+                        title_width = round((
+                            title_capital_chars * font_size / 1.5 + title_lower_chars * font_size / 2) / cm)
+
+                        # Get the maximum in between two and calculate a max end date
+                        max_end_date = project_task.end_date()
+                        if title_width > x:
+                        # project_task.stop = start_date + relativedelta(days=title_width+2) #HACK: +2 is take some margin with weekends
+                            if scale == DRAW_WITH_DAILY_SCALE:
+                                max_end_date = project_task.start + relativedelta(days=title_width)
+                            if scale == DRAW_WITH_WEEKLY_SCALE:
+                                max_end_date = project_task.start + relativedelta(weeks=title_width)
+                            if scale == DRAW_WITH_MONTHLY_SCALE:
+                                max_end_date = project_task.start + relativedelta(months=title_width)
+
+                        # If the task start after the max of the title lenght or the project length
+                        # Create a new task
+                        if t.start_date() > max_end_date:
+                            psvg, _ = project_task.svg(
+                                prev_y=nline,
+                                start=start_date,
+                                end=end_date,
+                                scale=scale,
+                                title_align_on_left=title_align_on_left,
+                                offset=offset,
+                                gantt_type=TYPE.RESOURCE,
+                                show_start_end_dates=False,
+                                tu_width=tu_width,
+                                tu_fraction=tu_fraction,
+                            )
+                            if psvg is not None:
+                                ldwg.add(psvg)
+                                # nline += 1
+                            project_task = Task(project_task_name, color=project_color, is_project=True)
                             project_task.start = t.start_date()
-                            # x = _time_diff(scale, t.start_date(), t.end_date(), True)
-                            # # TODO: make it a common code
-                            # title_capital_chars = sum(1 for char in t.project if char.isupper())
-                            # title_lower_chars = len(t.project) - title_capital_chars
-                            # font_size=15
-                            # title_width = round((
-                            #     title_capital_chars * font_size / 1.5 + title_lower_chars * font_size / 2
-                            # ) / cm)
-                            # #HACK: +2 to take some margin with weekends
-                            # if title_width + 2 > x:
-                            #     project_task.stop = t.start_date() + relativedelta(days=title_width+2) #HACK: +2 is take some margin with weekends
-                            # else:
-                            #     project_task.stop = t.end_date()
-                            update_project_task(project_task, scale, t.start_date(), t.end_date())
-
-                        elif project_task is not None and t.project in project_task.name and t.end_date() > project_task.stop:
                             project_task.stop = t.end_date()
-                            project_task._reset_coord()
-                        elif project_task is not None and not (t.project in project_task.name):
-                            if t.start_date() > project_task.end_date():
-                                psvg, _ = project_task.svg(
-                                    prev_y=nline,
-                                    start=start_date,
-                                    end=end_date,
-                                    scale=scale,
-                                    title_align_on_left=title_align_on_left,
-                                    offset=offset,
-                                    gantt_type=TYPE.RESOURCE,
-                                    show_start_end_dates=False,
-                                    tu_width=tu_width,
-                                    tu_fraction=tu_fraction,
-                                )
-                                if psvg is not None:
-                                    ldwg.add(psvg)
-                                    # nline += 1
-                                project_task = Task(t.project, color=t.color, is_project=True)
-                                project_task.start = t.start_date()
+                        # Otherwise add the task's project name to the macro project task name
+                        # and update the end date of the project if the task ends later
+                        else:
+                            project_task.name = project_task.name + " / " + project_task_name
+                            project_task.fullname = project_task.name
+                            if t.end_date() > project_task.stop:
                                 project_task.stop = t.end_date()
-                            else:
-                                project_task.name = project_task.name + " / " + t.project
-                                project_task.fullname = project_task.name
-                                # x = _time_diff(scale, project_task.start_date(), project_task.end_date(), True) * tu_width
-                                # # TODO: make it a common code
-                                # title_capital_chars = sum(1 for char in project_task.name if char.isupper())
-                                # title_lower_chars = len(project_task.name) - title_capital_chars
-                                # font_size=15
-                                # title_width = round((
-                                #     title_capital_chars * font_size / 1.5 + title_lower_chars * font_size / 2
-                                # ) / cm)
-                                # #HACK: +2 to take some margin with weekends
-                                # if title_width + 2 > x:
-                                #     project_task.stop = project_task.start_date() + relativedelta(days=title_width+2)
-                                # elif t.end_date() > project_task.stop:
-                                #     project_task.stop = t.end_date()
+                            project_task._reset_coord()
 
-                                update_project_task(project_task, scale, project_task.start_date(), t.end_date())
-                                project_task._reset_coord()
-                    if not one_line_for_tasks:
-                        psvg, _ = t.svg(
-                            prev_y=nline,
-                            start=start_date,
-                            end=end_date,
-                            scale=scale,
-                            title_align_on_left=title_align_on_left,
-                            offset=offset,
-                            gantt_type=TYPE.RESOURCE,
-                            show_start_end_dates=False,
-                            tu_width=tu_width,
-                            tu_fraction=tu_fraction,
-                        )
-                        if psvg is not None:
-                            ldwg.add(psvg)
-                            # nb_tasks_with_presence += 1
-                            if not one_line_for_tasks:
-                                nline += 1
+                if not one_line_for_tasks:
+                    psvg, _ = t.svg(
+                        prev_y=nline,
+                        start=start_date,
+                        end=end_date,
+                        scale=scale,
+                        title_align_on_left=title_align_on_left,
+                        offset=offset,
+                        gantt_type=TYPE.RESOURCE,
+                        show_start_end_dates=False,
+                        tu_width=tu_width,
+                        tu_fraction=tu_fraction,
+                    )
+                    if psvg is not None:
+                        ldwg.add(psvg)
+                        # nb_tasks_with_presence += 1
+                        if not one_line_for_tasks:
+                            nline += 1
 
             if nb_tasks == 0:
                 nline -= 1

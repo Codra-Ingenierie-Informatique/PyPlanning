@@ -812,7 +812,7 @@ class ChartData(AbstractDurationData):
                 end=self.stop.value,
                 filename=filename,
                 today=self.today.value,
-                resources=self.pdata.all_resources.values(),
+                resources=[res.gantt_object for res in self.pdata.reslist],
                 one_line_for_tasks=(ptype == "g"),
                 show_title=show_title,
                 show_conflicts=show_conflicts,

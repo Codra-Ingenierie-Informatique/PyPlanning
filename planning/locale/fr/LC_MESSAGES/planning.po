@@ -6,14 +6,14 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-01-28 17:56+0100\n"
+"POT-Creation-Date: 2025-02-25 10:03+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: utf-8\n"
+"Language: \n"
 "Generated-By: pygettext.py 1.5\n"
 
 #: planning\config.py:27
@@ -22,7 +22,7 @@ msgstr ""
 "Gestion de plannings d'équipe et création rapide de plannings projet "
 "simples.\n"
 
-#: planning\gui\closing_days_dialog.py:57 planning\model.py:1242
+#: planning\gui\closing_days_dialog.py:57 planning\model.py:1249
 msgid "Closing"
 msgstr "Fermeture"
 
@@ -44,7 +44,13 @@ msgid ""
 "To remove an end date, set it to any date equal/prior to start.\n"
 "The closing period is considered as a single day if the second column is "
 "empty."
-msgstr "Pour éditer un jour de fermeture existant, double-cliquez sur la date (ou la case vide).\nPour supprimer une date de fin, affectez-lui une date égale ou antérieure à la date de début.\nLa période de fermeture est considérée comme un jour unique si la deuxième colonne est vide."
+msgstr ""
+"Pour éditer un jour de fermeture existant, double-cliquez sur la date (ou la "
+"case vide).\n"
+"Pour supprimer une date de fin, affectez-lui une date égale ou antérieure à "
+"la date de début.\n"
+"La période de fermeture est considérée comme un jour unique si la deuxième "
+"colonne est vide."
 
 #: planning\gui\closing_days_dialog.py:317
 msgid "Add period/day"
@@ -54,10 +60,6 @@ msgstr "Ajouter une période/jour"
 msgid "Remove selected period/day"
 msgstr "Supprimer la période/jour sélectionnée"
 
-#: planning\gui\logviewer.py:28
-msgid "Contents of file"
-msgstr "Contenu du fichier"
-
 #: planning\gui\logviewer.py:58
 msgid "%s log files"
 msgstr "Journaux de bords %s"
@@ -66,27 +68,27 @@ msgstr "Journaux de bords %s"
 msgid "Log files are currently empty."
 msgstr "Les journaux de bord sont vides."
 
-#: planning\gui\mainwindow.py:43
+#: planning\gui\mainwindow.py:44
 msgid "untitled"
 msgstr "sanstitre"
 
-#: planning\gui\mainwindow.py:113
+#: planning\gui\mainwindow.py:115
 msgid "Welcome to %s!"
 msgstr "Bienvenue dans %s!"
 
-#: planning\gui\mainwindow.py:134
+#: planning\gui\mainwindow.py:136
 msgid "Log files were generated during last session."
 msgstr "Des journaux de bord ont été générés lors de la dernière session."
 
-#: planning\gui\mainwindow.py:136
+#: planning\gui\mainwindow.py:138
 msgid "Do you want to see available log files?"
 msgstr "Souhaitez-vous consulter les journaux de bord disponibles ?"
 
-#: planning\gui\mainwindow.py:202
+#: planning\gui\mainwindow.py:204
 msgid "Error"
 msgstr "Erreur"
 
-#: planning\gui\mainwindow.py:203
+#: planning\gui\mainwindow.py:205
 msgid ""
 "This feature is not yet available.\n"
 "Thanks for your patience."
@@ -94,84 +96,88 @@ msgstr ""
 "Cette fonctionnalité n'est pas encore disponible.\n"
 "Merci pour votre patience."
 
-#: planning\gui\mainwindow.py:226
+#: planning\gui\mainwindow.py:228
 msgid "Advanced XML mode"
 msgstr "Mode avancé XML"
 
-#: planning\gui\mainwindow.py:232
+#: planning\gui\mainwindow.py:234
 msgid "&New"
 msgstr "&Nouveau"
 
-#: planning\gui\mainwindow.py:239
+#: planning\gui\mainwindow.py:241
 msgid "&Open..."
 msgstr "&Ouvrir..."
 
-#: planning\gui\mainwindow.py:246
+#: planning\gui\mainwindow.py:248
 msgid "Open working directory"
 msgstr "Ouvrir le répertoire de travail"
 
-#: planning\gui\mainwindow.py:252
+#: planning\gui\mainwindow.py:254
+msgid "Merge with..."
+msgstr "Fusionner avec..."
+
+#: planning\gui\mainwindow.py:260
 msgid "Edit closing days"
 msgstr "Editer les jours de fermeture"
 
-#: planning\gui\mainwindow.py:258
+#: planning\gui\mainwindow.py:266
 msgid "&Save"
 msgstr "&Enregistrer"
 
-#: planning\gui\mainwindow.py:265
+#: planning\gui\mainwindow.py:273
 msgid "Save as..."
 msgstr "Enregistrer &sous..."
 
-#: planning\gui\mainwindow.py:271 planning\gui\mainwindow.py:538
+#: planning\gui\mainwindow.py:279 planning\gui\mainwindow.py:597
 msgid "Quit"
 msgstr "Quitter"
 
-#: planning\gui\mainwindow.py:278
+#: planning\gui\mainwindow.py:286
 msgid "About..."
 msgstr "A propos..."
 
-#: planning\gui\mainwindow.py:289
+#: planning\gui\mainwindow.py:297
 msgid "&File"
 msgstr "&Fichier"
 
-#: planning\gui\mainwindow.py:290
+#: planning\gui\mainwindow.py:298
 msgid "Open recent file"
 msgstr "Ouvrir un fichier récent"
 
-#: planning\gui\mainwindow.py:311
+#: planning\gui\mainwindow.py:320
 msgid "&Edit"
 msgstr "&Edition"
 
-#: planning\gui\mainwindow.py:313
+#: planning\gui\mainwindow.py:322
 msgid "&Tasks"
 msgstr "&Tâche"
 
-#: planning\gui\mainwindow.py:315
+#: planning\gui\mainwindow.py:324
 msgid "&Charts"
 msgstr "&Diagramme"
 
-#: planning\gui\mainwindow.py:317
+#: planning\gui\mainwindow.py:326
 msgid "&Projects"
 msgstr "&Projets"
 
-#: planning\gui\mainwindow.py:323
+#: planning\gui\mainwindow.py:332
 msgid "Show log files..."
 msgstr "Afficher les journaux de bords..."
 
-#: planning\gui\mainwindow.py:350
+#: planning\gui\mainwindow.py:359
 msgid "Main toolbar"
 msgstr "Barre d'outil principale"
 
-#: planning\gui\mainwindow.py:371
+#: planning\gui\mainwindow.py:380
 msgid "Switching mode"
 msgstr "Changement de mode"
 
-#: planning\gui\mainwindow.py:385 planning\gui\mainwindow.py:470
-#: planning\gui\mainwindow.py:485
+#: planning\gui\mainwindow.py:394 planning\gui\mainwindow.py:468
+#: planning\gui\mainwindow.py:529 planning\gui\mainwindow.py:544
 msgid "Warning"
 msgstr "Attention"
 
-#: planning\gui\mainwindow.py:386
+#: planning\gui\mainwindow.py:395
 msgid ""
 "This file cannot be opened in %s mode.\n"
 "Please check the file content."
@@ -179,289 +185,348 @@ msgstr ""
 "Ce fichier ne peut être ouvert en mode %s.\n"
 "Vérifiez son contenu."
 
-#: planning\gui\mainwindow.py:390
+#: planning\gui\mainwindow.py:399
 msgid "Tree"
 msgstr "Arbre"
 
-#: planning\gui\mainwindow.py:390
+#: planning\gui\mainwindow.py:399
 msgid "XML"
 msgstr "XML"
 
-#: planning\gui\mainwindow.py:399
+#: planning\gui\mainwindow.py:408
 msgid "Do you want to save %s file before continuing?"
 msgstr "Souhaitez-vous d'abord enregistrer le fichier %s ?"
 
-#: planning\gui\mainwindow.py:411
+#: planning\gui\mainwindow.py:420
 msgid "New file"
 msgstr "Nouveau fichier"
 
-#: planning\gui\mainwindow.py:431
+#: planning\gui\mainwindow.py:440
 msgid "Open file"
 msgstr "Ouvrir un fichier"
 
-#: planning\gui\mainwindow.py:435
+#: planning\gui\mainwindow.py:444
 msgid "Open"
 msgstr "Ouvrir"
 
-#: planning\gui\mainwindow.py:471
+#: planning\gui\mainwindow.py:469
+msgid ""
+"Merge operation will include the current planning, and replace it with the "
+"result. After the merge, you can replace the current file or save new "
+"planning in another file (via 'Save as...' command). Please save your work "
+"before proceeding."
+msgstr ""
+"L'opération de fusion incluera le planning actuel, et remplacera son contenu "
+"avec le résultat de la fusion. Après la fusion, vous pouvez sauvegarder le résultat "
+"dans le fichier actuel ou en sauvegarder le planning dans un nouveau fichier "
+"(via la commande 'Enregistrer sous...'). Merci de sauvegarde votre travail "
+"avant de continuer."
+
+#: planning\gui\mainwindow.py:473 planning\gui\mainwindow.py:478
+#, fuzzy
+msgid "Merge files"
+msgstr "Nouveau fichier"
+
+#: planning\gui\mainwindow.py:487
+msgid "Merge error"
+msgstr "Erreur de fusion"
+
+#: planning\gui\mainwindow.py:488
+msgid "The merge wasn't successful."
+msgstr "La fusion a échoué."
+
+#: planning\gui\mainwindow.py:496
+msgid "Merge conflicts"
+msgstr "Conflits de fusion"
+
+#: planning\gui\mainwindow.py:530
 msgid ""
 "To edit closing days via the user interface, please exit XML advanced mode "
 "first."
-msgstr "Pour éditer les jours de fermeture via l'interface utilisateur, veuillez quitter le mode avancé XML."
+msgstr ""
+"Pour éditer les jours de fermeture via l'interface utilisateur, veuillez "
+"quitter le mode avancé XML."
 
-#: planning\gui\mainwindow.py:479
+#: planning\gui\mainwindow.py:538
 msgid "Closing days edition"
 msgstr "Edition des jours de fermeture"
 
-#: planning\gui\mainwindow.py:486
+#: planning\gui\mainwindow.py:545
 msgid "You must open a file first to edit its projects' closing days."
-msgstr "Vous devez d'abord ouvrir un fichier pour éditer les jours de fermeture de ses projets."
+msgstr ""
+"Vous devez d'abord ouvrir un fichier pour éditer les jours de fermeture de "
+"ses projets."
 
-#: planning\gui\mainwindow.py:509
+#: planning\gui\mainwindow.py:568
 msgid "Save as"
 msgstr "Enregistrer sous"
 
-#: planning\gui\mainwindow.py:517
+#: planning\gui\mainwindow.py:576
 msgid "Created by"
 msgstr "Créé par"
 
-#: planning\gui\mainwindow.py:518
+#: planning\gui\mainwindow.py:577
 msgid "Developed and maintained by %s open-source project team"
 msgstr "Développé et maintenu par l'équipe du projet open-source %s"
 
-#: planning\gui\mainwindow.py:522
+#: planning\gui\mainwindow.py:581
 msgid "About"
 msgstr "A propos de "
-
-#: planning\gui\mainwindow.py:523
-msgid "How to enable debug mode?"
-msgstr "Comment activer le mode de débogage ?"
-
-#: planning\gui\mainwindow.py:523
-msgid "Set the %s environment variable to 1, 2 or 3"
-msgstr ""
-"Définir la variable d'environnement %s et lui affecter la valeur 1, 2 ou 3"
-
-#: planning\gui\mainwindow.py:523
-msgid "under"
-msgstr "sous"
 
 #: planning\gui\treewidgets.py:58
 msgid "Untitled"
 msgstr "Sans nom"
 
-#: planning\gui\treewidgets.py:366
+#: planning\gui\treewidgets.py:369
 msgid "Edit"
 msgstr "Modifier"
 
-#: planning\gui\treewidgets.py:373 planning\gui\treewidgets.py:1215
+#: planning\gui\treewidgets.py:376 planning\gui\treewidgets.py:1218
 msgid "Delete"
 msgstr "Supprimer"
 
-#: planning\gui\treewidgets.py:380
+#: planning\gui\treewidgets.py:383
 msgid "Move up"
 msgstr "Monter"
 
-#: planning\gui\treewidgets.py:386
+#: planning\gui\treewidgets.py:389
 msgid "Move down"
 msgstr "Descendre"
 
-#: planning\gui\treewidgets.py:392
+#: planning\gui\treewidgets.py:395
 msgid "Update tree"
 msgstr "Mettre à jour l'arbre"
 
-#: planning\gui\treewidgets.py:663
+#: planning\gui\treewidgets.py:666
 msgid "Task tree"
 msgstr "Arbre des tâches"
 
-#: planning\gui\treewidgets.py:665 planning\gui\treewidgets.py:1028
-#: planning\gui\treewidgets.py:1176
+#: planning\gui\treewidgets.py:668 planning\gui\treewidgets.py:1031
+#: planning\gui\treewidgets.py:1179
 msgid "Name"
 msgstr "Nom"
 
-#: planning\gui\treewidgets.py:666
+#: planning\gui\treewidgets.py:669
 msgid "Calculated start"
 msgstr "Début déduite"
 
-#: planning\gui\treewidgets.py:667
+#: planning\gui\treewidgets.py:670
 msgid "Calculated end"
 msgstr "Fin déduite"
 
-#: planning\gui\treewidgets.py:668 planning\gui\treewidgets.py:1029
+#: planning\gui\treewidgets.py:671 planning\gui\treewidgets.py:1032
 msgid "Start"
 msgstr "Début"
 
-#: planning\gui\treewidgets.py:669
+#: planning\gui\treewidgets.py:672
 msgid "Duration"
 msgstr "Durée"
 
-#: planning\gui\treewidgets.py:670 planning\gui\treewidgets.py:1031
+#: planning\gui\treewidgets.py:673 planning\gui\treewidgets.py:1034
 msgid "End"
 msgstr "Fin"
 
-#: planning\gui\treewidgets.py:672 planning\gui\treewidgets.py:1177
+#: planning\gui\treewidgets.py:675 planning\gui\treewidgets.py:1180
 msgid "Color"
 msgstr "Couleur"
 
-#: planning\gui\treewidgets.py:673
+#: planning\gui\treewidgets.py:676
 msgid "#"
 msgstr "N°"
 
-#: planning\gui\treewidgets.py:674
+#: planning\gui\treewidgets.py:677
 msgid "Depends on"
 msgstr "Prédécesseurs"
 
-#: planning\gui\treewidgets.py:675 planning\model.py:1312
+#: planning\gui\treewidgets.py:678 planning\model.py:1319
 msgid "Project"
 msgstr "Projet"
 
-#: planning\gui\treewidgets.py:753
+#: planning\gui\treewidgets.py:756
 msgid "New resource"
 msgstr "Nouvelle ressource"
 
-#: planning\gui\treewidgets.py:759
+#: planning\gui\treewidgets.py:762
 msgid "New task"
 msgstr "Nouvelle tâche"
 
-#: planning\gui\treewidgets.py:765
+#: planning\gui\treewidgets.py:768
 msgid "Duplicate task"
 msgstr "Dupliquer la tâche"
 
-#: planning\gui\treewidgets.py:771
+#: planning\gui\treewidgets.py:774
 msgid "New milestone"
 msgstr "Nouveau jalon"
 
-#: planning\gui\treewidgets.py:777
+#: planning\gui\treewidgets.py:780
 msgid "New leave"
 msgstr "Nouvelle absence"
 
-#: planning\gui\treewidgets.py:782
+#: planning\gui\treewidgets.py:785
 msgid "Duration mode"
 msgstr "Tâche en mode durée"
 
-#: planning\gui\treewidgets.py:786
+#: planning\gui\treewidgets.py:789
 msgid "Remove independant start date"
 msgstr "Supprimer la date de début indépendante"
 
-#: planning\gui\treewidgets.py:791
+#: planning\gui\treewidgets.py:794
 msgid "Add independant start date"
 msgstr "Ajouter une date de début indépendante"
 
-#: planning\gui\treewidgets.py:1026
+#: planning\gui\treewidgets.py:1029
 msgid "Chart tree"
 msgstr "Arbre des graphes"
 
-#: planning\gui\treewidgets.py:1030
+#: planning\gui\treewidgets.py:1033
 msgid "Today"
 msgstr "Aujourd'hui"
 
-#: planning\gui\treewidgets.py:1032
+#: planning\gui\treewidgets.py:1035
 msgid "Type"
 msgstr "Type"
 
-#: planning\gui\treewidgets.py:1033
+#: planning\gui\treewidgets.py:1036
 msgid "Scale"
 msgstr "Echelle"
 
-#: planning\gui\treewidgets.py:1034
+#: planning\gui\treewidgets.py:1037
 msgid "T0 mode"
 msgstr "Mode T0"
 
-#: planning\gui\treewidgets.py:1035
+#: planning\gui\treewidgets.py:1038
 msgid "Projects"
 msgstr "Projets"
 
-#: planning\gui\treewidgets.py:1086
+#: planning\gui\treewidgets.py:1089
 msgid "Set current date to today"
 msgstr "Mettre à jour à la date d'aujourd'hui"
 
-#: planning\gui\treewidgets.py:1092
+#: planning\gui\treewidgets.py:1095
 msgid "New chart"
 msgstr "Nouveau graphe"
 
-#: planning\gui\treewidgets.py:1174
+#: planning\gui\treewidgets.py:1177
 msgid "Project tree"
 msgstr "Arbres des projets"
 
-#: planning\gui\treewidgets.py:1178
+#: planning\gui\treewidgets.py:1181
 msgid "Show description"
 msgstr "Afficher la description"
 
-#: planning\gui\treewidgets.py:1179
+#: planning\gui\treewidgets.py:1182
 msgid "Description"
 msgstr "Description"
 
-#: planning\gui\treewidgets.py:1209
+#: planning\gui\treewidgets.py:1212
 msgid "New project"
 msgstr "Nouveau projet"
 
-#: planning\gui\treewidgets.py:1273
+#: planning\gui\treewidgets.py:1276
 msgid "General"
 msgstr "Général"
 
-#: planning\gui\treewidgets.py:1342
+#: planning\gui\treewidgets.py:1345
 msgid "Undo"
 msgstr "Annuler"
 
-#: planning\gui\treewidgets.py:1349
+#: planning\gui\treewidgets.py:1352
 msgid "Redo"
 msgstr "Répéter"
 
-#: planning\gui\treewidgets.py:1356
+#: planning\gui\treewidgets.py:1359
 msgid "Collapse all"
 msgstr "Tout replier"
 
-#: planning\gui\treewidgets.py:1362
+#: planning\gui\treewidgets.py:1365
 msgid "Expand all"
 msgstr "Tout déplier"
 
-#: planning\model.py:233
+#: planning\model.py:234
 msgid "day"
 msgstr "jour"
 
-#: planning\model.py:670
+#: planning\model.py:674
 msgid "Days"
 msgstr "Jours"
 
-#: planning\model.py:671
+#: planning\model.py:675
 msgid "Weeks"
 msgstr "Semaines"
 
-#: planning\model.py:672
+#: planning\model.py:676
 msgid "Months"
 msgstr "Mois"
 
-#: planning\model.py:674
+#: planning\model.py:678
+#, fuzzy
+msgid "Macro resources"
+msgstr "Ressources"
+
+#: planning\model.py:678
 msgid "Macro tasks"
 msgstr "Tâches macro"
 
-#: planning\model.py:674
+#: planning\model.py:678
 msgid "Resources"
 msgstr "Ressources"
 
-#: planning\model.py:674
+#: planning\model.py:678
 msgid "Tasks"
 msgstr "Tâches"
 
-#: planning\model.py:1254
+#: planning\model.py:1261
 msgid "Leave"
 msgstr "Absence"
 
-#: planning\model.py:1354
+#: planning\model.py:1369
 msgid "All projects"
 msgstr "Tous les projets"
 
-#: planning\utils\qthelpers.py:42
-msgid "An error has occured"
-msgstr "Une erreur est survenue"
+#: planning\model.py:1483
+msgid "This file was made with a newer version of PyPlanning"
+msgstr "Ce fichier a été créé avec une version plus récente de PyPlanning"
 
-#: planning\utils\qthelpers.py:42
-msgid "function"
-msgstr "fonction"
+#: planning\model.py:1521
+msgid "Merged planning"
+msgstr "Planning fusionné"
+
+#: planning\model.py:1524
+msgid "Some plannings are made with a newer PyPlanning version"
+msgstr "Certains plannings ont été créés avec une version plus récente de PyPlanning"
+
+#: planning\model.py:1560
+#, fuzzy
+msgid "resource"
+msgstr "Ressources"
+
+#: planning\model.py:1597
+#, fuzzy
+msgid "project"
+msgstr "Projet"
 
 #: planning\utils\qthelpers.py:47
 msgid "Error message:"
 msgstr "Message d'erreur :"
+
+#~ msgid "Contents of file"
+#~ msgstr "Contenu du fichier"
+
+#~ msgid "How to enable debug mode?"
+#~ msgstr "Comment activer le mode de débogage ?"
+
+#~ msgid "Set the %s environment variable to 1, 2 or 3"
+#~ msgstr ""
+#~ "Définir la variable d'environnement %s et lui affecter la valeur 1, 2 ou 3"
+
+#~ msgid "under"
+#~ msgstr "sous"
+
+#~ msgid "An error has occured"
+#~ msgstr "Une erreur est survenue"
+
+#~ msgid "function"
+#~ msgstr "fonction"
 
 #~ msgid "PyPlanning"
 #~ msgstr "PyPlanning"
