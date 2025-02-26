@@ -1,10 +1,23 @@
 # PyPlanning Releases #
 
+## Version 2.2.0 ##
+
+💥 New features:
+
+* Keep graphs from the current planning open when merging multiple planning
+* Improvement on the "Resources" graph showing task for each resource as a Gantt for better visualization
+* "Macro resources" graph added allowing a one line per resources view automatically merging project names or task names
+
+🛠️ Bug fixes:
+
+* Fix merge multiples planning when old depend references where still present in the XML
+* Fix task completion input when including a '%' character during editing
+
 ## Version 2.1.1 ##
 
 💥 New features:
 
-* Merge multiple planning files into one
+* First implementation of a "Merge planning" feature
 
 🛠️ Bug fixes:
 
@@ -20,11 +33,13 @@
 
 🛠️ Bug fixes:
 
-* Prevent set of task's start date before last end of its deps
-* Homogenized calculated dates display in tree, in dedicated columns
-* [Issue #38](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/38) - It shouldn't be possible to add a "leave" task under a global task
+
 * [Issue #21](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/21) - DataItems of type DTypes.MULTIPLE_CHOICE and DTypes.CHOICE cannot handle duplicate values approprietly
 * [Issue #29](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/29) - Ressource graph missing bottom line
+* [Issue #35](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/35) - Dates between TreeView and Chart may be desynchronized
+  * Homogenized calculated dates display in tree, in dedicated columns
+  * Prevent set of task's start date before last end of its deps
+* [Issue #38](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/38) - It shouldn't be possible to add a "leave" task under a global task
 * [Issue #40](https://github.com/Codra-Ingenierie-Informatique/PyPlanning/issues/40) - Chart: show resources even if on leave during the period
   * Proposed fix:
     * For resource chart, count resource if his task is in the period, even if he's on leave.
