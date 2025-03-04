@@ -8,7 +8,6 @@
   * Renamed as "Resources - Line"
   * The gantt view for ressources has been renamed "Resources - Gantt"
 
-
 ## Version 2.2.1 ##
 
 💥 New features:
@@ -18,7 +17,7 @@
 🛠️ Bug fixes:
 
 * Fix display of the today line broken in version 2.1.1
-
+* Fix false positive from ESET when running PyPlanning (PyInstaller max version set to 5.13.2 in requirements)
 
 ## Version 2.2.0 ##
 
