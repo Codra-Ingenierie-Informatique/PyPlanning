@@ -5,8 +5,8 @@
 💥 New features:
 
 * Bring back the one line ressource graph showing all the tasks on one line without merging them :
-  * Renamed as "Ressource - Line"
-  * The gantt view for ressources has been renamed "Ressources - Gantt"
+  * Renamed as "Resources - Line"
+  * The gantt view for ressources has been renamed "Resources - Gantt"
 
 
 ## Version 2.2.1 ##
