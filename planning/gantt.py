@@ -2245,22 +2245,22 @@ class Project(object):
 
             if is_it_today:
 
-                x = tu_middle_x
+                x_today = tu_middle_x
                 if scale == DRAW_WITH_WEEKLY_SCALE:
-                    x = round(
+                    x_today = round(
                         tu_start_x
                         + (today.weekday() * ((tu_end_x - tu_start_x) / 7.0)),
                         2,
                     )
                 elif scale == DRAW_WITH_MONTHLY_SCALE:
                     _, mtdays = calendar.monthrange(today.year, today.month)
-                    x = round(
+                    x_today = round(
                         tu_start_x + (today.day * ((tu_end_x - tu_start_x) / mtdays)), 2
                     )
 
                 vlines.add(
                     svgwrite.shapes.Rect(
-                        insert=(x, 1 * cm),
+                        insert=(x_today, 1 * cm),
                         size=(0.2 * cm, (maxy + 1) * cm),
                         fill=COLORS.TODAY.value,
                         stroke="lightgray",
@@ -2795,7 +2795,7 @@ class Project(object):
             nb_tasks = 0  # includes all resource's tasks in chart period, although he's on leave
             # nb_tasks_with_presence = 0
             project_task: Task = None
-            project_color = r.color or COLORS.RESSOURCES.value
+            # project_color = r.color or COLORS.RESSOURCES.value
 
             for t in ressources_tasks[r]:
                 # if t.get_resources() is not None and r in t.get_resources():
@@ -2803,8 +2803,11 @@ class Project(object):
 
                     nb_tasks += 1
                     project_task_name = t.project or t.name
+                    task_project = self.get_project(project_task_name)
+                    project_color = task_project.color if task_project is not None else COLORS.RESSOURCES.value
                     # Create a project task with the ressource color
                     if one_line_for_tasks and project_task is None:
+
                         project_task = Task(project_task_name, color=project_color, is_project=True)
                         project_task.start = t.start_date()
                         project_task.stop = t.end_date()
@@ -2857,9 +2860,12 @@ class Project(object):
                             project_task = Task(project_task_name, color=project_color, is_project=True)
                             project_task.start = t.start_date()
                             project_task.stop = t.end_date()
+
                         # Otherwise add the task's project name to the macro project task name
                         # and update the end date of the project if the task ends later
+                        # Use a global default color for the task
                         else:
+                            project_task.color = COLORS.RESSOURCES.value
                             project_task.name = project_task.name + " / " + project_task_name
                             project_task.fullname = project_task.name
                             if t.end_date() > project_task.stop:
@@ -3380,6 +3386,13 @@ class Project(object):
             if r not in flist:
                 flist.append(r)
         return flist
+
+    def get_project(self, project_name):
+        """ Return the project with the name in parameter"""
+        for task in self.tasks:
+            if isinstance(task, Project) and task.name == project_name:
+                return task
+        return None
 
     def csv(self, csv=None):
         """
