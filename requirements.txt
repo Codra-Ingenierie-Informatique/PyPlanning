@@ -5,7 +5,7 @@ guidata
 pylint
 black
 pycodestyle
-pyinstaller
+pyinstaller<=5.13.2
 python-dateutil
 svgwrite
 twine

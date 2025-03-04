@@ -2614,6 +2614,7 @@ class Project(object):
         title_align_on_left=False,
         offset=0,
         t0mode=False,
+        macro_mode=False,
         resource_on_left=False,
         show_title=True,
         show_conflicts=True,
@@ -2639,6 +2640,7 @@ class Project(object):
         scale -- drawing scale (d: days, w: weeks, m: months, q: quaterly)
         title_align_on_left -- boolean, align task title on left
         offset -- X offset from image border to start of drawing zone
+        macro_mode -- merge tasks of a ressource on one line
         tu_width -- float, width of a time unit on drawing zone in centimeters
         tu_fraction -- boolean, whether to show task duration fraction under time unit
         """
@@ -2802,99 +2804,118 @@ class Project(object):
                 if t.start_date() <= end_date and start_date <= t.end_date():
 
                     nb_tasks += 1
-                    project_task_name = t.project or t.name
-                    task_project = self.get_project(project_task_name)
-                    project_color = task_project.color if task_project is not None else COLORS.RESSOURCES.value
-                    # Create a project task with the ressource color
-                    if one_line_for_tasks and project_task is None:
 
-                        project_task = Task(project_task_name, color=project_color, is_project=True)
-                        project_task.start = t.start_date()
-                        project_task.stop = t.end_date()
-                    # Update the end date
-                    elif project_task is not None and project_task_name in project_task.name and t.end_date() > project_task.stop:
-                        project_task.stop = t.end_date()
-                        project_task._reset_coord()
-                    # Task linked to a new project, check if we add it to the current project task if the name is too
-                    # or if we can create a new dedicated project task
-                    elif project_task is not None and not (project_task_name in project_task.name):
+                    if macro_mode:
+                        project_task_name = t.project or t.name
+                        task_project = self.get_project(project_task_name)
+                        project_color = task_project.color if task_project is not None else COLORS.RESSOURCES.value
+                        # Create a project task with the ressource color
+                        if project_task is None:
 
-                        # Calculate the length of the project of the graph based on its start and stop dates
-                        x = _time_diff(scale, project_task.start, project_task.stop, True)
-
-                        # Calculate the length of the title of the project
-                        title_capital_chars = sum(1 for char in project_task.name if char.isupper())
-                        title_lower_chars = len(project_task.name) - title_capital_chars
-                        font_size=15
-                        title_width = round((
-                            title_capital_chars * font_size / 1.5 + title_lower_chars * font_size / 2) / cm)
-
-                        # Get the maximum in between two and calculate a max end date
-                        max_end_date = project_task.end_date()
-                        if title_width > x:
-                            if scale == DRAW_WITH_DAILY_SCALE:
-                                max_end_date = project_task.start + relativedelta(days=title_width)
-                            if scale == DRAW_WITH_WEEKLY_SCALE:
-                                max_end_date = project_task.start + relativedelta(weeks=title_width)
-                            if scale == DRAW_WITH_MONTHLY_SCALE:
-                                max_end_date = project_task.start + relativedelta(months=title_width)
-
-                        # If the task start after the max of the title lenght or the project length
-                        # Create a new task
-                        if t.start_date() > max_end_date:
-                            psvg, _ = project_task.svg(
-                                prev_y=nline,
-                                start=start_date,
-                                end=end_date,
-                                scale=scale,
-                                title_align_on_left=title_align_on_left,
-                                offset=offset,
-                                gantt_type=TYPE.RESOURCE,
-                                show_start_end_dates=False,
-                                tu_width=tu_width,
-                                tu_fraction=tu_fraction,
-                            )
-                            if psvg is not None:
-                                ldwg.add(psvg)
-                                # nline += 1
                             project_task = Task(project_task_name, color=project_color, is_project=True)
                             project_task.start = t.start_date()
                             project_task.stop = t.end_date()
-
-                        # Otherwise add the task's project name to the macro project task name
-                        # and update the end date of the project if the task ends later
-                        # Use a global default color for the task
-                        else:
-                            project_task.color = COLORS.RESSOURCES.value
-                            project_task.name = project_task.name + " / " + project_task_name
-                            project_task.fullname = project_task.name
-                            if t.end_date() > project_task.stop:
-                                project_task.stop = t.end_date()
+                        # Update the end date
+                        elif project_task is not None and project_task_name in project_task.name and t.end_date() > project_task.stop:
+                            project_task.stop = t.end_date()
                             project_task._reset_coord()
+                        # Task linked to a new project, check if we add it to the current project task if the name is too
+                        # or if we can create a new dedicated project task
+                        elif project_task is not None and (project_task_name not in project_task.name):
 
-                if not one_line_for_tasks:
-                    psvg, _ = t.svg(
-                        prev_y=nline,
-                        start=start_date,
-                        end=end_date,
-                        scale=scale,
-                        title_align_on_left=title_align_on_left,
-                        offset=offset,
-                        gantt_type=TYPE.RESOURCE,
-                        show_start_end_dates=False,
-                        tu_width=tu_width,
-                        tu_fraction=tu_fraction,
-                    )
-                    if psvg is not None:
-                        ldwg.add(psvg)
-                        # nb_tasks_with_presence += 1
-                        if not one_line_for_tasks:
-                            nline += 1
+                            # Calculate the length of the project of the graph based on its start and stop dates
+                            x = _time_diff(scale, project_task.start, project_task.stop, True)
+
+                            # Calculate the length of the title of the project
+                            title_capital_chars = sum(1 for char in project_task.name if char.isupper())
+                            title_lower_chars = len(project_task.name) - title_capital_chars
+                            font_size=15
+                            title_width = round((
+                                title_capital_chars * font_size / 1.5 + title_lower_chars * font_size / 2) / cm)
+
+                            # Get the maximum in between two and calculate a max end date
+                            max_end_date = project_task.end_date()
+                            if title_width > x:
+                                if scale == DRAW_WITH_DAILY_SCALE:
+                                    max_end_date = project_task.start + relativedelta(days=title_width)
+                                if scale == DRAW_WITH_WEEKLY_SCALE:
+                                    max_end_date = project_task.start + relativedelta(weeks=title_width)
+                                if scale == DRAW_WITH_MONTHLY_SCALE:
+                                    max_end_date = project_task.start + relativedelta(months=title_width)
+
+                            # If the task start after the max of the title lenght or the project length
+                            # Create a new task
+                            if t.start_date() > max_end_date:
+                                psvg, _ = project_task.svg(
+                                    prev_y=nline,
+                                    start=start_date,
+                                    end=end_date,
+                                    scale=scale,
+                                    title_align_on_left=title_align_on_left,
+                                    offset=offset,
+                                    gantt_type=TYPE.RESOURCE,
+                                    show_start_end_dates=False,
+                                    tu_width=tu_width,
+                                    tu_fraction=tu_fraction,
+                                )
+                                if psvg is not None:
+                                    ldwg.add(psvg)
+                                    # nline += 1
+                                project_task = Task(project_task_name, color=project_color, is_project=True)
+                                project_task.start = t.start_date()
+                                project_task.stop = t.end_date()
+
+                            # Otherwise add the task's project name to the macro project task name
+                            # and update the end date of the project if the task ends later
+                            # Use a global default color for the task
+                            else:
+                                project_task.color = COLORS.RESSOURCES.value
+                                project_task.name = project_task.name + " / " + project_task_name
+                                project_task.fullname = project_task.name
+                                if t.end_date() > project_task.stop:
+                                    project_task.stop = t.end_date()
+                                project_task._reset_coord()
+                    else:
+                        psvg, _ = t.svg(
+                            prev_y=nline,
+                            start=start_date,
+                            end=end_date,
+                            scale=scale,
+                            title_align_on_left=title_align_on_left,
+                            offset=offset,
+                            gantt_type=TYPE.RESOURCE,
+                            show_start_end_dates=False,
+                            tu_width=tu_width,
+                            tu_fraction=tu_fraction,
+                        )
+                        if psvg is not None:
+                            ldwg.add(psvg)
+                            if not one_line_for_tasks:
+                                nline += 1
+
+
+                # if not macro_mode:
+                #     psvg, _ = t.svg(
+                #         prev_y=nline,
+                #         start=start_date,
+                #         end=end_date,
+                #         scale=scale,
+                #         title_align_on_left=title_align_on_left,
+                #         offset=offset,
+                #         gantt_type=TYPE.RESOURCE,
+                #         show_start_end_dates=False,
+                #         tu_width=tu_width,
+                #         tu_fraction=tu_fraction,
+                #     )
+                #     if psvg is not None:
+                #         ldwg.add(psvg)
+                #         if not one_line_for_tasks:
+                #             nline += 1
 
             if nb_tasks == 0:
                 nline -= 1
             else:
-                if one_line_for_tasks and project_task is not None:
+                if macro_mode and project_task is not None:
                     psvg, _ = project_task.svg(
                         prev_y=nline,
                         start=start_date,
@@ -2920,21 +2941,8 @@ class Project(object):
                 if nline > 0 and resource_on_left or not show_title:
                     nline -= 1
 
-                if not one_line_for_tasks:
-                    # nline += 1
-                    ldwg.add(
-                        svgwrite.shapes.Line(
-                            start=((0) * cm, (nline + 1) * cm),
-                            end=(
-                                (((maxx + 1) * tu_width) + 1 + offset) * cm,
-                                (nline+1) * cm,
-                            ),
-                            stroke="black",
-                        )
-                    )
-
                 # nline += 1
-                if one_line_for_tasks:
+                if one_line_for_tasks or macro_mode:
                     nline += 1
                     ldwg.add(
                         svgwrite.shapes.Line(
@@ -2942,6 +2950,18 @@ class Project(object):
                             end=(
                                 (((maxx + 1) * tu_width) + 1 + offset) * cm,
                                 (nline) * cm,
+                            ),
+                            stroke="black",
+                        )
+                    )
+                else:
+                    # nline += 1
+                    ldwg.add(
+                        svgwrite.shapes.Line(
+                            start=((0) * cm, (nline + 1) * cm),
+                            end=(
+                                (((maxx + 1) * tu_width) + 1 + offset) * cm,
+                                (nline+1) * cm,
                             ),
                             stroke="black",
                         )

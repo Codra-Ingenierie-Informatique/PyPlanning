@@ -1,5 +1,25 @@
 # PyPlanning Releases #
 
+## Version 2.2.2 ##
+
+💥 New features:
+
+* Bring back the one line ressource graph showing all the tasks on one line without merging them :
+  * Renamed as "Ressource - Line"
+  * The gantt view for ressources has been renamed "Ressources - Gantt"
+
+
+## Version 2.2.1 ##
+
+💥 New features:
+
+* In "Macro resources" graph, color from the project is used instead of color from the ressource
+
+🛠️ Bug fixes:
+
+* Fix display of the today line broken in version 2.1.1
+
+
 ## Version 2.2.0 ##
 
 💥 New features:

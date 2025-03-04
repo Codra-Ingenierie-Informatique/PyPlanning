@@ -675,7 +675,7 @@ class ChartData(AbstractDurationData):
         "w": _("Weeks"),
         "m": _("Months"),
     }
-    TYPES = {"r": _("Resources"), "g": _("Macro resources"), "t": _("Tasks"), "m": _("Macro tasks")}
+    TYPES = {"r": _("Resources - Line"), "rg": _("Resources - Gantt"), "g": _("Macro resources"), "t": _("Tasks"), "m": _("Macro tasks")}
     TAG = "CHART"
     DEFAULT_ICON_NAME = "chart.svg"
     READ_ONLY_ITEMS = ("fullname", "color")
@@ -800,24 +800,24 @@ class ChartData(AbstractDurationData):
         ptype = "r" if self.type.value is None else self.type.value
         scale_key = "d" if self.scale.value is None else self.scale.value
         t0mode = False if self.t0mode.value is None else self.t0mode.value
-        one_line_task = False if ptype =="r" else True
         try:
             scale = self.GANTT_SCALES[scale_key]
         except KeyError as exc:
             raise ValueError(f"Unknown scale '{scale_key}'") from exc
 
-        if ptype == "r" or ptype == "g":
+        if ptype == "r" or ptype == "rg" or ptype == "g":
             project.make_svg_for_resources(
                 start=self.start.value,
                 end=self.stop.value,
                 filename=filename,
                 today=self.today.value,
                 resources=[res.gantt_object for res in self.pdata.reslist],
-                one_line_for_tasks=(ptype == "g"),
+                one_line_for_tasks=(ptype == "r"),
                 show_title=show_title,
                 show_conflicts=show_conflicts,
                 offset=offset,
                 t0mode=t0mode,
+                macro_mode=(ptype == "g"),
                 resource_on_left=True,
                 scale=scale,
                 tu_width=tu_width,

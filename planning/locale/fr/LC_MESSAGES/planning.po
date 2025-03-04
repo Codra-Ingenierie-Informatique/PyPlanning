@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-02-25 10:03+0100\n"
+"POT-Creation-Date: 2025-03-04 10:49+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -59,6 +59,10 @@ msgstr "Ajouter une période/jour"
 #: planning\gui\closing_days_dialog.py:318
 msgid "Remove selected period/day"
 msgstr "Supprimer la période/jour sélectionnée"
+
+#: planning\gui\logviewer.py:28
+msgid "Contents of file"
+msgstr "Contenu du fichier"
 
 #: planning\gui\logviewer.py:58
 msgid "%s log files"
@@ -217,13 +221,12 @@ msgid ""
 "before proceeding."
 msgstr ""
 "L'opération de fusion incluera le planning actuel, et remplacera son contenu "
-"avec le résultat de la fusion. Après la fusion, vous pouvez sauvegarder le résultat "
-"dans le fichier actuel ou en sauvegarder le planning dans un nouveau fichier "
-"(via la commande 'Enregistrer sous...'). Merci de sauvegarde votre travail "
-"avant de continuer."
+"avec le résultat de la fusion. Après la fusion, vous pouvez sauvegarder le "
+"résultat dans le fichier actuel ou en sauvegarder le planning dans un "
+"nouveau fichier (via la commande 'Enregistrer sous...'). Merci de sauvegarde "
+"votre travail avant de continuer."
 
 #: planning\gui\mainwindow.py:473 planning\gui\mainwindow.py:478
-#, fuzzy
 msgid "Merge files"
 msgstr "Nouveau fichier"
 
@@ -272,6 +275,19 @@ msgstr "Développé et maintenu par l'équipe du projet open-source %s"
 #: planning\gui\mainwindow.py:581
 msgid "About"
 msgstr "A propos de "
+
+#: planning\gui\mainwindow.py:586
+msgid "under"
+msgstr "sous"
+
+#: planning\gui\mainwindow.py:587
+msgid "How to enable debug mode?"
+msgstr "Comment activer le mode de débogage ?"
+
+#: planning\gui\mainwindow.py:588
+msgid "Set the %s environment variable to 1, 2 or 3"
+msgstr ""
+"Définir la variable d'environnement %s et lui affecter la valeur 1, 2 ou 3"
 
 #: planning\gui\treewidgets.py:58
 msgid "Untitled"
@@ -459,21 +475,24 @@ msgid "Months"
 msgstr "Mois"
 
 #: planning\model.py:678
-#, fuzzy
 msgid "Macro resources"
-msgstr "Ressources"
+msgstr "Ressources - Macro"
 
 #: planning\model.py:678
 msgid "Macro tasks"
-msgstr "Tâches macro"
+msgstr "Tâches - Macro"
 
 #: planning\model.py:678
-msgid "Resources"
-msgstr "Ressources"
+msgid "Resources - Gantt"
+msgstr "Ressources - Gantt"
+
+#: planning\model.py:678
+msgid "Resources - Line"
+msgstr "Ressources - Ligne"
 
 #: planning\model.py:678
 msgid "Tasks"
-msgstr "Tâches"
+msgstr "Tâches - Gantt"
 
 #: planning\model.py:1261
 msgid "Leave"
@@ -493,40 +512,28 @@ msgstr "Planning fusionné"
 
 #: planning\model.py:1524
 msgid "Some plannings are made with a newer PyPlanning version"
-msgstr "Certains plannings ont été créés avec une version plus récente de PyPlanning"
+msgstr ""
+"Certains plannings ont été créés avec une version plus récente de PyPlanning"
 
 #: planning\model.py:1560
-#, fuzzy
 msgid "resource"
-msgstr "Ressources"
+msgstr "ressource"
 
 #: planning\model.py:1597
-#, fuzzy
 msgid "project"
-msgstr "Projet"
+msgstr "projet"
+
+#: planning\utils\qthelpers.py:42
+msgid "An error has occured"
+msgstr "Une erreur est survenue"
+
+#: planning\utils\qthelpers.py:42
+msgid "function"
+msgstr "fonction"
 
 #: planning\utils\qthelpers.py:47
 msgid "Error message:"
 msgstr "Message d'erreur :"
-
-#~ msgid "Contents of file"
-#~ msgstr "Contenu du fichier"
-
-#~ msgid "How to enable debug mode?"
-#~ msgstr "Comment activer le mode de débogage ?"
-
-#~ msgid "Set the %s environment variable to 1, 2 or 3"
-#~ msgstr ""
-#~ "Définir la variable d'environnement %s et lui affecter la valeur 1, 2 ou 3"
-
-#~ msgid "under"
-#~ msgstr "sous"
-
-#~ msgid "An error has occured"
-#~ msgstr "Une erreur est survenue"
-
-#~ msgid "function"
-#~ msgstr "fonction"
 
 #~ msgid "PyPlanning"
 #~ msgstr "PyPlanning"
