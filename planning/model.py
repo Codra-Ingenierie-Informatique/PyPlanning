@@ -1479,7 +1479,7 @@ class PlanningData(AbstractData):
         with open(fname, "rb") as fdesc:
             xmlcode = fdesc.read().decode("utf-8")
         instance = cls.from_element(cls(), ET.fromstring(xmlcode))
-        if instance.version.value > float(VERSION):
+        if float(instance.version.value) > float(VERSION):
             raise ValueError(_("This file was made with a newer version of PyPlanning"))
         instance.set_filename(fname)
         return instance
