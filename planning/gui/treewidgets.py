@@ -238,7 +238,7 @@ class BaseTreeWidget(QW.QTreeView):
 
     TITLE = None
     SIG_MODEL_CHANGED = QC.Signal()
-    COLUMNS_TO_RESIZE = [0]
+    COLUMNS_TO_RESIZE = (0,)
     COLUMN_WIDTH_MARGIN = 20
     COLUMNS_TO_EDIT_ON_CLICK = ()
     ATTRS: tuple[str | tuple[str, ...], ...] = ()
@@ -708,7 +708,12 @@ class TaskTreeWidget(BaseTreeWidget):
     FIELD_CHANGE_SIGNALS = {}
 
     SIG_UPDATE_IDS_ON_CHANGE = QC.Signal(DataItem)
-    SIG_TASK_NANE_CHANGED = QC.Signal(DataItem)
+    SIG_TASK_NAME_CHANGED = QC.Signal(DataItem)
+
+    # This signal is emitted when a resource data item has changed. It can be used to update
+    SIG_RESOURCE_DATA_CHANGED = QC.Signal(DataItem)
+    # This signal is emitted when resource data has changed and the resource names and choices need to be updated. It is used to synchronise the panels.
+    SIG_RESOURCES_CHANGED = QC.Signal(object)
 
     def __init__(self, parent=None, debug=False):
         self.reload_action = None
@@ -731,23 +736,53 @@ class TaskTreeWidget(BaseTreeWidget):
         self.VALIDATORS["name"] = lambda new_name: new_name != ""
 
         self.SIG_UPDATE_IDS_ON_CHANGE.connect(self._update_ids_on_change)
-        self.SIG_TASK_NANE_CHANGED.connect(self._update_choices_on_change)
+        self.SIG_TASK_NAME_CHANGED.connect(self._update_choices_on_change)
+        self.SIG_RESOURCE_DATA_CHANGED.connect(self._resource_data_changed)
 
         self.FIELD_CHANGE_SIGNALS["depends_on_task_number"] = (
             self.SIG_UPDATE_IDS_ON_CHANGE
         )
-        self.FIELD_CHANGE_SIGNALS["name"] = self.SIG_TASK_NANE_CHANGED
+        self.FIELD_CHANGE_SIGNALS["name"] = self.SIG_TASK_NAME_CHANGED
+        self.FIELD_CHANGE_SIGNALS["color"] = self.SIG_RESOURCE_DATA_CHANGED
 
     def _update_ids_on_change(self, ditem: DataItem[str]):
         if isinstance(ditem.parent, AbstractTaskData):
             ditem.parent.update_depends_on_from_task_number()
 
+    def _update_resource_names(self):
+        """Update resource names and dependent choices."""
+        if self.planning is None:
+            return
+        self.planning.resource_choices(force=True)
+        for chart in self.planning.iterate_chart_data():
+            chart.update_resource_choices()
+        for task in self.planning.iterate_task_only():
+            task.update_resource_choice()
+
+    def _resource_data_changed(self, ditem: DataItem):
+        """Resource data has changed"""
+        if isinstance(ditem.parent, ResourceData):
+            self._update_resource_names()
+            self.SIG_RESOURCES_CHANGED.emit(self)
+
     def _update_choices_on_change(self, ditem: DataItem[str]):
         """Update choices on change"""
-        if isinstance(ditem.parent, AbstractTaskData) and self.planning:
+        parent = ditem.parent
+        if isinstance(parent, AbstractTaskData) and self.planning:
             self.planning.task_choices(True)
             for data in self.planning.iterate_task_data():
                 data.update_task_choices()
+        elif isinstance(parent, ResourceData):
+            self._update_resource_names()
+            self.SIG_RESOURCES_CHANGED.emit(self)
+
+    def move(self, delta_index):
+        """Move item and propagate resource move if needed."""
+        moved_data = self.get_current_data()
+        super().move(delta_index)
+        if isinstance(moved_data, ResourceData):
+            self._update_resource_names()
+            self.SIG_RESOURCES_CHANGED.emit(self)
 
     def setup_specific_actions(self):
         """Setup context menu specific actions"""
@@ -884,6 +919,8 @@ class TaskTreeWidget(BaseTreeWidget):
         self.set_current_id(data.id.value)
         self.repopulate()
         self.edit(self.currentIndex())
+        self._update_resource_names()
+        self.SIG_RESOURCES_CHANGED.emit(self)
 
     def new_task(self):
         """New task item"""
@@ -1000,6 +1037,7 @@ class TaskTreeWidget(BaseTreeWidget):
     def remove_item(self, item):
         """Remove item"""
         data = self.planning.get_data_from_id(self.get_id_from_item(item))
+        is_resource = isinstance(data, ResourceData)
         if (
             isinstance(data, TaskData)
             and data.has_start
@@ -1019,6 +1057,10 @@ class TaskTreeWidget(BaseTreeWidget):
                 while next_data.start.value.weekday() in (5, 6):
                     next_data.start.value += datetime.timedelta(days=1)
         super().remove_item(item)
+
+        if is_resource:
+            self._update_resource_names()
+            self.SIG_RESOURCES_CHANGED.emit(self)
 
 
 class ChartTreeWidget(BaseTreeWidget):
@@ -1170,6 +1212,108 @@ class ChartTreeWidget(BaseTreeWidget):
         for data in self.planning.iterate_chart_data():
             self.__add_chartitem(data)
 
+class ResourceTreeWidget(BaseTreeWidget):
+    """Resource Tree Widget"""
+
+    TITLE = _("Resource tree")
+    NAMES = (
+        _("Name"),
+        _("Color"),
+    )
+    ATTRS = (
+        "name",
+        "color",
+    )
+
+    TYPES = (
+        DTypes.TEXT,
+        DTypes.COLOR,
+    )
+
+    FIELD_CHANGE_SIGNALS = {}
+
+    # This signal is emitted when a resource data item has changed. It can be used to update
+    SIG_RESOURCE_DATA_CHANGED = QC.Signal(DataItem)
+    # This signal is emitted when a resource data item has changed and the resource names and choices need to be updated. It is used to synchronise the panels.
+    SIG_RESOURCES_CHANGED = QC.Signal(object)
+
+    def __init__(self, parent: Optional[QW.QWidget] = None, debug=False):
+        self.new_resource_action: Optional[QW.QAction] = None  # type: ignore
+        BaseTreeWidget.__init__(self, parent, debug)
+        self.FIELD_CHANGE_SIGNALS["name"] = self.SIG_RESOURCE_DATA_CHANGED
+        self.FIELD_CHANGE_SIGNALS["color"] = self.SIG_RESOURCE_DATA_CHANGED
+        self.SIG_RESOURCE_DATA_CHANGED.connect(self._resource_edited)
+
+    def _resource_edited(self, _ditem):
+        """Resource data edited"""
+        self._update_resource_names()
+        self.SIG_RESOURCES_CHANGED.emit(self)
+
+    def move(self, delta_index):
+        """Move item and propagate resource move if needed."""
+        moved_data = self.get_current_data()
+        super().move(delta_index)
+        if isinstance(moved_data, ResourceData):
+            self._update_resource_names()
+            self.SIG_RESOURCES_CHANGED.emit(self)
+
+    def setup_specific_actions(self):
+        """Setup context menu specific actions"""
+        self.new_resource_action = create_action(
+            self,
+            _("New resource"),
+            icon=get_icon("new_resource.svg"),
+            triggered=self.new_resource,
+        )
+        return [
+            self.new_resource_action,
+            self.remove_action,
+        ] + super().setup_specific_actions()
+
+    # useful when it will be possible to select resources to link to tasks in the central panel
+    def _update_resource_names(self):
+        """Update resource names"""
+        if self.planning is None:
+            return
+        self.planning.resource_choices(force=True)
+        for chart in self.planning.iterate_chart_data():
+            chart.update_resource_choices()
+        for task in self.planning.iterate_task_only():
+            task.update_resource_choice()
+
+    def new_resource(self):
+        """New resource item"""
+        if self.planning is not None:
+            data = ResourceData(self.planning, EMPTY_NAME)
+            self.planning.add_resource(data, after_data=self.get_current_data())
+            self.__add_resourceitem(data)
+            self.set_current_id(data.id.value)
+            self.repopulate()
+            self.edit(self.currentIndex())
+            self._update_resource_names()
+            self.SIG_RESOURCES_CHANGED.emit(self)
+
+    def remove(self):
+        """Remove selected items"""
+        resource = self.get_current_data()
+        if self.planning is not None and resource is not None:
+            self.planning.reslist.remove(resource)
+            self._update_resource_names()
+            self.repopulate()
+            self.SIG_RESOURCES_CHANGED.emit(self)
+
+    def __add_resourceitem(self, data: ResourceData):
+        """Add chart item to tree"""
+        self.add_or_update_item_row(data)
+
+    def populate_tree(self):
+        """Populate tree"""
+        # add charts
+        if self.planning is None:
+            return
+        for data in self.planning.iterate_resource_data():
+            self.__add_resourceitem(data)
+
 
 class ProjectTreeWidget(BaseTreeWidget):
     """Chart Tree Widget"""
@@ -1196,14 +1340,14 @@ class ProjectTreeWidget(BaseTreeWidget):
         DTypes.LONG_TEXT,
     )
     FIELD_CHANGE_SIGNALS = {}
-    SIG_PROJECT_NANE_CHANGED = QC.Signal(DataItem)
+    SIG_PROJECT_NAME_CHANGED = QC.Signal(DataItem)
 
     def __init__(self, parent: Optional[QW.QWidget] = None, debug=False):
         BaseTreeWidget.__init__(self, parent, debug)
         self.new_project_action: Optional[QW.QAction] = None  # type: ignore
-        self.FIELD_CHANGE_SIGNALS["name"] = self.SIG_PROJECT_NANE_CHANGED
+        self.FIELD_CHANGE_SIGNALS["name"] = self.SIG_PROJECT_NAME_CHANGED
 
-        self.SIG_PROJECT_NANE_CHANGED.connect(self._update_project_names)
+        self.SIG_PROJECT_NAME_CHANGED.connect(self._update_project_names)
 
     def setup_specific_actions(self):
         """Setup context menu common actions"""
@@ -1285,32 +1429,46 @@ class TreeWidgets(QW.QSplitter):
         self.__snapshots_lock = False
         self.planning: Optional[PlanningData] = None
 
-        self.project_tree = ProjectTreeWidget(self, debug=debug)
+        # Switcher to show either project tree or resource tree in the bottom part of the splitter, depending on the selection in the task tree
+        self.bottom_tree_switcher = BottomTreeSwitcher(self, debug=debug)
+
         self.chart_tree = ChartTreeWidget(self, debug=debug)
         self.task_tree = TaskTreeWidget(self, debug=debug)
-        self.forest: list[BaseTreeWidget] = [
+
+        self.forest = [
             self.chart_tree,
             self.task_tree,
-            self.project_tree,
+            self.bottom_tree_switcher.project_tree,
+            self.bottom_tree_switcher.resource_tree,
         ]
+
+        self.visible_panels = [
+            self.chart_tree,
+            self.task_tree,
+            self.bottom_tree_switcher,
+        ]
+
         for tree in self.forest:
             tree.SIG_MODEL_CHANGED.connect(self.model_has_changed)
             tree.pressed.connect(self.tree_pressed)
-            self.addWidget(tree)
 
-        self.undo_action = None
-        self.redo_action = None
-        self.collapse_all_action = None
-        self.expand_all_action = None
+        for panel in self.visible_panels:
+            self.addWidget(panel)
+
         self.common_actions = self.setup_common_actions()
-
         self.toolbars = self.create_toolbars()
+
+        self.bottom_tree_switcher.SIG_VIEW_CHANGED.connect(self.update_bottom_tree)
+        # When resources are changed in the task tree or resource tree, we need to update every resource-dependent panel (task tree, resource tree and chart tree)
+        self.bottom_tree_switcher.resource_tree.SIG_RESOURCES_CHANGED.connect(self.sync_resource_panels)
+        self.task_tree.SIG_RESOURCES_CHANGED.connect(self.sync_resource_panels)
 
         # Task tree is default
         self.task_tree.setFocus()
         self.chart_tree.set_specific_actions_state(False)
         self.chart_tree.toolbar.hide()
-        self.project_tree.toolbar.hide()
+        self.bottom_tree_switcher.project_tree.toolbar.hide()
+        self.bottom_tree_switcher.resource_tree.toolbar.hide()
 
         self.setCollapsible(0, False)
         self.setCollapsible(1, False)
@@ -1322,6 +1480,26 @@ class TreeWidgets(QW.QSplitter):
         # (
         #     lambda ditem: self.chart_tree.repopulate()
         # )
+
+    def update_bottom_tree(self, mode: str):
+        """Update bottom tree UI"""
+        if mode == "projects":
+            project_active = True
+        else:
+            project_active = False
+        self.bottom_tree_switcher.project_tree.toolbar.setVisible(project_active)
+        self.bottom_tree_switcher.resource_tree.toolbar.setVisible(not project_active)
+
+    def sync_resource_panels(self, source=None):
+        """Refresh every resource-dependent panel except the source."""
+        targets = [
+            self.task_tree,
+            self.bottom_tree_switcher.resource_tree,
+            self.chart_tree,
+        ]
+        for tree in targets:
+            if tree is not source:
+                tree.repopulate()
 
     def tree_pressed(self):
         """A mouse button was pressed on tree view"""
@@ -1442,3 +1620,113 @@ class TreeWidgets(QW.QSplitter):
                 if len(self.__snapshots) > self.MAX_SNAPSHOTS:
                     self.__snapshots.pop(0)
         self.SIG_MODEL_CHANGED.emit()
+
+class BottomTreeSwitcher (QW.QWidget):
+    """Widget to switch between ProjectTreeWidget and ResourceTreeWidget in the bottom panel"""
+
+    SIG_MODEL_CHANGED = QC.Signal()
+    SIG_VIEW_CHANGED = QC.Signal(str)
+
+    def __init__(self, parent=None, debug=False):
+        super().__init__(parent)
+
+        self.project_tree = ProjectTreeWidget(self, debug=debug)
+        self.resource_tree = ResourceTreeWidget(self, debug=debug)
+
+        self.stack = QW.QStackedWidget(self)
+        self.stack.addWidget(self.project_tree)
+        self.stack.addWidget(self.resource_tree)
+
+        layout = QW.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.stack)
+
+        # Connect signals to emit when model changes in either tree
+        self.project_tree.SIG_MODEL_CHANGED.connect(self.SIG_MODEL_CHANGED.emit)
+        self.resource_tree.SIG_MODEL_CHANGED.connect(self.SIG_MODEL_CHANGED.emit)
+
+        self.show_projects_action = create_action(
+            self,
+            _("By projects"),
+            checkable=True,
+            triggered=lambda: self.set_bottom_view("projects"),
+        )
+        self.show_resources_action = create_action(
+            self,
+            _("By resources"),
+            checkable=True,
+            triggered=lambda: self.set_bottom_view("resources"),
+        )
+
+        self._view_action_group = QG.QActionGroup(self)
+        # Make actions checkable and exclusive so that only one can be selected at a time and they don't
+        self._view_action_group.setExclusive(True)
+        self._view_action_group.addAction(self.show_projects_action)
+        self._view_action_group.addAction(self.show_resources_action)
+
+        self.SIG_VIEW_CHANGED.connect(self._sync_view_actions)
+        # Set initial view based on configuration
+        self.set_bottom_view(self.get_view_mode())
+        # sync view actions with the current mode to ensure correct state on startup
+        self._sync_view_actions(self.current_mode())
+
+    def _sync_view_actions(self, mode: str):
+        """Synchronise view actions with the current mode"""
+        if mode == "projects":
+            self.show_projects_action.setChecked(True)
+            self.show_resources_action.setChecked(False)
+        elif mode == "resources":
+            self.show_projects_action.setChecked(False)
+            self.show_resources_action.setChecked(True)
+        else:
+            self.show_projects_action.setChecked(False)
+            self.show_resources_action.setChecked(False)
+
+    @property
+    def view_actions(self) -> tuple[QW.QAction, QW.QAction]:
+        """Return the actions to switch between project and resource view"""
+        return (self.show_projects_action, self.show_resources_action)
+
+    @staticmethod
+    def set_view_mode(value: str) -> None:
+        """Persist bottom view mode in configuration."""
+        mode = value if value in ("projects", "resources") else "projects"
+        Conf.main.bottom_view.set(mode)
+
+    @staticmethod
+    def get_view_mode(default: str = "projects") -> str:
+        """Read bottom view mode from configuration."""
+        mode = Conf.main.bottom_view.get(default)
+        if mode not in ("projects", "resources"):
+            return default
+        return mode
+
+    def setup(self, planning):
+        """Setup tree switcher with planning data"""
+        self.project_tree.setup(planning)
+        self.resource_tree.setup(planning)
+
+    def set_bottom_view(self, mode: str):
+        """Set bottom view to either 'projects' or 'resources'"""
+        if mode == "projects":
+            self.stack.setCurrentWidget(self.project_tree)
+            self.resource_tree.clearSelection()
+            self.project_tree.setFocus()
+            self.set_view_mode(mode)
+            self.SIG_VIEW_CHANGED.emit("projects")
+        elif mode == "resources":
+            self.stack.setCurrentWidget(self.resource_tree)
+            self.project_tree.clearSelection()
+            self.resource_tree.setFocus()
+            self.set_view_mode(mode)
+            self.SIG_VIEW_CHANGED.emit("resources")
+
+    def current_tree(self):
+        """Return the currently visible tree widget"""
+        return self.stack.currentWidget()
+
+    def current_mode(self) -> str:
+        """Return the current mode based on the visible tree"""
+        if self.current_tree() is self.project_tree:
+            return "projects"
+        return "resources"

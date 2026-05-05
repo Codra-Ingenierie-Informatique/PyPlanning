@@ -106,6 +106,8 @@ class PlanningMainWindow(QW.QMainWindow):
         self.charts_menu = None
         self.tasks_menu = None
         self.projects_menu = None
+        self.resources_menu = None
+        self.views_menu = None
         self.help_menu = None
 
         self.closing_days_dialog = ClosingDaysDialog()
@@ -116,6 +118,11 @@ class PlanningMainWindow(QW.QMainWindow):
         self.create_actions()
         self.create_menus()
         self.create_toolbars()
+
+        # Connect signal to update bottom menus when switching between project and resource trees
+        self.central_widget.editor.trees.bottom_tree_switcher.SIG_VIEW_CHANGED.connect(self.update_bottom_menus)
+        # Update bottom menus visibility according to the initial bottom tree view mode
+        self.update_bottom_menus(self.central_widget.editor.trees.bottom_tree_switcher.current_mode())
 
         # This is necessary when the application is opened in xml mode
         if self.central_widget.editor.xml_mode:
@@ -135,6 +142,18 @@ class PlanningMainWindow(QW.QMainWindow):
 
 
         self.__restore_pos_and_size()
+
+    def update_bottom_menus(self, mode: str):
+        """Update bottom menus visibility according to the current bottom tree view mode"""
+        if mode == "projects":
+            self.projects_menu.setEnabled(True)
+        else:
+            self.projects_menu.setEnabled(False)
+
+        if mode == "resources":
+            self.resources_menu.setEnabled(True)
+        else:
+            self.resources_menu.setEnabled(False)
 
     def check_for_previous_crash(self):  # pragma: no cover
         """Check for previous crash"""
@@ -367,6 +386,10 @@ Thanks for your patience."""
         add_actions(self.charts_menu, actions["charts"])
         self.projects_menu = self.menuBar().addMenu(_("&Projects"))
         add_actions(self.projects_menu, actions["projects"])
+        self.resources_menu = self.menuBar().addMenu(_("&Resources"))
+        add_actions(self.resources_menu, actions["resources"])
+        self.views_menu = self.menuBar().addMenu(_("&Views"))
+        add_actions(self.views_menu, actions["views"])
 
         # Add plugin specific menus
         self.__create_plugins_menus()

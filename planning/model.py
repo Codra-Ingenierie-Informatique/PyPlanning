@@ -833,6 +833,11 @@ class ChartData(AbstractDurationData):
             if project not in project_keys:
                 self.projects.value.remove(project)
 
+    # TODO: to be implemented once it becomes possible to assign a resource to a task in the central panel
+    def update_resource_choices(self, force=False):
+        """Update resource choices"""
+        pass
+
 
 class AbstractTaskData(AbstractDurationData):
     """Abstract Task data set"""
@@ -998,6 +1003,10 @@ class AbstractTaskData(AbstractDurationData):
 
         if self.project.value not in project_keys:
             self.project.value = None
+
+    def update_resource_choice(self, force=False):
+        """Update resource choices"""
+        pass
 
 
 class TaskModes(Enum):
@@ -1372,6 +1381,7 @@ class PlanningData(AbstractData):
         self.tsklist: list[AbstractTaskData] = []
         self.tsk_num_to_tsk: dict[str, AbstractTaskData] = {}
         self._tsk_choices: dict[str, str] = {}
+        self._res_choices: dict[str, str] = {}
         self._projects_choices: dict[str | None, str] = {}
         self.projects: dict[str, ProjectData] = {}
         self.lvelist: list[LeaveData] = []
@@ -1952,6 +1962,14 @@ class PlanningData(AbstractData):
                             yield data
                             continue
 
+    def iterate_task_only(
+        self,
+    ) -> Generator[TaskData, None, None]:
+        """Iterate over task data dictionary items"""
+        for data in self.tsklist:
+            if isinstance(data, TaskData):
+                yield data
+
     def iterate_leave_data(self, only=None) -> Generator[LeaveData, None, None]:
         """Iterate over leave data dictionary items"""
         for data in self.lvelist:
@@ -2094,6 +2112,11 @@ class PlanningData(AbstractData):
         if force or len(self._tsk_choices.keys()) != len(self.tsklist):
             self._tsk_choices = {str(data.task_number.value): str(data.name.value) for data in self.iterate_task_data()}
         return self._tsk_choices
+
+    # TODO: to be implemented once it becomes possible to assign a resource to a task in the central panel
+    def resource_choices(self, force=False) -> list[dict[str | None, str]]:
+        """Return resource choices"""
+        pass
 
     def project_choices(self, force=False) -> list[dict[str | None, str]]:
         if force or (len(self.projects.keys()) + 1) != len(self._projects_choices.keys()):
