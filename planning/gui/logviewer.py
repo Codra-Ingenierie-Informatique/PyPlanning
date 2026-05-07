@@ -6,7 +6,7 @@
 """
 Module providing log viewer widgets
 
-Based on CodraFT's module codraft/widgets/logviewer.py
+Based on PyPlanning's module planning/gui/logviewer.py
 """
 
 import os.path as osp

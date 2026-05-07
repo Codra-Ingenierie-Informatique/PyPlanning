@@ -15,7 +15,7 @@ from guidata import configtools
 
 from planning.utils import conf
 
-CONF_VERSION = "1.0.0"
+CONF_VERSION = "1.1.0"
 
 APP_NAME = "PyPlanning"
 MOD_NAME = "planning"
@@ -42,6 +42,8 @@ DATETIME_FORMAT = "%d/%m/%Y - %H:%M:%S"
 DATAPATH = configtools.get_module_data_path(MOD_NAME, relpath="data")
 TESTPATH = configtools.get_module_data_path(MOD_NAME, relpath="tests")
 
+OTHER_PLUGINS_PATHLIST = [configtools.get_module_data_path(MOD_NAME, "plugins")]
+
 
 # Copyright (c) DataLab Platform Developers, BSD 3-Clause license.
 # https://datalab-platform.com
@@ -60,6 +62,12 @@ def is_frozen(module_name: str) -> bool:
 
 
 IS_FROZEN = is_frozen(MOD_NAME)
+if IS_FROZEN:
+    OTHER_PLUGINS_PATHLIST.append(osp.join(osp.dirname(sys.executable), "plugins"))
+    try:
+        os.mkdir(OTHER_PLUGINS_PATHLIST[-1])
+    except OSError:
+        pass
 
 
 # Copyright (c) DataLab Platform Developers, BSD 3-Clause license.
@@ -96,6 +104,8 @@ class MainSection(conf.Section, metaclass=conf.SectionMeta):
     base_dir = conf.WorkingDirOption()
     recent_files = conf.RecentFilesOption()
     xml_mode = conf.Option()
+    plugins_enabled = conf.Option()
+    plugins_path = conf.Option()
 
 
 class TreeSection(conf.Section, metaclass=conf.SectionMeta):
@@ -120,13 +130,14 @@ class ConsoleSection(conf.Section, metaclass=conf.SectionMeta):
 
 # Usage (example): Conf.console.enable.get(True)
 class Conf(conf.Configuration, metaclass=conf.ConfMeta):
-    """Class defining CodraFT configuration structure.
+    """Class defining PyPlanning configuration structure.
     Each class attribute is a section (metaclass is automatically affecting
     section names in .INI file based on class attribute names)."""
 
     main = MainSection()
     tree = TreeSection()
     console = ConsoleSection()
+    # tuleap = TuleapSection()
 
 
 def get_old_log_fname(fname):
@@ -136,12 +147,15 @@ def get_old_log_fname(fname):
 
 def initialize():
     """Initialize application configuration"""
-    Conf.initialize(APP_NAME, CONF_VERSION, load=not DEBUG)
+    Conf.initialize(APP_NAME, CONF_VERSION, load = not DEBUG)
     Conf.main.traceback_log_path.get(f".{APP_NAME}_traceback.log")
     Conf.main.faulthandler_log_path.get(f".{APP_NAME}_faulthandler.log")
+    Conf.main.plugins_enabled.get(True)
+    Conf.main.plugins_path.get(Conf.get_path("plugins"))
     Conf.console.console_enabled.get(True)
     Conf.console.external_editor_path.get("code")
     Conf.console.external_editor_args.get("-g {path}:{line_number}")
+    # Conf.tuleap.api_key.get()
 
 
 def reset():

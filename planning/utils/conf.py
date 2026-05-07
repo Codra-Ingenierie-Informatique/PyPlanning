@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 #
 # Licensed under the terms of the BSD 3-Clause or the CeCILL-B License
-# (see codraft/__init__.py for details)
+# (see planning/__init__.py for details)
 
 """
 PyPlanning Configuration utilities
 
-Based on CodraFT's module codraft/utils/conf.py
+Based on PyPlanning's module planning/utils/conf.py
 """
 
 import os
@@ -34,22 +34,6 @@ class AppUserConfig(UserConfig):
 CONF = AppUserConfig({})
 
 
-class Configuration:
-    """Configuration file"""
-
-    @classmethod
-    def initialize(cls, name, version, load):
-        """Initialize configuration"""
-        CONF.set_application(name, version, load=load)
-
-    @classmethod
-    def reset(cls):
-        """Reset configuration"""
-        global CONF  # pylint: disable=global-statement
-        CONF.cleanup()  # Remove configuration file
-        CONF = UserConfig({})
-
-
 class Section:
     """Configuration section"""
 
@@ -62,7 +46,6 @@ class Section:
     def get_name(cls):
         """Return section name"""
         return cls._name
-
 
 class Option:
     """Configuration option handler"""
@@ -150,7 +133,6 @@ class FontOption(Option):
         for key, val in value:
             CONF.set(self.section, self.option + "/font/" + key, val)
 
-
 class SectionMeta(type):
     """Configuration metaclass"""
 
@@ -174,3 +156,32 @@ class ConfMeta(type):
                 for option in obj._options:
                     option.section = attrname
         return type.__new__(mcs, name, bases, dct)
+
+class Configuration:
+    """Configuration file"""
+
+    @classmethod
+    def initialize(cls, name, version, load):
+        """Initialize configuration"""
+        CONF.set_application(name, version, load=load)
+
+    @classmethod
+    def reset(cls):
+        """Reset configuration"""
+        global CONF  # pylint: disable=global-statement
+        CONF.cleanup()  # Remove configuration file
+        CONF = AppUserConfig({})
+
+    @classmethod
+    def get_path(cls, basename: str) -> str:
+        """Return filename path inside configuration directory"""
+        return CONF.get_path(basename)
+
+    @classmethod
+    def add_section(cls, section_name: str, klass:type):
+        """Dynamically add configuration section"""
+        section = klass()
+        section.set_name(section_name)
+        for option in section._options:
+            option.section = section_name
+        setattr(cls, section_name, section)

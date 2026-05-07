@@ -20,9 +20,7 @@ locale.setlocale(locale.LC_TIME, "")
 
 VERSION = ".".join(__version__.split(".", 2)[0:2])
 
-gantt.define_font_attributes(
-    fill="black", stroke="black", stroke_width=0, font_family=MAIN_FONT_FAMILY
-)
+gantt.define_font_attributes(fill="black", stroke="black", stroke_width=0, font_family=MAIN_FONT_FAMILY)
 
 _T = TypeVar("_T")
 AbstractDataT = TypeVar("AbstractDataT", bound="AbstractData")
@@ -212,9 +210,7 @@ class DataItem(Generic[_T]):
                 if self.value is None:
                     return None
                 for cname in self.COLORS:
-                    if cname == self.value or cname.startswith(
-                        self.value
-                    ):  # retrocompatibility
+                    if cname == self.value or cname.startswith(self.value):  # retrocompatibility
                         return cname
             if self.datatype == DTypes.LIST:
                 return ""
@@ -237,10 +233,7 @@ class DataItem(Generic[_T]):
             return text
         if self.datatype in (DTypes.CHOICE, DTypes.MULTIPLE_CHOICE):
             if self.value is None:
-                if (
-                    self.default_choice_mode is DefaultChoiceMode.NONE
-                    or len(self.choices.keys()) == 0
-                ):
+                if self.default_choice_mode is DefaultChoiceMode.NONE or len(self.choices.keys()) == 0:
                     return None
                 elif self.default_choice_mode is DefaultChoiceMode.FIRST:
                     return self.choice_values[0]
@@ -454,9 +447,7 @@ class AbstractData:
 
         self._check_create_missing_project(element)
 
-        self.project: DataItem[str] = self.get_choices(
-            "project", default=None, choices=self.pdata.project_choices()
-        )
+        self.project: DataItem[str] = self.get_choices("project", default=None, choices=self.pdata.project_choices())
 
         self.id: DataItem[str] = self.get_str("id", default=self.default_id)
 
@@ -476,11 +467,7 @@ class AbstractData:
         attrib = {}
         for name in self.get_attrib_names():
             ditem = getattr(self, name, None)
-            if (
-                ditem is not None
-                and ditem.value not in (None, [])
-                and not self.is_read_only(ditem.name)
-            ):
+            if ditem is not None and ditem.value not in (None, []) and not self.is_read_only(ditem.name):
                 attrib[name] = ditem.to_text()
         return attrib
 
@@ -544,17 +531,13 @@ class AbstractData:
         choices: Optional[list] = None,
     ):
         """Create new data item"""
-        return DataItem.from_element(
-            self, self.element, name, datatype, default, choices
-        )
+        return DataItem.from_element(self, self.element, name, datatype, default, choices)
 
     def get_str(self, name: str, default: Optional[_T | type[NoDefault]] = NoDefault):
         """Get value from XML element and set its datatype"""
         return self.create_item(name, DTypes.TEXT, default=default)
 
-    def get_long_text(
-        self, name: str, default: Optional[_T | type[NoDefault]] = NoDefault
-    ):
+    def get_long_text(self, name: str, default: Optional[_T | type[NoDefault]] = NoDefault):
         """Get value from XML element and set its datatype"""
         return self.create_item(name, DTypes.LONG_TEXT, default=default)
 
@@ -675,7 +658,13 @@ class ChartData(AbstractDurationData):
         "w": _("Weeks"),
         "m": _("Months"),
     }
-    TYPES = {"r": _("Resources - Line"), "rg": _("Resources - Gantt"), "g": _("Macro resources"), "t": _("Tasks"), "m": _("Macro tasks")}
+    TYPES = {
+        "r": _("Resources - Line"),
+        "rg": _("Resources - Gantt"),
+        "g": _("Macro resources"),
+        "t": _("Tasks"),
+        "m": _("Macro tasks"),
+    }
     TAG = "CHART"
     DEFAULT_ICON_NAME = "chart.svg"
     READ_ONLY_ITEMS = ("fullname", "color")
@@ -688,9 +677,7 @@ class ChartData(AbstractDurationData):
         self.today = DataItem(self, "today", DTypes.DATE, None)
         self.offset = DataItem(self, "offset", DTypes.INTEGER, None)
         self.t0mode = DataItem(self, "t0mode", DTypes.BOOLEAN, None)
-        self.projects = DataItem[list[str]](
-            self, "projects", DTypes.MULTIPLE_CHOICE, None, {}, DefaultChoiceMode.NONE
-        )
+        self.projects = DataItem[list[str]](self, "projects", DTypes.MULTIPLE_CHOICE, None, {}, DefaultChoiceMode.NONE)
         self.is_default_name = self.set_is_default_name()
 
     def set_is_default_name(self) -> bool:
@@ -703,12 +690,8 @@ class ChartData(AbstractDurationData):
             self.is_default_name = False
             return False
         xml_prefix, _ext = osp.basename(str(self.pdata.filename)).rsplit(".", 1)
-        default_name_re = re.compile(
-            rf"^{xml_prefix}(_?\d{{2}})?(\.svg)?$", re.IGNORECASE
-        )
-        is_default_name = self.name.value is None or bool(
-            default_name_re.match(str(self.name.value))
-        )
+        default_name_re = re.compile(rf"^{xml_prefix}(_?\d{{2}})?(\.svg)?$", re.IGNORECASE)
+        is_default_name = self.name.value is None or bool(default_name_re.match(str(self.name.value)))
         self.is_default_name = is_default_name
         return is_default_name
 
@@ -720,9 +703,7 @@ class ChartData(AbstractDurationData):
         self.today = self.get_date("today")
         self.offset = self.get_int("offset")
         self.t0mode = self.get_bool("t0mode")
-        self.projects = self.get_multi_choices(
-            "projects", [], self.pdata.project_choices(), DefaultChoiceMode.NONE
-        )
+        self.projects = self.get_multi_choices("projects", [], self.pdata.project_choices(), DefaultChoiceMode.NONE)
         if self.projects.value is not None and self.project.value is not None:
             self.projects.value = [self.project.value]
             self.project.value = None
@@ -843,9 +824,7 @@ class ChartData(AbstractDurationData):
         if self.pdata is None:
             return
         available_choices = self.pdata.project_choices(force)
-        self.projects.choices = {
-            key: val for key, val in available_choices.items() if key is not None
-        }
+        self.projects.choices = {key: val for key, val in available_choices.items() if key is not None}
 
         if self.projects.value is None:
             return
@@ -895,7 +874,10 @@ class AbstractTaskData(AbstractDurationData):
 
     def get_attrib_names(self):
         """Return attribute names"""
-        return super().get_attrib_names() + ["depends_on", "percent_done"]
+        attrib_names = super().get_attrib_names()
+        if "id" not in attrib_names:
+            attrib_names.append("id")
+        return attrib_names + ["depends_on", "percent_done"]
 
     def process_gantt(self):
         """Create or update Gantt objects and add them to dictionaries"""
@@ -913,9 +895,7 @@ class AbstractTaskData(AbstractDurationData):
                 for dep in task.depends_on:
                     if dep.end_date() is not None and dep.end_date() < min_start_date:
                         min_start_date = dep.end_date()
-                if min_start_date is not None and (
-                    task.start is None or task.start < min_start_date
-                ):
+                if min_start_date is not None and (task.start is None or task.start < min_start_date):
                     task.start = min_start_date
 
             elif task.start is None and prevtask is not None:
@@ -946,11 +926,7 @@ class AbstractTaskData(AbstractDurationData):
         task = self.pdata.all_tasks[self.id.value]
         if self.depends_on.value is not None:
             task.add_depends(
-                [
-                    task
-                    for tskdata_id, task in self.pdata.all_tasks.items()
-                    if tskdata_id in self.depends_on.value
-                ]
+                [task for tskdata_id, task in self.pdata.all_tasks.items() if tskdata_id in self.depends_on.value]
             )
 
     def update_depends_on_from_task_number(self):
@@ -965,8 +941,7 @@ class AbstractTaskData(AbstractDurationData):
                 or other_task is self
                 or (
                     other_task.depends_on_task_number.value is not None
-                    and self.task_number.value
-                    in other_task.depends_on_task_number.value
+                    and self.task_number.value in other_task.depends_on_task_number.value
                 )
             ):
                 wrong_values.append(value)
@@ -1056,15 +1031,11 @@ class TaskData(AbstractTaskData):
         """Return True if item name is read-only"""
         if super().is_read_only(name):
             return True
-        return (self.has_duration and name == "stop") or (
-            self.has_stop and name == "duration"
-        )
+        return (self.has_duration and name == "stop") or (self.has_stop and name == "duration")
 
     def is_mode_switchable(self):
         """Return True if task mode can be switched from one to another"""
-        return self.get_mode() is not None and (
-            self.has_start or self.start_calc.value is not None
-        )
+        return self.get_mode() is not None and (self.has_start or self.start_calc.value is not None)
 
     def get_mode(self):
         """Return task mode"""
@@ -1140,7 +1111,8 @@ class TaskData(AbstractTaskData):
         if item_name == "start":
             if prev_data is None:
                 return False
-            return prev_data.has_duration or prev_data.has_stop
+            # Enables task dependencies on milestones
+            return (prev_data.has_duration or prev_data.has_stop or (isinstance(prev_data, MilestoneData) and prev_data.has_start))
         return True
 
     def get_resource_ids(self):
@@ -1169,9 +1141,7 @@ class TaskData(AbstractTaskData):
         # for data in self.pdata.iterate_chart_data():
         #     data.update_project_choices()
         resource_list = [
-            resource
-            for resource_id, resource in self.pdata.all_resources.items()
-            if resource_id in self.__resids
+            resource for resource_id, resource in self.pdata.all_resources.items() if resource_id in self.__resids
         ]
         percent_done = 0 if self.percent_done.value is None else self.percent_done.value
         project_name = self.project.choices[self.project.value]
@@ -1183,7 +1153,7 @@ class TaskData(AbstractTaskData):
             percent_done=percent_done,
             resources=resource_list,
             color=self.color.value or DataItem.COLORS["cyan"],
-            project=project_name
+            project=project_name,
         )
         super().process_gantt()
 
@@ -1329,9 +1299,7 @@ class ProjectData(AbstractData):
         super().__init__(pdata, name, fullname)
 
         self.color = DataItem[str](self, "color", DTypes.COLOR, self.DEFAULT_COLOR)
-        self.show_description = DataItem[bool](
-            self, "show_description", DTypes.BOOLEAN, True
-        )
+        self.show_description = DataItem[bool](self, "show_description", DTypes.BOOLEAN, True)
 
         self.description = DataItem[str](self, "description", DTypes.LONG_TEXT, None)
 
@@ -1361,6 +1329,31 @@ class ProjectData(AbstractData):
             if task.project is not None and task.project.value == self.id.value:
                 tasks.append(task)
         return tasks
+
+    @property
+    def start(self):
+        """Return project start date"""
+        tasks_and_milestones = self.get_project_tasks()
+        if not tasks_and_milestones:
+            return None
+
+        tasks_start_dates = [task.start_calc.value for task in tasks_and_milestones if isinstance(task, TaskData) and task.start_calc.value is not None]
+        milestones_start_dates = [milestone.start.value for milestone in tasks_and_milestones if isinstance(milestone, MilestoneData) and milestone.start.value is not None]
+        start_dates = tasks_start_dates + milestones_start_dates
+        return min(start_dates) if start_dates else None
+
+    @property
+    def stop(self):
+        """Return project stop date"""
+        tasks_and_milestones = self.get_project_tasks()
+        if not tasks_and_milestones:
+            return None
+
+        tasks_stop_dates = [task.stop_calc.value for task in tasks_and_milestones if isinstance(task, TaskData) and task.stop_calc.value is not None]
+        # For milestones, start date is also stop date
+        milestones_stop_dates = [milestone.start.value for milestone in tasks_and_milestones if isinstance(milestone, MilestoneData) and milestone.start.value is not None]
+        stop_dates = tasks_stop_dates + milestones_stop_dates
+        return max(stop_dates) if stop_dates else None
 
 
 class PlanningData(AbstractData):
@@ -1485,7 +1478,7 @@ class PlanningData(AbstractData):
         return instance
 
     @classmethod
-    def merge_files(cls, fnames: list[str], keep_charts = False) -> tuple["PlanningData", list[str]]:
+    def merge_files(cls, fnames: list[str], keep_charts=False) -> tuple["PlanningData", list[str]]:
         """Merge multiple plannings files into one planning object"""
 
         CONFLICT_COLOR = DataItem.COLORS["_merge_warn"]
@@ -1518,14 +1511,16 @@ class PlanningData(AbstractData):
 
         plannings = [cls.from_filename(fname) for fname in fnames]
 
-        merge = PlanningData(__validate_value([p.name.value for p in plannings], _("Merged planning"), "Planning names are different"))
+        merge = PlanningData(
+            __validate_value([p.name.value for p in plannings], _("Merged planning"), "Planning names are different")
+        )
 
         if any([pln.version.value is None or pln.version.value > float(VERSION) for pln in plannings]):
             return None, [_("Some plannings are made with a newer PyPlanning version")]
 
         tu_width = 1.0
         tu_fraction = False
-        try: # We have to handle lack of these values, because inexistant on ver < 2.1
+        try:  # We have to handle lack of these values, because inexistant on ver < 2.1
             tu_width = max([p.tu_width.value for p in plannings])
             tu_fraction = any([p.tu_fraction.value for p in plannings])
         except Exception:
@@ -1617,7 +1612,7 @@ class PlanningData(AbstractData):
 
                 attrs = ["fullname", "color", "start"]
                 if isinstance(pln_tsk, TaskData):
-                    attrs.extend([ "percent_done", "duration", "stop"])
+                    attrs.extend(["percent_done", "duration", "stop"])
 
                 pln_tsk_prjname = "<Global>"
                 if pln_tsk.project.value is not None:
@@ -1627,14 +1622,16 @@ class PlanningData(AbstractData):
                 if pln_tsk_key in tsk_plns.keys() and tsk_plns[pln_tsk_key] == pln.filename:
 
                     suffix = 2
-                    while (
-                        f"{pln_tsk.name.value} ({suffix})-[{pln_tsk.project.value}]"
-                        in tsk_names
-                    ):
+                    while f"{pln_tsk.name.value} ({suffix})-[{pln_tsk.project.value}]" in tsk_names:
                         suffix += 1
 
                     if suffix == 2:
-                        warnings.append(_("Duplicate(s) of element '%s' in project '%s' in the same planning. They were kept and differentiated via suffixes." % (pln_tsk.name.value, pln_tsk_prjname)))
+                        warnings.append(
+                            _(
+                                "Duplicate(s) of element '%s' in project '%s' in the same planning. They were kept and differentiated via suffixes."
+                                % (pln_tsk.name.value, pln_tsk_prjname)
+                            )
+                        )
 
                     pln_tsk_key = f"{pln_tsk.name.value} ({suffix})-[{pln_tsk.project.value}]"
                     pln_tsk.name.value = pln_tsk.name.value + f" ({suffix})"
@@ -1683,7 +1680,9 @@ class PlanningData(AbstractData):
                     # Update project and resources
 
                     if pln_tsk.has_project:
-                        mrg_tsk.project.value = merge.get_project_from_name(pln.projects[pln_tsk.project.value].name.value).id.value
+                        mrg_tsk.project.value = merge.get_project_from_name(
+                            pln.projects[pln_tsk.project.value].name.value
+                        ).id.value
 
                     if isinstance(pln_tsk, TaskData) and not pln_tsk.no_resource:
 
@@ -1723,7 +1722,8 @@ class PlanningData(AbstractData):
                             else:
                                 warnings.append(
                                     _(
-                                        f"Task with %s depends on a none existing one with ID '%s''." % (pln_tsk.name.value, pln_dep_id)
+                                        f"Task with %s depends on a none existing one with ID '%s''."
+                                        % (pln_tsk.name.value, pln_dep_id)
                                     )
                                 )
 
@@ -1757,7 +1757,6 @@ class PlanningData(AbstractData):
                             else:
                                 mrg_chart.projects.value = [mrg_proj.default_id]
                 merge.add_chart(mrg_chart)
-
 
         return merge, warnings
 
@@ -1873,6 +1872,53 @@ class PlanningData(AbstractData):
                 tasks.append(task)
         return tasks
 
+    def get_tasks(self) -> list[TaskData]:
+        """Returns a list with all tasks from a schedule"""
+        all_tasks = []
+        for task in self.pdata.iterate_task_data():
+            if isinstance(task, TaskData):
+                all_tasks.append(task)
+        return all_tasks
+
+    def get_milestones(self) -> list[MilestoneData]:
+        """Returns a list with all milestones from a schedule"""
+        all_milestones = []
+        for milestone in self.pdata.iterate_task_data():
+            if isinstance(milestone, MilestoneData):
+                all_milestones.append(milestone)
+        return all_milestones
+
+    def get_projects(self) -> list[ProjectData]:
+        """Returns a list with all projects from a schedule"""
+        all_projects = []
+        for project in self.pdata.iterate_project_data():
+            if isinstance(project, ProjectData):
+                all_projects.append(project)
+        return all_projects
+
+    def get_project_for_item(self, task: TaskData | MilestoneData) -> Optional[ProjectData]:
+        """Return the project linked to a task or milestone, if any."""
+        if task.project.value is None:
+            return None
+
+        # Get project data from id and check its type before returning it
+        project_data = self.pdata.get_data_from_id(task.project.value)
+        if isinstance(project_data, ProjectData):
+            return project_data
+        return None
+
+    def get_task_resource(self, task: TaskData) -> Optional[ResourceData]:
+        """Return the resource assigned to a task, if any."""
+        resource_ids = task.get_resource_ids()
+        if not resource_ids:
+            return None
+
+        # Get resource data from id and check its type before returning it
+        resource_list = self.pdata.get_resources_from_ids([resource_ids[0]])
+        if resource_list:
+            return resource_list[0]
+        return None
+
     def iterate_chart_data(self) -> Generator[ChartData, None, None]:
         """Iterate over chart data dictionary items"""
         yield from self.chtlist
@@ -1886,7 +1932,8 @@ class PlanningData(AbstractData):
         yield from self.prjlist
 
     def iterate_task_data(
-        self, only=None,
+        self,
+        only=None,
     ) -> Generator[TaskData | MilestoneData, None, None]:
         """Iterate over task data dictionary items"""
         for data in self.tsklist:
@@ -1930,11 +1977,7 @@ class PlanningData(AbstractData):
     def get_resources_from_ids(self, resids) -> list[ResourceData]:
         """Return resource list from resource data id list"""
         if resids:
-            return [
-                resdata
-                for resdata in self.iterate_resource_data()
-                if resdata.id.value in resids
-            ]
+            return [resdata for resdata in self.iterate_resource_data() if resdata.id.value in resids]
         return []
 
     def get_resource_from_name(self, resname) -> Optional[ResourceData]:
@@ -1998,18 +2041,14 @@ class PlanningData(AbstractData):
         return new_id
 
     @staticmethod
-    def __append_or_insert(
-        dlist: list[AbstractDataT], index: Optional[int], data: AbstractDataT
-    ):
+    def __append_or_insert(dlist: list[AbstractDataT], index: Optional[int], data: AbstractDataT):
         """Append or insert data to list"""
         if index is None:
             dlist.append(data)
         else:
             dlist.insert(index + 1, data)
 
-    def add_resource(
-        self, data: ResourceData, after_data: Optional[AbstractData] = None
-    ):
+    def add_resource(self, data: ResourceData, after_data: Optional[AbstractData] = None):
         """Add resource to planning"""
         index = None
         if isinstance(after_data, TaskData):
@@ -2020,9 +2059,7 @@ class PlanningData(AbstractData):
             index = self.reslist.index(after_data)
         self.__append_or_insert(self.reslist, index, data)
 
-    def add_task(
-        self, data: AbstractTaskData, after_data: Optional[AbstractData] = None
-    ):
+    def add_task(self, data: AbstractTaskData, after_data: Optional[AbstractData] = None):
         """Add task/milestone to planning"""
         index = None
         task_number_index = None
@@ -2055,16 +2092,11 @@ class PlanningData(AbstractData):
 
     def task_choices(self, force=False) -> list[dict[str, str]]:
         if force or len(self._tsk_choices.keys()) != len(self.tsklist):
-            self._tsk_choices = {
-                str(data.task_number.value): str(data.name.value)
-                for data in self.iterate_task_data()
-            }
+            self._tsk_choices = {str(data.task_number.value): str(data.name.value) for data in self.iterate_task_data()}
         return self._tsk_choices
 
     def project_choices(self, force=False) -> list[dict[str | None, str]]:
-        if force or (len(self.projects.keys()) + 1) != len(
-            self._projects_choices.keys()
-        ):
+        if force or (len(self.projects.keys()) + 1) != len(self._projects_choices.keys()):
             self._projects_choices = {None: ""}
             for proj in self.prjlist:
                 if proj.id.value is not None:
@@ -2100,9 +2132,7 @@ class PlanningData(AbstractData):
             index = self.lvelist.index(after_data)
         self.__append_or_insert(self.lvelist, index, data)
 
-    def add_closing_day(
-        self, data: ClosingDayData, after_data: Optional[AbstractData] = None
-    ):
+    def add_closing_day(self, data: ClosingDayData, after_data: Optional[AbstractData] = None):
         """Add closing day to planning"""
         index = None
         if isinstance(after_data, ClosingDayData):

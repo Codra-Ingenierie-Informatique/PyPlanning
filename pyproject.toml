@@ -52,3 +52,6 @@ include = ["planning*"]
 
 [tool.setuptools.dynamic]
 version = { attr = "planning.__version__" }
+
+[tool.black]
+line-length = 120

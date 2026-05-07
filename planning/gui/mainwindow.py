@@ -13,6 +13,7 @@ planning.gui.mainwindow
 import os
 import os.path as osp
 import platform
+from typing import TYPE_CHECKING
 
 from guidata import __version__ as GUIDATA_VERSION_STR
 from guidata.configtools import get_icon
@@ -30,10 +31,16 @@ from planning.config import APP_DESC, APP_NAME, DEBUG, DEBUG_VAR_STR, Conf, _
 from planning.gantt import LOG
 from planning.gui.centralwidget import PlanningCentralWidget
 from planning.gui.closing_days_dialog import ClosingDaysDialog
+from planning.plugins import PluginRegistry, discover_plugins
+# from planning.plugins.tuleap.export import TuleapExport
 from planning.gui.logviewer import exec_logviewer_dialog
 from planning.model import PlanningData
 from planning.utils import qthelpers as qth
 from planning.utils.misc import go_to_error
+
+if TYPE_CHECKING:
+    from typing import Literal
+    from planning.plugins import PluginBase
 
 
 class PlanningMainWindow(QW.QMainWindow):
@@ -101,8 +108,14 @@ class PlanningMainWindow(QW.QMainWindow):
         self.tasks_menu = None
         self.projects_menu = None
         self.help_menu = None
+        # self.export_act = None
 
         self.closing_days_dialog = ClosingDaysDialog()
+
+        # self.export = TuleapExport(self.central_widget.planning)
+
+        self.__register_plugins()
+        self.__create_plugins_actions()
 
         self.create_actions()
         self.create_menus()
@@ -123,6 +136,7 @@ class PlanningMainWindow(QW.QMainWindow):
         if not ok:
             self.new_file()
             self.set_modified(False)
+
 
         self.__restore_pos_and_size()
 
@@ -175,6 +189,38 @@ class PlanningMainWindow(QW.QMainWindow):
             Conf.main.window_size.set((size.width(), size.height()))
             pos = self.pos()
             Conf.main.window_position.set((pos.x(), pos.y()))
+
+    def __register_plugins(self) -> None:
+        """Register plugins"""
+        with qth.try_or_log_error("Discovering plugins"):
+            # Discovering plugins
+            plugin_nb = len(discover_plugins())
+            # execenv.log(self, f"{plugin_nb} plugin(s) found")
+        for plugin_class in PluginRegistry.get_plugin_classes():
+            with qth.try_or_log_error(f"Instantiating plugin {plugin_class.__name__}"):
+                # Instantiating plugin
+                plugin: PluginBase = plugin_class()
+            with qth.try_or_log_error(f"Registering plugin {plugin.info.name}"):
+                # Registering plugin
+                plugin.register(self)
+
+    def __create_plugins_actions(self) -> None:
+        """Create plugins actions"""
+        for plugin in PluginRegistry.get_plugins():
+            with qth.try_or_log_error(f"Create actions for {plugin.info.name}"):
+                plugin.create_actions()
+
+    def __create_plugins_menus(self) -> None:
+        """Create plugins actions"""
+        for plugin in PluginRegistry.get_plugins():
+            with qth.try_or_log_error(f"Create actions for {plugin.info.name}"):
+                plugin.create_menus()
+
+    @staticmethod
+    def __unregister_plugins() -> None:
+        """Unregister plugins"""
+        with qth.try_or_log_error("Unregistering plugins"):
+            PluginRegistry.unregister_all_plugins()
 
     def sizeHint(self):  # pylint: disable=C0103
         """Reimplement QWidget method"""
@@ -325,6 +371,10 @@ Thanks for your patience."""
         add_actions(self.charts_menu, actions["charts"])
         self.projects_menu = self.menuBar().addMenu(_("&Projects"))
         add_actions(self.projects_menu, actions["projects"])
+
+        # Add plugin specific menus
+        self.__create_plugins_menus()
+
         self.menuBar().addSeparator()
         help_menu = self.menuBar().addMenu("?")
         logv_act = create_action(
@@ -370,6 +420,7 @@ Thanks for your patience."""
                 self.diropen_act,
                 None,
                 self.about_act,
+                # self.export_act
             ),
         )
         for toolbar in self.central_widget.get_toolbars():
@@ -433,6 +484,11 @@ Please check the file content."""
         else:
             self._last_basedir = osp.dirname(fname)
         return self._last_basedir
+
+    @property
+    def current_planning(self):
+        """Return the current planning data"""
+        return self.central_widget.planning
 
     @qth.qt_try_except()
     def open_file(self, fname=None):

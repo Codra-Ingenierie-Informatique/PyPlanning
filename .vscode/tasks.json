@@ -10,7 +10,11 @@
             "args": [
                 "/c",
                 "gettext.bat",
-                "rescan"
+                "scan",
+                "--name",
+                "planning",
+                "--directory",
+                "."
             ],
             "options": {
                 "cwd": "scripts",
@@ -41,6 +45,10 @@
                 "/c",
                 "gettext.bat",
                 "compile",
+                "--name",
+                "planning",
+                "--directory",
+                "."
             ],
             "options": {
                 "cwd": "scripts",

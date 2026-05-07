@@ -12,6 +12,7 @@ import os.path as osp
 import shutil
 import sys
 import traceback
+from collections.abc import Generator
 from contextlib import contextmanager
 
 import guidata
@@ -92,6 +93,24 @@ def qt_try_except():
         return method_wrapper
 
     return qt_try_except_decorator
+
+
+@contextmanager
+def try_or_log_error(context: str) -> Generator[None, None, None]:
+    """Try to execute a function and log an error message if it fails"""
+    try:
+        yield
+    except Exception:  # pylint: disable=broad-except
+        # if is_running_tests():
+        #     # If we are running tests, we want to raise the exception
+        #     raise
+
+        traceback.print_exc()
+        logger = logging.getLogger(__name__)
+        logger.error("Error in %s", context, exc_info=traceback.format_exc())
+        Conf.main.traceback_log_available.set(True)
+    finally:
+        pass
 
 
 def get_log_contents(fname: str) -> str | None:

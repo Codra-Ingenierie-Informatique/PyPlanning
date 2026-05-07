@@ -16,10 +16,11 @@ from guidata.widgets.codeeditor import CodeEditor
 from qtpy.QtCore import Qt, Signal
 from qtpy.QtWidgets import QSplitter, QStackedWidget, QTabWidget
 
-from planning.config import DEBUG, Conf
+from planning.config import DEBUG, Conf, _
 from planning.gui.svgviewer import SVGViewer
 from planning.gui.treewidgets import TreeWidgets
 from planning.model import PlanningData
+
 
 
 class PlanningEditor(QStackedWidget):
@@ -352,6 +353,16 @@ class PlanningCentralWidget(QSplitter):
         self.preview.clear_all_tabs()
         self.editor.load_object(planning)
         self.__adjust_sizes()
+
+    def refresh_planning(self, planning: Optional[PlanningData] = None):
+        """Refresh editors and previews from a planning object already in memory."""
+        if planning is None:
+            planning = self.planning
+        if planning is None:
+            return
+        self.editor.load_object(planning)
+        self.update_planning_charts(planning, force=True)
+        self.SIG_MODIFIED.emit()
 
     def save_file(self, path: str):
         """Save file"""
