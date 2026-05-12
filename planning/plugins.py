@@ -149,21 +149,10 @@ class PluginBase(abc.ABC, metaclass=PluginBaseMeta):
 
     def __init__(self):
         self.main: main.PlanningMainWindow = None
-        # self.proxy: LocalProxy = None
         self._is_registered = False
         self.info = self.PLUGIN_INFO
         if self.info is None:
             raise ValueError(f"Plugin info not set for {self.__class__.__name__}")
-
-    # @property
-    # def signalpanel(self) -> SignalPanel:
-    #     """Return signal panel"""
-    #     return self.main.signalpanel
-
-    # @property
-    # def imagepanel(self) -> ImagePanel:
-    #     """Return image panel"""
-    #     return self.main.imagepanel
 
     def show_warning(self, message: str):
         """Show warning message"""
@@ -193,60 +182,6 @@ class PluginBase(abc.ABC, metaclass=PluginBaseMeta):
             return False
         return None
 
-    # def edit_new_signal_parameters(
-    #     self,
-    #     title: str | None = None,
-    #     size: int | None = None,
-    # ) -> NewSignalParam:
-    #     """Create and edit new signal parameter dataset
-
-    #     Args:
-    #         title: title of the new signal
-    #         size: size of the new signal (default: None, get from current signal)
-
-    #     Returns:
-    #         New signal parameter dataset (or None if canceled)
-    #     """
-    #     newparam = self.signalpanel.get_newparam_from_current(title=title)
-    #     if size is not None:
-    #         newparam.size = size
-    #     if newparam.edit(self.main):
-    #         return newparam
-    #     return None
-
-    # def edit_new_image_parameters(
-    #     self,
-    #     title: str | None = None,
-    #     shape: tuple[int, int] | None = None,
-    #     hide_height: bool = False,
-    #     hide_width: bool = False,
-    #     hide_type: bool = True,
-    #     hide_dtype: bool = False,
-    # ) -> NewImageParam | None:
-    #     """Create and edit new image parameter dataset
-
-    #     Args:
-    #         title: title of the new image
-    #         shape: shape of the new image (default: None, get from current image)
-    #         hide_height: hide image heigth parameter (default: False)
-    #         hide_width: hide image width parameter (default: False)
-    #         hide_type: hide image type parameter (default: True)
-    #         hide_dtype: hide image data type parameter (default: False)
-
-    #     Returns:
-    #         New image parameter dataset (or None if canceled)
-    #     """
-    #     newparam = self.imagepanel.get_newparam_from_current(title=title)
-    #     if shape is not None:
-    #         newparam.height, newparam.width = shape
-    #     newparam.hide_height = hide_height
-    #     newparam.hide_width = hide_width
-    #     newparam.hide_type = hide_type
-    #     newparam.hide_dtype = hide_dtype
-    #     if newparam.edit(self.main):
-    #         return newparam
-    #     return None
-
     def is_registered(self):
         """Return True if plugin is registered"""
         return self._is_registered
@@ -258,7 +193,6 @@ class PluginBase(abc.ABC, metaclass=PluginBaseMeta):
         PluginRegistry.register_plugin(self)
         self._is_registered = True
         self.main = main
-        # self.proxy = LocalProxy(main)
         self.register_hooks()
 
     def unregister(self):
@@ -306,34 +240,6 @@ def discover_plugins() -> list[type[PluginBase]]:
             if name.startswith(f"{MOD_NAME}_")
         ]
     return []
-
-
-# def discover_v020_plugins() -> list[tuple[str, str]]:
-#     """Discover v0.20 plugins (with ``cdl_`` prefix) without importing them
-
-#     Returns:
-#         List of tuples (plugin_name, directory_path) for discovered v0.20 plugins
-#     """
-#     v020_plugins = []
-#     if Conf.main.plugins_enabled.get():
-#         for path in [
-#             Conf.main.plugins_path.get(),
-#             PLUGINS_DEFAULT_PATH,
-#         ] + OTHER_PLUGINS_PATHLIST:
-#             rpath = osp.realpath(path)
-#             if rpath not in sys.path:
-#                 sys.path.append(rpath)
-#         for finder, name, _ispkg in pkgutil.iter_modules():
-#             if name.startswith("cdl_"):
-#                 # Get the directory path from the module finder
-#                 if hasattr(finder, "path"):
-#                     directory_path = finder.path
-#                     v020_plugins.append((name, directory_path))
-#                 else:
-#                     # Fallback if path is not available
-#                     v020_plugins.append((name, ""))
-#     return v020_plugins
-
 
 def get_available_plugins() -> list[PluginBase]:
     """Instantiate and get available plugins

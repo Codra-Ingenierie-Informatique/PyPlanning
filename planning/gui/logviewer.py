@@ -5,8 +5,6 @@
 
 """
 Module providing log viewer widgets
-
-Based on PyPlanning's module planning/gui/logviewer.py
 """
 
 import os.path as osp

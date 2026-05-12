@@ -137,7 +137,6 @@ class Conf(conf.Configuration, metaclass=conf.ConfMeta):
     main = MainSection()
     tree = TreeSection()
     console = ConsoleSection()
-    # tuleap = TuleapSection()
 
 
 def get_old_log_fname(fname):
@@ -155,7 +154,6 @@ def initialize():
     Conf.console.console_enabled.get(True)
     Conf.console.external_editor_path.get("code")
     Conf.console.external_editor_args.get("-g {path}:{line_number}")
-    # Conf.tuleap.api_key.get()
 
 
 def reset():

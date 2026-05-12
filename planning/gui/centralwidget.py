@@ -354,16 +354,6 @@ class PlanningCentralWidget(QSplitter):
         self.editor.load_object(planning)
         self.__adjust_sizes()
 
-    def refresh_planning(self, planning: Optional[PlanningData] = None):
-        """Refresh editors and previews from a planning object already in memory."""
-        if planning is None:
-            planning = self.planning
-        if planning is None:
-            return
-        self.editor.load_object(planning)
-        self.update_planning_charts(planning, force=True)
-        self.SIG_MODIFIED.emit()
-
     def save_file(self, path: str):
         """Save file"""
         self.path = path

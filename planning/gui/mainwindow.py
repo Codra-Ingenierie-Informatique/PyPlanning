@@ -32,7 +32,6 @@ from planning.gantt import LOG
 from planning.gui.centralwidget import PlanningCentralWidget
 from planning.gui.closing_days_dialog import ClosingDaysDialog
 from planning.plugins import PluginRegistry, discover_plugins
-# from planning.plugins.tuleap.export import TuleapExport
 from planning.gui.logviewer import exec_logviewer_dialog
 from planning.model import PlanningData
 from planning.utils import qthelpers as qth
@@ -108,11 +107,8 @@ class PlanningMainWindow(QW.QMainWindow):
         self.tasks_menu = None
         self.projects_menu = None
         self.help_menu = None
-        # self.export_act = None
 
         self.closing_days_dialog = ClosingDaysDialog()
-
-        # self.export = TuleapExport(self.central_widget.planning)
 
         self.__register_plugins()
         self.__create_plugins_actions()
@@ -420,7 +416,6 @@ Thanks for your patience."""
                 self.diropen_act,
                 None,
                 self.about_act,
-                # self.export_act
             ),
         )
         for toolbar in self.central_widget.get_toolbars():

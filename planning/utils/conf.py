@@ -5,8 +5,6 @@
 
 """
 PyPlanning Configuration utilities
-
-Based on PyPlanning's module planning/utils/conf.py
 """
 
 import os
