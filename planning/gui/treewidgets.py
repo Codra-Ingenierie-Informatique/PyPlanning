@@ -1180,7 +1180,7 @@ class ProjectTaskTreeWidget(TaskTreeWidget):
         DTypes.MULTIPLE_CHOICE,
         DTypes.BOOLEAN,
         DTypes.TEXT,
-        DTypes.MULTIPLE_CHOICE,
+        DTypes.CHOICE,
     )
     COLUMNS_TO_RESIZE = (0, 1, 2, 3, 5, 7, 8, 9, 11)
     COLUMNS_TO_EDIT_ON_CLICK = (11, 12)
@@ -1197,7 +1197,7 @@ class ProjectTaskTreeWidget(TaskTreeWidget):
 
     def __init__(self, parent=None, debug=False):
         TaskTreeWidget.__init__(self, parent, debug)
-        self._task_resource_ditems: dict[str, DataItem[list[str]]] = {}
+        self._task_resource_ditems: dict[str, DataItem[str | None]] = {}
         self.SIG_PROJECT_DATA_CHANGED.connect(self._project_data_changed)
         self.SIG_TASK_RESOURCE_CHANGED.connect(self._task_resource_changed)
         self.FIELD_CHANGE_SIGNALS["color"] = self.SIG_PROJECT_DATA_CHANGED
@@ -1214,12 +1214,19 @@ class ProjectTaskTreeWidget(TaskTreeWidget):
 
         ditem = self._task_resource_ditems.get(task_id)
         if ditem is None:
-            ditem = DataItem[list[str]](data, "resource", DTypes.MULTIPLE_CHOICE, [], {})
+            ditem = DataItem[str | None](
+                data,
+                "resource",
+                DTypes.CHOICE,
+                None,
+                {},
+            )
             self._task_resource_ditems[task_id] = ditem
 
         if self.planning is not None:
             ditem.choices = self.planning.resource_choices(force=False)
-        ditem.value = list(data.get_resource_ids())
+        resource_ids = data.get_resource_ids()
+        ditem.value = resource_ids[0] if resource_ids else None
         return ditem
 
     def _update_choices_on_change(self, ditem: DataItem[str]):
@@ -1263,12 +1270,12 @@ class ProjectTaskTreeWidget(TaskTreeWidget):
         self._update_project_names()
         self.SIG_PROJECTS_CHANGED.emit(self)
 
-    def _task_resource_changed(self, ditem: DataItem[list[str]]):
+    def _task_resource_changed(self, ditem: DataItem[str | None]):
         """Task resource assignment has changed from the project view."""
         parent = ditem.parent
         if not isinstance(parent, TaskData):
             return
-        parent.set_resource_ids(ditem.value or [])
+        parent.set_resource_ids([ditem.value] if ditem.value else [])
         parent.update_resource_choice()
 
     def move(self, delta_index):
