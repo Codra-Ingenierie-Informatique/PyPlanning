@@ -798,10 +798,6 @@ class TaskTreeWidget(BaseTreeWidget):
         if self.planning is None:
             return
         self.planning.resource_choices(force=True)
-        for chart in self.planning.iterate_chart_data():
-            chart.update_resource_choices()
-        for task in self.planning.iterate_task_only():
-            task.update_resource_choice()
 
     def _update_choices_on_change(self, ditem: DataItem[str]):
         """Update choices on change"""
@@ -1203,6 +1199,38 @@ class ProjectTaskTreeWidget(TaskTreeWidget):
         self.FIELD_CHANGE_SIGNALS["color"] = self.SIG_PROJECT_DATA_CHANGED
         self.FIELD_CHANGE_SIGNALS["resource"] = self.SIG_TASK_RESOURCE_CHANGED
 
+    def setup_specific_actions(self):
+        """Setup context menu specific actions"""
+        self.new_project_action = create_action(
+            self,
+            _("New project"),
+            icon=get_icon("new_project.svg"),
+            triggered=self.new_project,
+        )
+        self.always_enabled_actions += [self.new_project_action]
+        return [self.new_project_action, None] + super().setup_specific_actions()
+
+    def selected_indexes_changed(self, sel_indexes, desel_indexes):
+        """Selected indexes have changed"""
+        super().selected_indexes_changed(sel_indexes, desel_indexes)
+        data = self.get_current_data() if self.planning is not None else None
+        is_task = isinstance(data, AbstractTaskData)
+        self.duplicate_task_action.setEnabled(is_task)
+
+    def new_project(self):
+        """New project item"""
+        if self.planning is not None:
+            project = ProjectData(self.planning, EMPTY_NAME)
+            current_data = self.get_current_data()
+            if not isinstance(current_data, ProjectData):
+                current_data = None
+            self.planning.add_project(project, current_data)
+            self._add_projectitem(project)
+            self.set_current_id(project.id.value)
+            self._update_project_names()
+            self.SIG_PROJECTS_CHANGED.emit(self)
+            self.repopulate()
+
     def setup(self, planning: PlanningData):
         """Setup widget and reset per-task UI proxy cache when planning changes."""
         if planning is not self.planning:
@@ -1282,7 +1310,6 @@ class ProjectTaskTreeWidget(TaskTreeWidget):
         if not isinstance(parent, TaskData):
             return
         parent.set_resource_ids([ditem.value] if ditem.value else [])
-        parent.update_resource_choice()
 
     def move(self, delta_index):
         """Move item and propagate project move if needed."""
@@ -1414,15 +1441,6 @@ class ChartTreeWidget(BaseTreeWidget):
             icon=get_icon("new_chart.svg"),
             triggered=self.new_chart,
         )
-        # self.toggle_tu_fraction_action = create_action(
-        #     self,
-        #     _("(not implemented) Show time fractions on chart"),
-        #     icon=get_icon("divide.svg"),
-        #     toggled=self.toggle_tu_fraction,
-        # )
-        # if self.planning:
-        #     self.toggle_tu_fraction_action.setChecked(self.planning.tu_fraction.value)
-
         self.always_enabled_actions += [
             self.new_chart_action,
             # self.toggle_tu_fraction_action,
@@ -1522,6 +1540,7 @@ class ResourceTreeWidget(BaseTreeWidget):
 
     def __init__(self, parent: Optional[QW.QWidget] = None, debug=False):
         self.new_resource_action: Optional[QW.QAction] = None  # type: ignore
+        self.new_leave_action: Optional[QW.QAction] = None
         BaseTreeWidget.__init__(self, parent, debug)
         self.FIELD_CHANGE_SIGNALS["name"] = self.SIG_RESOURCE_DATA_CHANGED
         self.FIELD_CHANGE_SIGNALS["color"] = self.SIG_RESOURCE_DATA_CHANGED
@@ -1548,21 +1567,44 @@ class ResourceTreeWidget(BaseTreeWidget):
             icon=get_icon("new_resource.svg"),
             triggered=self.new_resource,
         )
+        self.new_leave_action = create_action(
+            self,
+            _("New leave"),
+            icon=get_icon("new_leave.svg"),
+            triggered=self.new_leave,
+        )
         return [
             self.new_resource_action,
+            self.new_leave_action,
             self.remove_action,
         ] + super().setup_specific_actions()
 
-    # useful when it will be possible to select resources to link to tasks in the central panel
+    def selected_indexes_changed(self, sel_indexes, desel_indexes):
+        """Selected indexes have changed"""
+        super().selected_indexes_changed(sel_indexes, desel_indexes)
+        if self.planning is not None and self.new_leave_action is not None:
+            data = self.get_current_data()
+            self.new_leave_action.setVisible(isinstance(data, (ResourceData, LeaveData)))
+
+    def new_leave(self):
+        """New leave item"""
+        item = self.get_current_item()
+        if item is not None and self.planning is not None:
+            resnode = item if item.parent() is None else item.parent()
+            data = LeaveData(self.planning)
+            data.set_resource_id(self.get_id_from_item(resnode))
+            self.planning.add_leave(data, after_data=self.get_current_data())
+            self.__add_leaveitem(data)
+            self.set_current_id(data.id.value)
+            self.repopulate()
+            item_row = self.get_item_row_from_id(data.id.value)
+            self.edit(item_row[1].index())
+
     def _update_resource_names(self):
         """Update resource names"""
         if self.planning is None:
             return
         self.planning.resource_choices(force=True)
-        for chart in self.planning.iterate_chart_data():
-            chart.update_resource_choices()
-        for task in self.planning.iterate_task_only():
-            task.update_resource_choice()
 
     def new_resource(self):
         """New resource item"""
@@ -1577,13 +1619,30 @@ class ResourceTreeWidget(BaseTreeWidget):
             self.edit(self.currentIndex())
 
     def remove(self):
-        """Remove selected items"""
-        resource = self.get_current_data()
-        if self.planning is not None and resource is not None:
-            self.planning.reslist.remove(resource)
-            self._update_resource_names()
-            self.repopulate()
-            self.SIG_RESOURCES_CHANGED.emit(self)
+        """Remove selected item (resource or leave)."""
+        item = self.get_current_item()
+        if item is None or self.planning is None:
+            return
+
+        # Ensure undo has a pre-delete snapshot.
+        self.SIG_MODEL_CHANGED.emit()
+
+        data = self.get_current_data()
+        if isinstance(data, ResourceData):
+            resid = data.id.value
+            if resid is not None:
+                # Detach tasks from the resource being removed.
+                for task in self.planning.iterate_task_only():
+                    if task.is_assigned_to(resid):
+                        task.set_resource_ids(
+                            [rid for rid in task.get_resource_ids() if rid != resid]
+                        )
+
+        self.remove_item(item)
+        self.SIG_MODEL_CHANGED.emit()
+        self._update_resource_names()
+        self.repopulate()
+        self.SIG_RESOURCES_CHANGED.emit(self)
 
     def __add_resourceitem(self, data: ResourceData):
         """Add chart item to tree"""

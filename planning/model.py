@@ -833,12 +833,6 @@ class ChartData(AbstractDurationData):
             if project not in project_keys:
                 self.projects.value.remove(project)
 
-    # TODO: to be implemented once it becomes possible to assign a resource to a task in the central panel
-    def update_resource_choices(self, force=False):
-        """Update resource choices"""
-        pass
-
-
 class AbstractTaskData(AbstractDurationData):
     """Abstract Task data set"""
 
@@ -1003,11 +997,6 @@ class AbstractTaskData(AbstractDurationData):
 
         if self.project.value not in project_keys:
             self.project.value = None
-
-    def update_resource_choice(self, force=False):
-        """Update resource choices"""
-        pass
-
 
 class TaskModes(Enum):
     """This is the enum for task modes"""
@@ -2113,7 +2102,6 @@ class PlanningData(AbstractData):
             self._tsk_choices = {str(data.task_number.value): str(data.name.value) for data in self.iterate_task_data()}
         return self._tsk_choices
 
-    # TODO: to be implemented once it becomes possible to assign a resource to a task in the central panel
     def resource_choices(self, force=False) -> list[dict[str | None, str]]:
         """Return resource choices"""
         if force or len(self._res_choices.keys()) != len(self.reslist):
