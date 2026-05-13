@@ -1130,7 +1130,7 @@ class TaskData(AbstractTaskData):
 
     def set_resource_ids(self, resids):
         """Set associated resource data ids"""
-        self.__resids = resids
+        self.__resids = list(resids or [])
 
     def iterate_resource_ids(self):
         """Iterate over resource ids"""
@@ -2116,7 +2116,13 @@ class PlanningData(AbstractData):
     # TODO: to be implemented once it becomes possible to assign a resource to a task in the central panel
     def resource_choices(self, force=False) -> list[dict[str | None, str]]:
         """Return resource choices"""
-        pass
+        if force or len(self._res_choices.keys()) != len(self.reslist):
+            self._res_choices = {
+                str(data.id.value): str(data.name.value)
+                for data in self.iterate_resource_data()
+                if data.id.value is not None
+            }
+        return self._res_choices
 
     def project_choices(self, force=False) -> list[dict[str | None, str]]:
         if force or (len(self.projects.keys()) + 1) != len(self._projects_choices.keys()):

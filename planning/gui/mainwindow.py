@@ -10,6 +10,7 @@ planning.gui.mainwindow
 # pylint: disable=no-member
 # pylint: disable=invalid-name  # Allows short reference names like x, y, ...
 
+from enum import Enum
 import os
 import os.path as osp
 import platform
@@ -31,6 +32,7 @@ from planning.config import APP_DESC, APP_NAME, DEBUG, DEBUG_VAR_STR, Conf, _
 from planning.gantt import LOG
 from planning.gui.centralwidget import PlanningCentralWidget
 from planning.gui.closing_days_dialog import ClosingDaysDialog
+from planning.gui.treewidgets import ViewModes
 from planning.plugins import PluginRegistry, discover_plugins
 from planning.gui.logviewer import exec_logviewer_dialog
 from planning.model import PlanningData
@@ -120,9 +122,9 @@ class PlanningMainWindow(QW.QMainWindow):
         self.create_toolbars()
 
         # Connect signal to update bottom menus when switching between project and resource trees
-        self.central_widget.editor.trees.bottom_tree_switcher.SIG_VIEW_CHANGED.connect(self.update_bottom_menus)
+        self.central_widget.editor.trees.tree_switcher_coordinator.SIG_VIEW_CHANGED.connect(self._update_menus)
         # Update bottom menus visibility according to the initial bottom tree view mode
-        self.update_bottom_menus(self.central_widget.editor.trees.bottom_tree_switcher.current_mode())
+        self._update_menus(self.central_widget.editor.trees.tree_switcher_coordinator.view_mode)
 
         # This is necessary when the application is opened in xml mode
         if self.central_widget.editor.xml_mode:
@@ -143,14 +145,14 @@ class PlanningMainWindow(QW.QMainWindow):
 
         self.__restore_pos_and_size()
 
-    def update_bottom_menus(self, mode: str):
-        """Update bottom menus visibility according to the current bottom tree view mode"""
-        if mode == "projects":
+    def _update_menus(self, mode: Enum):
+        """Update menus visibility according to the current bottom tree view mode"""
+        if mode == ViewModes.PROJECTS:
             self.projects_menu.setEnabled(True)
         else:
             self.projects_menu.setEnabled(False)
 
-        if mode == "resources":
+        if mode == ViewModes.RESOURCES:
             self.resources_menu.setEnabled(True)
         else:
             self.resources_menu.setEnabled(False)

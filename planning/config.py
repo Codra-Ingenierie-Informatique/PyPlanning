@@ -104,7 +104,7 @@ class MainSection(conf.Section, metaclass=conf.SectionMeta):
     base_dir = conf.WorkingDirOption()
     recent_files = conf.RecentFilesOption()
     xml_mode = conf.Option()
-    bottom_view = conf.Option()
+    view_mode = conf.Option()
     plugins_enabled = conf.Option()
     plugins_path = conf.Option()
 

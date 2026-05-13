@@ -68,14 +68,14 @@ class PlanningEditor(QStackedWidget):
         return self.set_text_and_path(text, path)
 
     def get_menu_actions(self):
-        """Return menu actions"""
+        """Return menu actions."""
         return {
             "edit": self.trees.common_actions,
             "charts": self.trees.chart_tree.specific_actions,
             "tasks": self.trees.task_tree.specific_actions,
             "projects": self.trees.bottom_tree_switcher.project_tree.specific_actions,
             "resources": self.trees.bottom_tree_switcher.resource_tree.specific_actions,
-            "views": self.trees.bottom_tree_switcher.view_actions,
+            "views": self.trees.tree_switcher_coordinator.view_actions,
         }
 
     def clear_all(self):
