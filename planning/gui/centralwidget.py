@@ -347,6 +347,7 @@ class PlanningCentralWidget(QSplitter):
         self.editor.clear_all()
         self.preview.clear_all_tabs()
         self.editor.load_file(path)
+        self.update_planning_charts(force=True)
         self.__adjust_sizes()
 
     def load_object(self, planning: PlanningData):
@@ -354,6 +355,7 @@ class PlanningCentralWidget(QSplitter):
         self.editor.clear_all()
         self.preview.clear_all_tabs()
         self.editor.load_object(planning)
+        self.update_planning_charts(force=True)
         self.__adjust_sizes()
 
     def save_file(self, path: str):

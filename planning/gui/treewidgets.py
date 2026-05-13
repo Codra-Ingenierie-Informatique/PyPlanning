@@ -1203,6 +1203,12 @@ class ProjectTaskTreeWidget(TaskTreeWidget):
         self.FIELD_CHANGE_SIGNALS["color"] = self.SIG_PROJECT_DATA_CHANGED
         self.FIELD_CHANGE_SIGNALS["resource"] = self.SIG_TASK_RESOURCE_CHANGED
 
+    def setup(self, planning: PlanningData):
+        """Setup widget and reset per-task UI proxy cache when planning changes."""
+        if planning is not self.planning:
+            self._task_resource_ditems.clear()
+        super().setup(planning)
+
     def resolve_attr_value(self, data: AbstractData, attr: str):
         """Provide a UI-only proxy for task resources in project view."""
         if attr != "resource" or not isinstance(data, TaskData):
@@ -1958,7 +1964,7 @@ class TreeWidgets(QW.QSplitter):
             self._tree_sync_lock = False
 
 
-class TreeSwitcherCoordinator(QW.QWidget):
+class TreeSwitcherCoordinator(QW.QSplitter):
     """Widget to switch between TaskTreeWidget and ChartTreeWidget in the central and the bottom panels"""
 
     SIG_VIEW_MODE_REQUESTED = QC.Signal(ViewModes)
@@ -1968,6 +1974,9 @@ class TreeSwitcherCoordinator(QW.QWidget):
 
     def __init__(self, parent=None, debug=False):
         super().__init__(parent)
+        self.setOrientation(QC.Qt.Vertical)
+        self.setChildrenCollapsible(False)
+
         self._view_mode: Optional[ViewModes] = None
         self._cross_tree_sync_lock = False
 
@@ -1976,10 +1985,10 @@ class TreeSwitcherCoordinator(QW.QWidget):
         self.central_tree_switcher = CentralTreeSwitcher(self, debug=debug)
         self.bottom_tree_switcher = BottomTreeSwitcher(self, debug=debug)
 
-        layout = QW.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.central_tree_switcher)
-        layout.addWidget(self.bottom_tree_switcher)
+        self.addWidget(self.central_tree_switcher)
+        self.addWidget(self.bottom_tree_switcher)
+        self.setStretchFactor(0, 4)
+        self.setStretchFactor(1, 1)
 
         self._view_action_group = QG.QActionGroup(self)
         # Make actions checkable and exclusive so that only one can be selected at a time and they don't
@@ -2108,7 +2117,7 @@ class TreeSwitcherCoordinator(QW.QWidget):
         """Set global view mode"""
         view_modes = self.view_modes_available()
         mode = value if value in view_modes else ViewModes.PROJECTS
-        Conf.main.view_mode.set(mode)
+        Conf.main.view_mode.set(mode.value)
 
     def get_view_mode_from_conf(self, default: ViewModes = ViewModes.PROJECTS) -> ViewModes:
         """Read bottom view mode from configuration."""
