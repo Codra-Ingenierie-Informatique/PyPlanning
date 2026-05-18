@@ -133,14 +133,11 @@ class PlanningMainWindow(QW.QMainWindow):
             self.new_file()
             self.set_modified(False)
 
-
         self.__restore_pos_and_size()
 
     def check_for_previous_crash(self):  # pragma: no cover
         """Check for previous crash"""
-        if Conf.main.faulthandler_log_available.get(
-            False
-        ) or Conf.main.traceback_log_available.get(False):
+        if Conf.main.faulthandler_log_available.get(False) or Conf.main.traceback_log_available.get(False):
             txt = "<br>".join(
                 [
                     _("Log files were generated during last session."),
@@ -244,10 +241,8 @@ class PlanningMainWindow(QW.QMainWindow):
         QW.QMessageBox.critical(
             self,
             _("Error"),
-            _(
-                """This feature is not yet available.
-Thanks for your patience."""
-            ),
+            _("""This feature is not yet available.
+Thanks for your patience."""),
         )
 
     def update_title(self):
@@ -266,9 +261,7 @@ Thanks for your patience."""
         self.separator_act = create_action(self, "")
         self.separator_act.setSeparator(True)
 
-        self.xmlmode_act = create_action(
-            self, _("Advanced XML mode"), toggled=self.switch_xml_mode
-        )
+        self.xmlmode_act = create_action(self, _("Advanced XML mode"), toggled=self.switch_xml_mode)
         self.xmlmode_act.setChecked(Conf.main.xml_mode.get(False))
 
         self.new_act = create_action(
@@ -438,11 +431,8 @@ Thanks for your patience."""
                     QW.QMessageBox.warning(
                         self,
                         _("Warning"),
-                        _(
-                            """This file cannot be opened in %s mode.
-Please check the file content."""
-                        )
-                        % (_("XML") if state else _("Tree")),
+                        _("""This file cannot be opened in %s mode.
+Please check the file content.""") % (_("XML") if state else _("Tree")),
                     )
 
     def maybe_save(self, title):
@@ -485,15 +475,19 @@ Please check the file content."""
         """Return the current planning data"""
         return self.central_widget.planning
 
+    def update_current_planning(self, planning: PlanningData):
+        """Update the current planning data"""
+        self.central_widget.load_object(planning)
+        self.central_widget.planning = planning
+        self.set_modified(True)
+
     @qth.qt_try_except()
     def open_file(self, fname=None):
         """Open file"""
         if not self.maybe_save(_("Open file")):
             return False
         if fname is None:
-            fname, _selected_filter = getopenfilename(
-                self, _("Open"), self.basedir, "*" + self.EXTENSION
-            )
+            fname, _selected_filter = getopenfilename(self, _("Open"), self.basedir, "*" + self.EXTENSION)
             if not fname:
                 return False
         self.central_widget.load_file(fname)
@@ -515,12 +509,12 @@ Please check the file content."""
 
         if self.filename:
             QW.QMessageBox.warning(
-                    self,
-                    _("Warning"),
-                    _(
-                        "Merge operation will include the current planning, and replace it with the result. After the merge, you can replace the current file or save new planning in another file (via 'Save as...' command). Please save your work before proceeding."
-                    ),
-                )
+                self,
+                _("Warning"),
+                _(
+                    "Merge operation will include the current planning, and replace it with the result. After the merge, you can replace the current file or save new planning in another file (via 'Save as...' command). Please save your work before proceeding."
+                ),
+            )
             if not self.maybe_save(_("Merge files")):
                 return
             file_paths.append(self.filename)
@@ -536,9 +530,7 @@ Please check the file content."""
             QW.QMessageBox.warning(
                 self,
                 _("Merge error"),
-                _("The merge wasn't successful.")
-                + "\n"
-                + "\n\n".join(warnings),
+                _("The merge wasn't successful.") + "\n" + "\n\n".join(warnings),
             )
         else:
             if len(warnings) > 0:
@@ -578,9 +570,7 @@ Please check the file content."""
                 QW.QMessageBox.warning(
                     self,
                     _("Warning"),
-                    _(
-                        "To edit closing days via the user interface, please exit XML advanced mode first."
-                    ),
+                    _("To edit closing days via the user interface, please exit XML advanced mode first."),
                 )
                 return
             result = self.closing_days_dialog.exec_(self.central_widget.planning)
@@ -615,9 +605,7 @@ Please check the file content."""
         fname = self.filename
         if fname is None:
             fname = osp.join(self.basedir, self.DEFAULT_NAME)
-        fname, _selected_filter = getsavefilename(
-            self, _("Save as"), fname, filters="*" + self.EXTENSION
-        )
+        fname, _selected_filter = getsavefilename(self, _("Save as"), fname, filters="*" + self.EXTENSION)
         if not fname:
             return False
         return self.__save(fname)
