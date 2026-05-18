@@ -32,6 +32,7 @@ from typing import TYPE_CHECKING
 from qtpy import QtWidgets as QW
 
 from planning.config import MOD_NAME, OTHER_PLUGINS_PATHLIST, Conf, _
+from planning.model import PlanningData
 
 if TYPE_CHECKING:
     from planning.gui import mainwindow as main
@@ -154,6 +155,11 @@ class PluginBase(abc.ABC, metaclass=PluginBaseMeta):
         if self.info is None:
             raise ValueError(f"Plugin info not set for {self.__class__.__name__}")
 
+    def update_planning(self, planning_data: PlanningData):
+        """Update planning data in the main window"""
+        if self.main is not None:
+            self.main.update_current_planning(planning_data)
+
     def show_warning(self, message: str):
         """Show warning message"""
         QW.QMessageBox.warning(self.main, _("Warning"), message)
@@ -166,9 +172,7 @@ class PluginBase(abc.ABC, metaclass=PluginBaseMeta):
         """Show info message"""
         QW.QMessageBox.information(self.main, _("Information"), message)
 
-    def ask_yesno(
-        self, message: str, title: str | None = None, cancelable: bool = False
-    ) -> bool:
+    def ask_yesno(self, message: str, title: str | None = None, cancelable: bool = False) -> bool:
         """Ask yes/no question"""
         if title is None:
             title = _("Question")
@@ -240,6 +244,7 @@ def discover_plugins() -> list[type[PluginBase]]:
             if name.startswith(f"{MOD_NAME}_")
         ]
     return []
+
 
 def get_available_plugins() -> list[PluginBase]:
     """Instantiate and get available plugins
