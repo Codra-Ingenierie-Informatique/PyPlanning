@@ -516,6 +516,12 @@ Please check the file content.""") % (_("XML") if state else _("Tree")),
         """Return the current planning data"""
         return self.central_widget.planning
 
+    def update_current_planning(self, planning: PlanningData):
+        """Update the current planning data"""
+        self.central_widget.load_object(planning)
+        self.central_widget.planning = planning
+        self.set_modified(True)
+
     @qth.qt_try_except()
     def open_file(self, fname=None):
         """Open file"""
