@@ -619,8 +619,9 @@ class BaseTreeWidget(QW.QTreeView):
                         item.setBackground(qcolor)
             else:
                 item = QG.QStandardItem(text)
-                if isinstance(ditem, DataItem):
-                    self.item_data[id(item)] = ditem
+                # Always adding the item even if it's a None value
+                self.item_data[id(item)] = ditem
+
                 if column == 0 and group:
                     font = item.font()
                     font.setBold(True)
@@ -649,6 +650,7 @@ class BaseTreeWidget(QW.QTreeView):
                         item.setBackground(QG.QBrush(QG.QColor(color)))
                     self.update_item_icon(item, ditem)
                 items.append(item)
+
         if not update:
             self.item_rows[data.id.value] = items
             if parent is None:
@@ -1515,7 +1517,7 @@ class ChartTreeWidget(BaseTreeWidget):
         for data in self.planning.iterate_chart_data():
             if data.name.value == new_name:
                 return False
-        validation_regex = re.compile(r"^[a-zA-Z0-9_-.]+$")
+        validation_regex = re.compile(r"^[a-zA-Z0-9_\-.]+$")
         return bool(validation_regex.match(new_name))
 
     def populate_tree(self):
@@ -2030,6 +2032,10 @@ class TreeWidgets(QW.QSplitter):
                 tree.setup(planning)
         finally:
             self._tree_sync_lock = False
+
+        # Signal that the model changed since the signal was blocked
+        # by the tree_sync_log flag
+        self.tree_model_changed()
 
         # Ensure chart-dependent views are initialized immediately after loading.
         chart_model = self.chart_tree.model()
