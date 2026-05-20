@@ -4,7 +4,7 @@
 block_cipher = None
 
 from PyInstaller.utils.hooks import collect_submodules, collect_data_files
-all_hidden_imports = collect_submodules('planning')
+all_hidden_imports = collect_submodules('planning') + collect_submodules('http')
 datas = collect_data_files('planning') + collect_data_files('guidata')
 
 a = Analysis(['planning\\app.py'],

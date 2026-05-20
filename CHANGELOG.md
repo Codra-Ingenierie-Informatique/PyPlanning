@@ -1,5 +1,35 @@
 # PyPlanning Releases #
 
+## Version 2.3.0 ##
+
+💥 New features:
+
+* Added a plugin mechanism to extend PyPlanning
+  * Plugins can be installed in the `.PyPlanning/plugins` subfolder in the user folder
+  * Plugins can add custom menus and actions to the main window
+  * Plugins can update the current planning data
+  * Plugin discovery done by naming convention (`planning_*` modules)
+* New "Project view" allowing editing planning by project instead of resources
+  * This view is backward compatible with older plannings
+  * Possibility of switching from the "Project view" to the "Resources view" and vice versa
+  * Resource assignment via dropdown directly from the project view
+  * Support for creating tasks and milestones under projects
+* New "View" and "Resources" menu in the main window
+* Task dependencies on milestones are now supported
+
+🛠️ Bug fixes:
+
+* Fix possible freeze/crash when loading a planning (version comparison issue: string vs float)
+* Fix multiple null pointer errors in tree widgets (item selection, editing, moving, removing)
+* Fix chart name validation regex (improperly escaped hyphen in character class)
+
+♻ PyPlanning internal changes:
+
+* Renamed `iterate_task_data(only=...)` to `iterate_all_task_data(only=...)` in `PlanningData`
+* Updated translation tooling to use `guidata.utils.translations`
+* Bumped `CONF_VERSION` from `1.0.0` to `1.1.0`
+* Updated French translations
+
 ## Version 2.2.2 ##
 
 💥 New features:

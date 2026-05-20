@@ -6,9 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-03-31 11:37+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
 "Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -77,6 +75,10 @@ msgstr ""
 msgid "Advanced XML mode"
 msgstr "Mode avancé XML"
 
+#, fuzzy
+msgid "Switch view mode"
+msgstr "Changement de mode"
+
 msgid "&New"
 msgstr "&Nouveau"
 
@@ -113,6 +115,9 @@ msgstr "Ouvrir un fichier récent"
 msgid "&Edit"
 msgstr "&Edition"
 
+msgid "&View"
+msgstr "&Affichage"
+
 msgid "&Tasks"
 msgstr "&Tâche"
 
@@ -121,6 +126,9 @@ msgstr "&Diagramme"
 
 msgid "&Projects"
 msgstr "&Projets"
+
+msgid "&Resources"
+msgstr "&Ressources"
 
 msgid "Show log files..."
 msgstr "Afficher les journaux de bords..."
@@ -227,8 +235,27 @@ msgstr "Descendre"
 msgid "Update tree"
 msgstr "Mettre à jour l'arbre"
 
-msgid "Task tree"
-msgstr "Arbre des tâches"
+msgid "New task"
+msgstr "Nouvelle tâche"
+
+msgid "Duplicate task"
+msgstr "Dupliquer la tâche"
+
+msgid "New milestone"
+msgstr "Nouveau jalon"
+
+msgid "Duration mode"
+msgstr "Tâche en mode durée"
+
+msgid "Remove independant start date"
+msgstr "Supprimer la date de début indépendante"
+
+msgid "Add independant start date"
+msgstr "Ajouter une date de début indépendante"
+
+#, fuzzy
+msgid "Resource task tree"
+msgstr "Arbres des tâches par ressource"
 
 msgid "Name"
 msgstr "Nom"
@@ -260,26 +287,23 @@ msgstr "Prédécesseurs"
 msgid "New resource"
 msgstr "Nouvelle ressource"
 
-msgid "New task"
-msgstr "Nouvelle tâche"
-
-msgid "Duplicate task"
-msgstr "Dupliquer la tâche"
-
-msgid "New milestone"
-msgstr "Nouveau jalon"
-
 msgid "New leave"
 msgstr "Nouvelle absence"
 
-msgid "Duration mode"
-msgstr "Tâche en mode durée"
+msgid "Project task tree"
+msgstr "Arbres des tâches par projets"
 
-msgid "Remove independant start date"
-msgstr "Supprimer la date de début indépendante"
+msgid "Show description"
+msgstr "Afficher la description"
 
-msgid "Add independant start date"
-msgstr "Ajouter une date de début indépendante"
+msgid "Description"
+msgstr "Description"
+
+msgid "Resource"
+msgstr "Ressource"
+
+msgid "New project"
+msgstr "Nouveau projet"
 
 msgid "Chart tree"
 msgstr "Arbre des graphes"
@@ -305,17 +329,11 @@ msgstr "Mettre à jour à la date d'aujourd'hui"
 msgid "New chart"
 msgstr "Nouveau graphe"
 
+msgid "Resource tree"
+msgstr "Arbres des ressources"
+
 msgid "Project tree"
 msgstr "Arbres des projets"
-
-msgid "Show description"
-msgstr "Afficher la description"
-
-msgid "Description"
-msgstr "Description"
-
-msgid "New project"
-msgstr "Nouveau projet"
 
 msgid "General"
 msgstr "Général"
@@ -428,4 +446,3 @@ msgstr "fonction"
 
 msgid "Error message:"
 msgstr "Message d'erreur :"
-

@@ -7,6 +7,7 @@ black
 pycodestyle
 pyinstaller<=5.13.2
 python-dateutil
+setuptools<78
 svgwrite
 twine
 build

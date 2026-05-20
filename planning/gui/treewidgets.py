@@ -704,7 +704,11 @@ class BaseTreeWidget(QW.QTreeView):
 
 
 class TaskTreeWidget(BaseTreeWidget):
-    """"""
+    """
+    Base widget for creating task trees, used for both task by project and task by resource views.
+    It defines the common behaviour of these trees, such as the context menu actions,
+    the signals emitted when task data is changed, and the validators for task data fields.
+    """
 
     FIELD_CHANGE_SIGNALS = {}
 
@@ -871,7 +875,7 @@ class TaskTreeWidget(BaseTreeWidget):
 class ResourceTaskTreeWidget(TaskTreeWidget):
     """Tasks Browser Tree Widget, corresponds to the widget that displays resources along with their tasks and milestones in the central panel when ‘resource view’ mode is enabled"""
 
-    TITLE = _("Task tree")
+    TITLE = _("Resource task tree")
     NAMES = (
         _("Name"),
         _("Calculated start"),
