@@ -781,12 +781,6 @@ class TaskTreeWidget(BaseTreeWidget):
         if isinstance(ditem.parent, AbstractTaskData):
             ditem.parent.update_depends_on_from_task_number()
 
-    def _update_resource_names(self):
-        """Update resource names and dependent choices."""
-        if self.planning is None:
-            return
-        self.planning.resource_choices(force=True)
-
     def _update_choices_on_change(self, ditem: DataItem[str]):
         """Update choices on change"""
         parent = ditem.parent
@@ -794,9 +788,6 @@ class TaskTreeWidget(BaseTreeWidget):
             self.planning.task_choices(True)
             for data in self.planning.iterate_all_task_data():
                 data.update_task_choices()
-        elif isinstance(parent, ResourceData):
-            self._update_resource_names()
-            self.SIG_RESOURCES_CHANGED.emit(self)
 
     def enable_duration_mode(self, state):
         """Enable duration mode for current task (if current is a task)"""
@@ -864,17 +855,14 @@ class TaskTreeWidget(BaseTreeWidget):
 
     def new_milestone(self):
         """New milestone item"""
-        item = self.get_current_item()
-        if item is not None:
-            data = MilestoneData(self.planning, EMPTY_NAME)
-            self.planning.add_task(data, after_data=self.get_current_data())
-            self._add_taskitem(data)
-            self.set_current_id(data.id.value)
-            self.repopulate()
-            self.edit(self.currentIndex())
+        raise NotImplementedError
 
     def new_task(self):
         """New task item"""
+        raise NotImplementedError
+
+    def _add_taskitem(self, data: AbstractTaskData):
+        """Add task item to tree"""
         raise NotImplementedError
 
 
@@ -937,14 +925,6 @@ class ResourceTaskTreeWidget(TaskTreeWidget):
         self.SIG_RESOURCE_DATA_CHANGED.connect(self._resource_data_changed)
         self.FIELD_CHANGE_SIGNALS["color"] = self.SIG_RESOURCE_DATA_CHANGED
 
-    def move(self, delta_index):
-        """Move item and propagate resource move if needed."""
-        moved_data = self.get_current_data()
-        super().move(delta_index)
-        if isinstance(moved_data, ResourceData):
-            self._update_resource_names()
-            self.SIG_RESOURCES_CHANGED.emit(self)
-
     def setup_specific_actions(self):
         """Setup context menu specific actions"""
         self.new_resource_action = create_action(
@@ -985,7 +965,7 @@ class ResourceTaskTreeWidget(TaskTreeWidget):
         """New resource item"""
         data = ResourceData(self.planning, EMPTY_NAME)
         self.planning.add_resource(data, after_data=self.get_current_data())
-        self.__add_resourceitem(data)
+        self._add_resourceitem(data)
         self.set_current_id(data.id.value)
         self._update_resource_names()
         self.SIG_RESOURCES_CHANGED.emit(self)
@@ -1033,6 +1013,17 @@ class ResourceTaskTreeWidget(TaskTreeWidget):
         self.repopulate()
         self.edit(self.currentIndex())
 
+    def new_milestone(self):
+        """New milestone item"""
+        item = self.get_current_item()
+        if item is not None:
+            data = MilestoneData(self.planning, EMPTY_NAME)
+            self.planning.add_task(data, after_data=self.get_current_data())
+            self._add_taskitem(data)
+            self.set_current_id(data.id.value)
+            self.repopulate()
+            self.edit(self.currentIndex())
+
     def new_leave(self):
         """New leave item"""
         item = self.get_current_item()
@@ -1041,15 +1032,20 @@ class ResourceTaskTreeWidget(TaskTreeWidget):
             data = LeaveData(self.planning)
             data.set_resource_id(self.get_id_from_item(resnode))
             self.planning.add_leave(data, after_data=self.get_current_data())
-            self.__add_leaveitem(data)
+            self._add_leaveitem(data)
             self.set_current_id(data.id.value)
             self.repopulate()
             item_row = self.get_item_row_from_id(data.id.value)
             self.edit(item_row[1].index())
 
-    def __add_resourceitem(self, data: ResourceData):
+    def _add_resourceitem(self, data: ResourceData):
         """Add resource item to tree"""
         self.add_or_update_item_row(data, group=True)
+
+    def _add_leaveitem(self, data: LeaveData):
+        """Add leave item to tree"""
+        parent_row = self.get_item_row_from_id(data.get_resource_id())[0]
+        self.add_or_update_item_row(data, parent_row)
 
     def _add_taskitem(self, data: AbstractTaskData):
         """Add task/milestone item to tree"""
@@ -1062,10 +1058,11 @@ class ResourceTaskTreeWidget(TaskTreeWidget):
             if data.no_resource:
                 self.add_or_update_item_row(data)
 
-    def __add_leaveitem(self, data: LeaveData):
-        """Add leave item to tree"""
-        parent_row = self.get_item_row_from_id(data.get_resource_id())[0]
-        self.add_or_update_item_row(data, parent_row)
+    def _update_resource_names(self):
+        """Update resource names and dependent choices."""
+        if self.planning is None:
+            return
+        self.planning.resource_choices(force=True)
 
     def _resource_data_changed(self, ditem: DataItem):
         """Resource data has changed"""
@@ -1073,20 +1070,20 @@ class ResourceTaskTreeWidget(TaskTreeWidget):
             self._update_resource_names()
             self.SIG_RESOURCES_CHANGED.emit(self)
 
-    def populate_tree(self):
-        """Populate tree"""
-        self.SIG_MODEL_CHANGED.emit()
-        if self.planning is None:
-            return
-        # add resources
-        for data in self.planning.iterate_resource_data():
-            self.__add_resourceitem(data)
-        # add tasks
-        for data in self.planning.iterate_all_task_data():
-            self._add_taskitem(data)
-        # add vacations
-        for data in self.planning.iterate_leave_data():
-            self.__add_leaveitem(data)
+    def _update_choices_on_change(self, ditem: DataItem[str]):
+        """Update choices on change"""
+        super()._update_choices_on_change(ditem)
+        if isinstance(ditem.parent, ResourceData):
+            self._update_resource_names()
+            self.SIG_RESOURCES_CHANGED.emit(self)
+
+    def move(self, delta_index):
+        """Move item and propagate resource move if needed."""
+        moved_data = self.get_current_data()
+        super().move(delta_index)
+        if isinstance(moved_data, ResourceData):
+            self._update_resource_names()
+            self.SIG_RESOURCES_CHANGED.emit(self)
 
     def remove_item(self, item):
         """Remove item"""
@@ -1109,6 +1106,21 @@ class ResourceTaskTreeWidget(TaskTreeWidget):
         if is_resource:
             self._update_resource_names()
             self.SIG_RESOURCES_CHANGED.emit(self)
+
+    def populate_tree(self):
+        """Populate tree"""
+        self.SIG_MODEL_CHANGED.emit()
+        if self.planning is None:
+            return
+        # add resources
+        for data in self.planning.iterate_resource_data():
+            self._add_resourceitem(data)
+        # add tasks
+        for data in self.planning.iterate_all_task_data():
+            self._add_taskitem(data)
+        # add vacations
+        for data in self.planning.iterate_leave_data():
+            self._add_leaveitem(data)
 
 
 class ProjectTaskTreeWidget(TaskTreeWidget):
@@ -1162,24 +1174,29 @@ class ProjectTaskTreeWidget(TaskTreeWidget):
     )
     COLUMNS_TO_RESIZE = (0, 1, 2, 3, 5, 7, 8, 9, 11)
     COLUMNS_TO_EDIT_ON_CLICK = (11, 12)
-    FIELD_CHANGE_SIGNALS = {}
 
-    SIG_UPDATE_IDS_ON_CHANGE = QC.Signal(DataItem)
-    SIG_TASK_NAME_CHANGED = QC.Signal(DataItem)
-
-    # This signal is emitted when a resource data item has changed. It can be used to update
+    # This signal is emitted when a project data item has changed. It can be used to update
     SIG_PROJECT_DATA_CHANGED = QC.Signal(DataItem)
     # This signal is emitted when project data has changed and dependent choices need to be updated.
     SIG_PROJECTS_CHANGED = QC.Signal(object)
+    # This signal is emitted when a task's resource has changed.
     SIG_TASK_RESOURCE_CHANGED = QC.Signal(DataItem)
 
     def __init__(self, parent=None, debug=False):
+        self.new_project_action = None
         TaskTreeWidget.__init__(self, parent, debug)
+
         self._task_resource_ditems: dict[str, DataItem[str | None]] = {}
         self.SIG_PROJECT_DATA_CHANGED.connect(self._project_data_changed)
         self.SIG_TASK_RESOURCE_CHANGED.connect(self._task_resource_changed)
         self.FIELD_CHANGE_SIGNALS["color"] = self.SIG_PROJECT_DATA_CHANGED
         self.FIELD_CHANGE_SIGNALS["resource"] = self.SIG_TASK_RESOURCE_CHANGED
+
+    def setup(self, planning: PlanningData):
+        """Setup widget and reset per-task UI proxy cache when planning changes."""
+        if planning is not self.planning:
+            self._task_resource_ditems.clear()
+        super().setup(planning)
 
     def setup_specific_actions(self):
         """Setup context menu specific actions"""
@@ -1213,11 +1230,58 @@ class ProjectTaskTreeWidget(TaskTreeWidget):
             self.SIG_PROJECTS_CHANGED.emit(self)
             self.repopulate()
 
-    def setup(self, planning: PlanningData):
-        """Setup widget and reset per-task UI proxy cache when planning changes."""
-        if planning is not self.planning:
-            self._task_resource_ditems.clear()
-        super().setup(planning)
+    def new_task(self):
+        """New task item"""
+        data = TaskData(self.planning, EMPTY_NAME)
+        data.start.value = datetime.date.today()
+        data.duration.value = 1
+        current_data = self.get_current_data()
+        if self.planning is None:
+            return
+
+        if isinstance(current_data, ProjectData):
+            data.project.value = current_data.id.value
+        elif isinstance(current_data, AbstractTaskData):
+            data.project.value = current_data.project.value
+            data.depends_on.value = [current_data.id.value]
+            data.start.value = (
+                current_data.stop_calc.value
+                if isinstance(current_data, TaskData)
+                else current_data.stop.value
+            ) or datetime.date.today()
+            data.duration.value = 1
+
+        self.planning.add_task(data, after_data=current_data)
+        self._add_taskitem(data)
+        self.set_current_id(data.id.value)
+        self.repopulate()
+        self.edit(self.currentIndex())
+
+    def new_milestone(self):
+        """New milestone item"""
+        data = MilestoneData(self.planning, EMPTY_NAME)
+        data.start.value = datetime.date.today()
+        current_data = self.get_current_data()
+
+        if self.planning is None:
+            return
+
+        if isinstance(current_data, ProjectData):
+            data.project.value = current_data.id.value
+        elif isinstance(current_data, AbstractTaskData):
+            data.project.value = current_data.project.value
+            data.depends_on.value = [current_data.id.value]
+            data.start.value = (
+                current_data.stop_calc.value
+                if isinstance(current_data, TaskData)
+                else current_data.stop.value
+            ) or datetime.date.today()
+
+        self.planning.add_task(data, after_data=current_data)
+        self._add_taskitem(data)
+        self.set_current_id(data.id.value)
+        self.repopulate()
+        self.edit(self.currentIndex())
 
     def resolve_attr_value(self, data: AbstractData, attr: str):
         """Provide a UI-only proxy for task resources in project view."""
@@ -1267,16 +1331,17 @@ class ProjectTaskTreeWidget(TaskTreeWidget):
         self.add_or_update_item_row(data)
 
     def _add_taskitem(self, data: AbstractTaskData):
-        """Add task item as child of its project, or at root if no project"""
-        if isinstance(data, MilestoneData):
-            self.add_or_update_item_row(data)
-            return
+        """Add task or milestone item as child of its project, or at root if no project"""
+        # Get the project id and try to find the corresponding item in the tree to add the task as its child
         project_id = data.project.value if data.project else None
         if project_id:
             parent_row = self.get_item_row_from_id(project_id)
             if parent_row is not None:
                 self.add_or_update_item_row(data, parent_row[0])
                 return
+
+        # If the project is not found (which can happen if the project is filtered out),
+        # add the task at root level
         self.add_or_update_item_row(data)
 
     def _project_data_changed(self, ditem: DataItem):
@@ -1309,33 +1374,6 @@ class ProjectTaskTreeWidget(TaskTreeWidget):
         if is_project:
             self._update_project_names()
             self.SIG_PROJECTS_CHANGED.emit(self)
-
-    def new_task(self):
-        """New task item"""
-        data = TaskData(self.planning, EMPTY_NAME)
-        data.start.value = datetime.date.today()
-        data.duration.value = 1
-        current_data = self.get_current_data()
-        if self.planning is None:
-            return
-
-        if isinstance(current_data, ProjectData):
-            data.project.value = current_data.id.value
-        elif isinstance(current_data, AbstractTaskData):
-            data.project.value = current_data.project.value
-            data.depends_on.value = [current_data.id.value]
-            data.start.value = (
-                current_data.stop_calc.value
-                if isinstance(current_data, TaskData)
-                else current_data.stop.value
-            ) or datetime.date.today()
-            data.duration.value = 1
-
-        self.planning.add_task(data, after_data=current_data)
-        self._add_taskitem(data)
-        self.set_current_id(data.id.value)
-        self.repopulate()
-        self.edit(self.currentIndex())
 
     def populate_tree(self):
         """Populate tree"""
@@ -1490,35 +1528,42 @@ class ChartTreeWidget(BaseTreeWidget):
 
 
 class ResourceTreeWidget(BaseTreeWidget):
-    """Resource Tree Widget, corresponds to the widget that displays resources and leave in the bottom panel when 'view by projects' mode is enabled"""
+    """
+    Resource Tree Widget, corresponds to the widget that displays resources
+    and leave in the bottom panel when 'view by projects' mode is enabled
+    """
 
     TITLE = _("Resource tree")
     NAMES = (
         _("Name"),
-        _("Color"),
         _("Start"),
         _("End"),
+        _("Color"),
+        _("Description"),
     )
     ATTRS = (
         "name",
-        "color",
         "start",
         "stop",
+        "color",
+        "description",
     )
-    COLUMNS_TO_RESIZE = (0, 1, 2, 3)
+    COLUMNS_TO_RESIZE = (0, 1, 2, 3, 4)
 
     TYPES = (
         DTypes.TEXT,
+        DTypes.DATE,
+        DTypes.DATE,
         DTypes.COLOR,
-        DTypes.DATE,
-        DTypes.DATE,
+        DTypes.TEXT,
     )
 
     FIELD_CHANGE_SIGNALS = {}
 
     # This signal is emitted when a resource data item has changed. It can be used to update
     SIG_RESOURCE_DATA_CHANGED = QC.Signal(DataItem)
-    # This signal is emitted when a resource data item has changed and the resource names and choices need to be updated. It is used to synchronise the panels.
+    # This signal is emitted when a resource data item has changed
+    # and the resource names and choices need to be updated. It is used to synchronise the panels.
     SIG_RESOURCES_CHANGED = QC.Signal(object)
 
     def __init__(self, parent: Optional[QW.QWidget] = None, debug=False):
@@ -1527,20 +1572,14 @@ class ResourceTreeWidget(BaseTreeWidget):
         BaseTreeWidget.__init__(self, parent, debug)
         self.FIELD_CHANGE_SIGNALS["name"] = self.SIG_RESOURCE_DATA_CHANGED
         self.FIELD_CHANGE_SIGNALS["color"] = self.SIG_RESOURCE_DATA_CHANGED
-        self.SIG_RESOURCE_DATA_CHANGED.connect(self._resource_edited)
+        self.SIG_RESOURCE_DATA_CHANGED.connect(self._resource_data_changed)
 
-    def _resource_edited(self, _ditem):
+    def _resource_data_changed(self, ditem: DataItem):
         """Resource data edited"""
+        if not isinstance(ditem.parent, ResourceData):
+            return
         self._update_resource_names()
         self.SIG_RESOURCES_CHANGED.emit(self)
-
-    def move(self, delta_index):
-        """Move item and propagate resource move if needed."""
-        moved_data = self.get_current_data()
-        super().move(delta_index)
-        if isinstance(moved_data, ResourceData):
-            self._update_resource_names()
-            self.SIG_RESOURCES_CHANGED.emit(self)
 
     def setup_specific_actions(self):
         """Setup context menu specific actions"""
@@ -1563,12 +1602,24 @@ class ResourceTreeWidget(BaseTreeWidget):
             self.remove_action,
         ] + super().setup_specific_actions()
 
-    def selected_indexes_changed(self, sel_indexes, desel_indexes):
-        """Selected indexes have changed"""
-        super().selected_indexes_changed(sel_indexes, desel_indexes)
-        if self.planning is not None and self.new_leave_action is not None:
-            data = self.get_current_data()
-            self.new_leave_action.setVisible(isinstance(data, (ResourceData, LeaveData)))
+    def _update_resource_names(self):
+        """Update resource names"""
+        if self.planning is None:
+            return
+
+        self.planning.resource_choices(force=True)
+
+    def new_resource(self):
+        """New resource item"""
+        if self.planning is not None:
+            data = ResourceData(self.planning, EMPTY_NAME)
+            self.planning.add_resource(data, after_data=self.get_current_data())
+            self.__add_resourceitem(data)
+            self.set_current_id(data.id.value)
+            self._update_resource_names()
+            self.SIG_RESOURCES_CHANGED.emit(self)
+            self.repopulate()
+            self.edit(self.currentIndex())
 
     def new_leave(self):
         """New leave item"""
@@ -1584,23 +1635,13 @@ class ResourceTreeWidget(BaseTreeWidget):
             item_row = self.get_item_row_from_id(data.id.value)
             self.edit(item_row[1].index())
 
-    def _update_resource_names(self):
-        """Update resource names"""
-        if self.planning is None:
-            return
-        self.planning.resource_choices(force=True)
-
-    def new_resource(self):
-        """New resource item"""
-        if self.planning is not None:
-            data = ResourceData(self.planning, EMPTY_NAME)
-            self.planning.add_resource(data, after_data=self.get_current_data())
-            self.__add_resourceitem(data)
-            self.set_current_id(data.id.value)
+    def move(self, delta_index):
+        """Move item and propagate resource move if needed."""
+        moved_data = self.get_current_data()
+        super().move(delta_index)
+        if isinstance(moved_data, ResourceData):
             self._update_resource_names()
             self.SIG_RESOURCES_CHANGED.emit(self)
-            self.repopulate()
-            self.edit(self.currentIndex())
 
     def remove(self):
         """Remove selected item (resource or leave)."""
@@ -1629,7 +1670,7 @@ class ResourceTreeWidget(BaseTreeWidget):
         self.SIG_RESOURCES_CHANGED.emit(self)
 
     def __add_resourceitem(self, data: ResourceData):
-        """Add chart item to tree"""
+        """Add resource item to tree"""
         self.add_or_update_item_row(data)
 
     def __add_leaveitem(self, data: LeaveData):
@@ -1639,13 +1680,26 @@ class ResourceTreeWidget(BaseTreeWidget):
 
     def populate_tree(self):
         """Populate tree"""
-        # add charts
+        # add resources and leaves
         if self.planning is None:
             return
         for data in self.planning.iterate_resource_data():
             self.__add_resourceitem(data)
         for data in self.planning.iterate_leave_data():
             self.__add_leaveitem(data)
+
+    def selected_indexes_changed(self, sel_indexes, desel_indexes):
+        """
+        Selected indexes have changed
+        Update visibility of the "new leave" action based
+        on the type of the currently selected item (it should only be visible
+        when a resource or a leave is selected or when a task without
+        assigned resource is selected)
+        """
+        super().selected_indexes_changed(sel_indexes, desel_indexes)
+        if self.planning is not None and self.new_leave_action is not None:
+            data = self.get_current_data()
+            self.new_leave_action.setVisible(isinstance(data, (ResourceData, LeaveData)))
 
 
 class ProjectTreeWidget(BaseTreeWidget):
