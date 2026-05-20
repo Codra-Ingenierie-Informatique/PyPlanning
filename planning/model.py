@@ -1419,7 +1419,7 @@ class PlanningData(AbstractData):
         self.tsklist: list[AbstractTaskData] = []
         self.tsk_num_to_tsk: dict[str, AbstractTaskData] = {}
         self._tsk_choices: dict[str, str] = {}
-        self._res_choices: dict[str, str] = {}
+        self._res_choices: dict[str | None, str] = {}
         self._projects_choices: dict[str | None, str] = {}
         self.projects: dict[str, ProjectData] = {}
         self.lvelist: list[LeaveData] = []
@@ -2168,12 +2168,15 @@ class PlanningData(AbstractData):
 
     def resource_choices(self, force=False) -> list[dict[str | None, str]]:
         """Return resource choices"""
-        if force or len(self._res_choices.keys()) != len(self.reslist):
-            self._res_choices = {
-                str(data.id.value): str(data.name.value)
-                for data in self.iterate_resource_data()
-                if data.id.value is not None
-            }
+        if force or len(self._res_choices.keys()) != (len(self.reslist) + 1):
+            self._res_choices = {None: ""}
+            self._res_choices.update(
+                {
+                    str(data.id.value): str(data.name.value)
+                    for data in self.iterate_resource_data()
+                    if data.id.value is not None
+                }
+            )
         return self._res_choices
 
     def project_choices(self, force=False) -> list[dict[str | None, str]]:
