@@ -31,6 +31,7 @@
         },
         {
             "name": "Run PyPlanning (production)",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/planning/app.py",
             "console": "integratedTerminal",
@@ -44,7 +45,7 @@
             "env": {
                 "PYTHONPATH": "${workspaceFolder}",
                 "PLANNINGDEBUG": "0",
-                // "LANG": "en",
+                "LANG": "fr",
                 // "QT_COLOR_MODE": "light",
             }
         },

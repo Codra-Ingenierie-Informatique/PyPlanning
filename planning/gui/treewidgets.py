@@ -58,6 +58,7 @@ IS_DARK = qthelpers.is_dark_mode()
 
 EMPTY_NAME = _("Untitled")
 
+
 class ViewModes(str, Enum):
     """This is the enum for task modes"""
 
@@ -135,9 +136,7 @@ class TaskTreeDelegate(QW.QItemDelegate):
             editor = CheckableComboBox(parent=parent)
             editor.addItems(ditem.choice_values, ditem.choice_keys)
             editor.setMinimumWidth(self.parent().columnWidth(index.column()))
-            editor.lineEdit().editingFinished.connect(
-                lambda: self.commitAndCloseEditor()
-            )
+            editor.lineEdit().editingFinished.connect(lambda: self.commitAndCloseEditor())
             return editor
         elif ditem.datatype == DTypes.LONG_TEXT:
             editor = CustomTextEditor(parent)
@@ -274,14 +273,12 @@ class BaseTreeWidget(QW.QTreeView):
         if IS_DARK:
             bg_color = QG.QColor(45, 45, 45)
             bg_color_light = QG.QColor(55, 55, 55)
-            self.setStyleSheet(
-                f"""
+            self.setStyleSheet(f"""
             QTreeView {{
                 alternate-background-color: {bg_color_light.name()};
                 background: {bg_color.name()};
             }}
-            """
-            )
+            """)
 
         families = [MAIN_FONT_FAMILY, "Verdana"]
         nfont = Conf.tree.normal.get({"family": families, "size": 11})
@@ -448,9 +445,7 @@ class BaseTreeWidget(QW.QTreeView):
             item_next = self.get_item_from_index(self.indexBelow(sel_indexes[0]))
             # parent = self.get_item_parent(item)
             self.up_action.setVisible(item.row() > 0)
-            self.down_action.setVisible(
-                item_next is not None and item_next.text() != "Leave"
-            )
+            self.down_action.setVisible(item_next is not None and item_next.text() != "Leave")
 
     def update_menu(self):
         """Update context menu"""
@@ -535,9 +530,7 @@ class BaseTreeWidget(QW.QTreeView):
         if self.planning is None:
             return []
         return [
-            self.planning.get_data_from_id(
-                self.get_id_from_item(self.get_item_from_index(index))
-            )
+            self.planning.get_data_from_id(self.get_id_from_item(self.get_item_from_index(index)))
             for index in self.selectedIndexes()
             if self.get_item_from_index(index) is not None
         ]
@@ -588,9 +581,7 @@ class BaseTreeWidget(QW.QTreeView):
     def add_or_update_item_row(self, data: AbstractData, parent=None, group=False):
         """Add data item row to tree, or update it if already present"""
         update = data.id.value in self.item_rows
-        items: list[QG.QStandardItem] = (
-            self.item_rows[data.id.value or ""] if update else []
-        )
+        items: list[QG.QStandardItem] = self.item_rows[data.id.value or ""] if update else []
         for column, attrs in enumerate(self.ATTRS):
             if not isinstance(attrs, tuple):
                 attrs = (attrs,)
@@ -644,9 +635,7 @@ class BaseTreeWidget(QW.QTreeView):
                         item.setEditable(False)
                         item.setForeground(QG.QBrush(QC.Qt.GlobalColor.gray))
 
-                item.setEditable(
-                    ditem is not None and not data.is_read_only(ditem.name)
-                )
+                item.setEditable(ditem is not None and not data.is_read_only(ditem.name))
                 if ditem is not None:
                     if ditem.datatype in (
                         DTypes.DATE,
@@ -714,6 +703,7 @@ class BaseTreeWidget(QW.QTreeView):
 
 class TaskTreeWidget(BaseTreeWidget):
     """"""
+
     FIELD_CHANGE_SIGNALS = {}
 
     SIG_UPDATE_IDS_ON_CHANGE = QC.Signal(DataItem)
@@ -729,11 +719,9 @@ class TaskTreeWidget(BaseTreeWidget):
 
         self.FIELD_CHANGE_SIGNALS["id"] = self.SIG_UPDATE_IDS_ON_CHANGE
         self.FIELD_CHANGE_SIGNALS["name"] = self.SIG_TASK_NAME_CHANGED
-        self.FIELD_CHANGE_SIGNALS["depends_on_task_number"] = (self.SIG_UPDATE_IDS_ON_CHANGE)
+        self.FIELD_CHANGE_SIGNALS["depends_on_task_number"] = self.SIG_UPDATE_IDS_ON_CHANGE
 
-        self.VALIDATORS["percent_done"] = (
-            lambda value: value is None or 0 <= value <= 100
-        )
+        self.VALIDATORS["percent_done"] = lambda value: value is None or 0 <= value <= 100
 
         # Correct a bug where an empty name is accepted. Then if the user sets a new
         # name, it wouldn't be set in the "name" dataitem, but in fullname. The result
@@ -783,7 +771,7 @@ class TaskTreeWidget(BaseTreeWidget):
             self.new_milestone_action,
         ]
         return [
-            self.new_task_action ,
+            self.new_task_action,
             self.duplicate_task_action,
             self.new_milestone_action,
             None,
@@ -891,7 +879,7 @@ class TaskTreeWidget(BaseTreeWidget):
 
 
 class ResourceTaskTreeWidget(TaskTreeWidget):
-    """Tasks Browser Tree Widget, corresponds to the widget that displays resources along with their tasks and milestones in the central panel when ‘resource view’ mode is enabled """
+    """Tasks Browser Tree Widget, corresponds to the widget that displays resources along with their tasks and milestones in the central panel when ‘resource view’ mode is enabled"""
 
     TITLE = _("Task tree")
     NAMES = (
@@ -1104,16 +1092,10 @@ class ResourceTaskTreeWidget(TaskTreeWidget):
         """Remove item"""
         data = self.planning.get_data_from_id(self.get_id_from_item(item))
         is_resource = isinstance(data, ResourceData)
-        if (
-            isinstance(data, TaskData)
-            and data.has_start
-            and (data.has_stop or data.has_duration)
-        ):
+        if isinstance(data, TaskData) and data.has_start and (data.has_stop or data.has_duration):
             prev_data = data.get_previous()
             next_data = data.get_next()
-            if (prev_data is None) and (
-                next_data is not None and not next_data.has_start
-            ):
+            if (prev_data is None) and (next_data is not None and not next_data.has_start):
                 if data.has_duration:
                     duration = datetime.timedelta(days=data.duration.value)
                     next_data.start.value = data.start.value + duration
@@ -1130,7 +1112,7 @@ class ResourceTaskTreeWidget(TaskTreeWidget):
 
 
 class ProjectTaskTreeWidget(TaskTreeWidget):
-    """Project Task Tree Widget, corresponds to the widget that displays projects along with their tasks and milestones in the central panel when ‘view by projects’ mode is enabled """
+    """Project Task Tree Widget, corresponds to the widget that displays projects along with their tasks and milestones in the central panel when ‘view by projects’ mode is enabled"""
 
     TITLE = _("Project task tree")
     NAMES = (
@@ -1506,8 +1488,9 @@ class ChartTreeWidget(BaseTreeWidget):
         for data in self.planning.iterate_chart_data():
             self.__add_chartitem(data)
 
+
 class ResourceTreeWidget(BaseTreeWidget):
-    """Resource Tree Widget, corresponds to the widget that displays resources and leave in the bottom panel when 'view by projects' mode is enabled """
+    """Resource Tree Widget, corresponds to the widget that displays resources and leave in the bottom panel when 'view by projects' mode is enabled"""
 
     TITLE = _("Resource tree")
     NAMES = (
@@ -1573,6 +1556,7 @@ class ResourceTreeWidget(BaseTreeWidget):
             icon=get_icon("new_leave.svg"),
             triggered=self.new_leave,
         )
+        self.always_enabled_actions += [self.new_resource_action]
         return [
             self.new_resource_action,
             self.new_leave_action,
@@ -1665,7 +1649,7 @@ class ResourceTreeWidget(BaseTreeWidget):
 
 
 class ProjectTreeWidget(BaseTreeWidget):
-    """Project Tree Widget, corresponds to the widget that displays the projects in the lower panel when 'view by resources' mode is enabled """
+    """Project Tree Widget, corresponds to the widget that displays the projects in the lower panel when 'view by resources' mode is enabled"""
 
     TITLE = _("Project tree")
     NAMES = (
@@ -1798,31 +1782,41 @@ class TreeWidgets(QW.QSplitter):
         self._tree_sync_lock = False
         self.planning: Optional[PlanningData] = None
 
-        self.tree_switcher_coordinator = TreeSwitcherCoordinator(self, debug=debug)
-
-        self.tree_switcher_coordinator.SIG_VIEW_CHANGED.connect(self.on_view_changed_mode)
-
+        # The chart tree is always visible in the central panel,
+        # regardless of the view mode, so we create it directly as a child of the splitter.
         self.chart_tree = ChartTreeWidget(self, debug=debug)
 
-        self.forest = [
-            self.chart_tree,
-            self.tree_switcher_coordinator.bottom_tree_switcher.project_tree,
-            self.tree_switcher_coordinator.bottom_tree_switcher.resource_tree,
-            self.tree_switcher_coordinator.central_tree_switcher.project_tree,
-            self.tree_switcher_coordinator.central_tree_switcher.resource_tree,
-        ]
+        # Project and resource task trees are not directly visible,
+        # but they are needed for synchronisation of the panels,
+        # so we create them regardless of the view mode.
+        self._task_stack = QW.QStackedWidget(self)
+        self.project_task_tree = ProjectTaskTreeWidget(self, debug=debug)
+        self.resource_task_tree = ResourceTaskTreeWidget(self, debug=debug)
+        self._task_stack.addWidget(self.project_task_tree)
+        self._task_stack.addWidget(self.resource_task_tree)
+        self.addWidget(self._task_stack)
 
-        self.visible_panels = [
+        # Project and resource trees are needed for synchronisation of the panels,
+        # even if they are not visible in the current view mode,
+        # so we create them regardless of the view mode.
+        self._bottom_stack = QW.QStackedWidget(self)
+        self.project_tree = ProjectTreeWidget(self, debug=debug)
+        self.resource_tree = ResourceTreeWidget(self, debug=debug)
+        self._bottom_stack.addWidget(self.resource_tree)
+        self._bottom_stack.addWidget(self.project_tree)
+        self.addWidget(self._bottom_stack)
+
+        self.forest: list[BaseTreeWidget] = [
             self.chart_tree,
-            self.tree_switcher_coordinator,
+            self.project_task_tree,
+            self.resource_task_tree,
+            self.project_tree,
+            self.resource_tree,
         ]
 
         for tree in self.forest:
             tree.SIG_MODEL_CHANGED.connect(self.tree_model_changed)
             tree.pressed.connect(self.tree_pressed)
-
-        for panel in self.visible_panels:
-            self.addWidget(panel)
 
         self.common_actions = self.setup_common_actions()
         self.toolbars = self.create_toolbars()
@@ -1831,28 +1825,51 @@ class TreeWidgets(QW.QSplitter):
         self.task_tree.setFocus()
         self.chart_tree.set_specific_actions_state(False)
         self.chart_tree.toolbar.hide()
-        self.bottom_tree_switcher.project_tree.toolbar.hide()
-        self.bottom_tree_switcher.resource_tree.toolbar.hide()
+        self.resource_task_tree.toolbar.hide()
+        self.project_tree.toolbar.hide()
+        self.project_task_tree.toolbar.hide()
+        self.resource_tree.toolbar.hide()
 
         self.setCollapsible(0, False)
         self.setCollapsible(1, False)
         self.setStretchFactor(0, 1)
         self.setStretchFactor(1, 4)
 
-    @property
-    def central_tree_switcher(self):
-        """Return the central tree switcher."""
-        return self.tree_switcher_coordinator.central_tree_switcher
+        # Set the initial mode based on the configuration.
+        self._set_current_mode()
 
     @property
-    def bottom_tree_switcher(self):
-        """Return the bottom tree switcher."""
-        return self.tree_switcher_coordinator.bottom_tree_switcher
-
-    @property
-    def task_tree(self):
+    def task_tree(self) -> TaskTreeWidget:
         """Return the currently visible central tree."""
-        return self.central_tree_switcher.current_tree()
+        return self._task_stack.currentWidget()
+
+    @property
+    def view_mode(self) -> ViewModes:
+        """Get  view mode"""
+        mode = Conf.main.view_mode.get(ViewModes.PROJECTS.value)
+        try:
+            mode = ViewModes(mode)
+        except ValueError:
+            return ViewModes.PROJECTS
+
+        return mode
+
+    def _set_current_mode(self):
+        """Set current mode based on the saved configuration"""
+        is_project_mode = self.view_mode == ViewModes.PROJECTS
+        self._task_stack.setCurrentWidget(
+            self.project_task_tree if is_project_mode else self.resource_task_tree
+        )
+        self._bottom_stack.setCurrentWidget(
+            self.resource_tree if is_project_mode else self.project_tree
+        )
+
+    def switch_mode(self):
+        """Switch view mode"""
+        is_project_mode = self.view_mode == ViewModes.PROJECTS
+        new_mode = ViewModes.RESOURCES if is_project_mode else ViewModes.PROJECTS
+        Conf.main.view_mode.set(new_mode.value)
+        self._set_current_mode()
 
     def tree_model_changed(self):
         """A tree model changed."""
@@ -2014,288 +2031,8 @@ class TreeWidgets(QW.QSplitter):
             return
         self._tree_sync_lock = True
         try:
-            central_tree = self.central_tree_switcher.current_tree()
-            bottom_tree = self.bottom_tree_switcher.current_tree()
-            central_tree.repopulate()
-            bottom_tree.repopulate()
-            central_tree.setFocus()
+            self._bottom_stack.currentWidget().repopulate()
+            self._task_stack.currentWidget().repopulate()
+            self._task_stack.currentWidget().setFocus()
         finally:
             self._tree_sync_lock = False
-
-
-class TreeSwitcherCoordinator(QW.QSplitter):
-    """Widget to switch between TaskTreeWidget and ChartTreeWidget in the central and the bottom panels"""
-
-    SIG_VIEW_MODE_REQUESTED = QC.Signal(ViewModes)
-    # Emitted when the user requests a view mode change (by clicking an action), with the requested mode as argument
-
-    SIG_VIEW_CHANGED = QC.Signal(ViewModes)
-
-    def __init__(self, parent=None, debug=False):
-        super().__init__(parent)
-        self.setOrientation(QC.Qt.Vertical)
-        self.setChildrenCollapsible(False)
-
-        self._view_mode: Optional[ViewModes] = None
-        self._cross_tree_sync_lock = False
-
-
-        # Switcher to show either project tree or resource tree in the bottom part of the splitter, depending on the selection in the task tree
-        self.central_tree_switcher = CentralTreeSwitcher(self, debug=debug)
-        self.bottom_tree_switcher = BottomTreeSwitcher(self, debug=debug)
-
-        self.addWidget(self.central_tree_switcher)
-        self.addWidget(self.bottom_tree_switcher)
-        self.setStretchFactor(0, 4)
-        self.setStretchFactor(1, 1)
-
-        self._view_action_group = QG.QActionGroup(self)
-        # Make actions checkable and exclusive so that only one can be selected at a time and they don't
-        self._view_action_group.setExclusive(True)
-
-        self.show_projects_action = create_action(
-            self,
-            _("By projects"),
-            checkable=True,
-            triggered=lambda: self.SIG_VIEW_MODE_REQUESTED.emit(ViewModes.PROJECTS),
-        )
-        self.show_resources_action = create_action(
-            self,
-            _("By resources"),
-            checkable=True,
-            triggered=lambda: self.SIG_VIEW_MODE_REQUESTED.emit(ViewModes.RESOURCES),
-        )
-
-        self._view_action_group.addAction(self.show_projects_action)
-        self._view_action_group.addAction(self.show_resources_action)
-
-        self.SIG_VIEW_CHANGED.connect(self._sync_view_actions)
-        # sync view actions with the current mode to ensure correct state on startup
-        self.initialize_view_mode()
-        self._apply_view_mode(self._view_mode)
-        self._sync_toolbars_and_menus(self._view_mode)
-        self._connect_cross_panel_signals()
-
-        self.SIG_VIEW_MODE_REQUESTED.connect(self.manage_view_mode)
-
-    def _connect_cross_panel_signals(self):
-        """Connect cross-panel data synchronisation signals."""
-        self.central_tree_switcher.resource_tree.SIG_RESOURCES_CHANGED.connect(
-            self._resources_changed
-        )
-        self.bottom_tree_switcher.resource_tree.SIG_RESOURCES_CHANGED.connect(
-            self._resources_changed
-        )
-        self.central_tree_switcher.project_tree.SIG_PROJECTS_CHANGED.connect(
-            self._projects_changed
-        )
-        self.bottom_tree_switcher.project_tree.SIG_PROJECTS_CHANGED.connect(
-            self._projects_changed
-        )
-
-    def _resources_changed(self, _source):
-        """Keep resource choices coherent across panels."""
-        if self._cross_tree_sync_lock:
-            return
-        self._cross_tree_sync_lock = True
-        try:
-            self.central_tree_switcher.resource_tree._update_resource_names()
-            self.bottom_tree_switcher.resource_tree._update_resource_names()
-            self.central_tree_switcher.project_tree._update_resource_names()
-        finally:
-            self._cross_tree_sync_lock = False
-
-    def _projects_changed(self, _source):
-        """Keep project choices coherent across panels."""
-        if self._cross_tree_sync_lock:
-            return
-        self._cross_tree_sync_lock = True
-        try:
-            self.central_tree_switcher.project_tree._update_project_names()
-            self.bottom_tree_switcher.project_tree._update_project_names()
-        finally:
-            self._cross_tree_sync_lock = False
-
-    def _sync_view_actions(self, mode: ViewModes):
-        """Synchronise view actions with the current mode"""
-        if mode == ViewModes.PROJECTS:
-            self.show_projects_action.setChecked(True)
-            self.show_resources_action.setChecked(False)
-        elif mode == ViewModes.RESOURCES:
-            self.show_projects_action.setChecked(False)
-            self.show_resources_action.setChecked(True)
-        else:
-            self.show_projects_action.setChecked(False)
-            self.show_resources_action.setChecked(False)
-
-    @property
-    def view_actions(self) -> tuple[QW.QAction, QW.QAction]:
-        """Return the actions to switch between project and resource view"""
-        return (self.show_projects_action, self.show_resources_action)
-
-    @staticmethod
-    def view_modes_available() -> tuple[ViewModes, ...]:
-        """Return available view modes"""
-        view_modes = []
-        for mode in ViewModes:
-            view_modes.append(mode)
-        return view_modes
-
-    def set_view_mode(self, mode: ViewModes) -> None:
-        """Set view mode"""
-        try:
-            self._view_mode = ViewModes(mode)
-        except ValueError:
-            self._view_mode = ViewModes.PROJECTS
-
-    def manage_view_mode(self, mode: ViewModes) -> None:
-        """Manage global view mode"""
-        self.set_view_mode(mode)
-        self.set_view_mode_in_conf(mode)
-        self._apply_view_mode(mode)
-        self._sync_toolbars_and_menus(mode)
-        self.SIG_VIEW_CHANGED.emit(mode)
-
-    def _apply_view_mode(self, mode: ViewModes):
-        """Apply view mode"""
-        self.central_tree_switcher.set_panels_view(mode)
-        self.bottom_tree_switcher.set_panels_view(mode)
-
-    def _sync_toolbars_and_menus(self, mode: ViewModes) -> None:
-        """Sync toolbars and menus with current view mode"""
-        self.bottom_tree_switcher.update_active_toolbar(mode)
-        self.central_tree_switcher.update_active_toolbar(mode)
-        self._sync_view_actions(mode)
-
-    @property
-    def view_mode(self) -> Optional[ViewModes]:
-        """Get global view mode"""
-        return self._view_mode
-
-    def set_view_mode_in_conf(self, value: ViewModes) -> None:
-        """Set global view mode"""
-        view_modes = self.view_modes_available()
-        mode = value if value in view_modes else ViewModes.PROJECTS
-        Conf.main.view_mode.set(mode.value)
-
-    def get_view_mode_from_conf(self, default: ViewModes = ViewModes.PROJECTS) -> ViewModes:
-        """Read bottom view mode from configuration."""
-        mode = Conf.main.view_mode.get(default)
-        try:
-            mode = ViewModes(mode)
-        except ValueError:
-            return default
-        return mode
-
-    def initialize_view_mode(self):
-        """Initialize global view mode"""
-        current_mode = self.get_view_mode_from_conf()
-        # If the current mode in conf is not valid (not present), set it to default and use default as current mode
-        view_modes = self.view_modes_available()
-        if current_mode not in view_modes:
-            current_mode = self.set_view_mode_in_conf(ViewModes.PROJECTS)
-        self.set_view_mode(current_mode)
-
-    def update_active_toolbars(self, mode: ViewModes) -> None:
-        """Update active toolbars depending on the view mode"""
-        self.bottom_tree_switcher.update_active_toolbar(mode)
-        self.central_tree_switcher.update_active_toolbar(mode)
-
-
-class BaseTreeSwitcher(QW.QWidget):
-    """Base class for tree switchers"""
-
-    SIG_MODEL_CHANGED = QC.Signal()
-    SIG_VIEW_CHANGED = QC.Signal(ViewModes)
-    # Emitted when the user requests a view mode change (by clicking an action), with the requested mode as argument
-
-    def __init__(self, parent=None, project_tree=None, resource_tree=None, debug=False):
-        super().__init__(parent)
-        self._project_tree = project_tree
-        self._resource_tree = resource_tree
-
-        self.stack = QW.QStackedWidget(self)
-        layout = QW.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-
-        layout.addWidget(self.stack)
-        self.stack.addWidget(self.project_tree)
-        self.stack.addWidget(self.resource_tree)
-
-    def current_tree(self) -> BaseTreeWidget:
-        """Return the currently visible tree widget"""
-        return self.stack.currentWidget()
-
-    @property
-    def project_tree(self) -> ProjectTreeWidget | ProjectTaskTreeWidget:
-        return self._project_tree
-
-    @property
-    def resource_tree(self) -> ResourceTaskTreeWidget | ResourceTreeWidget:
-        return self._resource_tree
-
-    def set_panels_view(self, mode: ViewModes):
-        raise NotImplementedError("set_panels_view must be implemented in subclasses")
-
-    def update_active_toolbar(self, mode: ViewModes):
-        raise NotImplementedError("update_active_toolbar must be implemented in subclasses")
-
-
-class CentralTreeSwitcher(BaseTreeSwitcher):
-    """Widget to switch between TaskTreeWidget and ProjectTaskTreeWidget in the central panel"""
-
-    def __init__(self, parent=None, debug=False):
-        resource_tree = ResourceTaskTreeWidget(debug=debug)
-        project_tree = ProjectTaskTreeWidget(debug=debug)
-        super().__init__(parent, project_tree, resource_tree)
-
-    def set_panels_view(self, mode: ViewModes):
-        """Set view to either 'projects' or 'resources' in central and bottom panels"""
-        if mode == ViewModes.PROJECTS:
-            self.stack.setCurrentWidget(self.project_tree)
-            self.resource_tree.clearSelection()
-            self.project_tree.setFocus()
-        elif mode == ViewModes.RESOURCES:
-            self.stack.setCurrentWidget(self.resource_tree)
-            self.project_tree.clearSelection()
-            self.resource_tree.setFocus()
-        self.SIG_VIEW_CHANGED.emit(mode)
-
-    def update_active_toolbar(self, mode: ViewModes):
-        """Update active toolbar"""
-        if mode == ViewModes.PROJECTS:
-            project_active = True
-        else:
-            project_active = False
-        self.project_tree.toolbar.setVisible(project_active)
-        self.resource_tree.toolbar.setVisible(not project_active)
-
-
-class BottomTreeSwitcher(BaseTreeSwitcher):
-    """Widget to switch between ProjectTreeWidget and ResourceTreeWidget in the bottom panel"""
-
-    def __init__(self, parent=None, debug=False):
-        project_tree = ProjectTreeWidget(debug=debug)
-        resource_tree = ResourceTreeWidget(debug=debug)
-        super().__init__(parent, project_tree, resource_tree)
-
-    def set_panels_view(self, mode: ViewModes):
-        """Inverse mapping for bottom panel:
-        - projects mode -> show resources
-        - resources mode -> show projects
-        """
-        if mode == ViewModes.PROJECTS:
-            self.stack.setCurrentWidget(self.resource_tree)
-            self.project_tree.clearSelection()
-            self.resource_tree.setFocus()
-        elif mode == ViewModes.RESOURCES:
-            self.stack.setCurrentWidget(self.project_tree)
-            self.resource_tree.clearSelection()
-            self.project_tree.setFocus()
-        self.SIG_VIEW_CHANGED.emit(mode)
-
-    def update_active_toolbar(self, mode: ViewModes):
-        """Toolbar must follow the inverted mapping."""
-        resource_active = mode == ViewModes.PROJECTS
-        self.resource_tree.toolbar.setVisible(resource_active)
-        self.project_tree.toolbar.setVisible(not resource_active)

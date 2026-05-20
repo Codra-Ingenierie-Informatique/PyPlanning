@@ -22,7 +22,6 @@ from planning.gui.treewidgets import TreeWidgets
 from planning.model import PlanningData
 
 
-
 class PlanningEditor(QStackedWidget):
     """Planning editor widget"""
 
@@ -73,9 +72,8 @@ class PlanningEditor(QStackedWidget):
             "edit": self.trees.common_actions,
             "charts": self.trees.chart_tree.specific_actions,
             "tasks": self.trees.task_tree.specific_actions,
-            "projects": self.trees.bottom_tree_switcher.project_tree.specific_actions,
-            "resources": self.trees.bottom_tree_switcher.resource_tree.specific_actions,
-            "views": self.trees.tree_switcher_coordinator.view_actions,
+            "projects": self.trees.project_tree.specific_actions,
+            "resources": self.trees.resource_tree.specific_actions,
         }
 
     def clear_all(self):
@@ -176,9 +174,7 @@ class PlanningPreview(QTabWidget):
                     if (
                         pop is not None
                         and self.__path is not None
-                        and osp.exists(
-                            path_to_remove := osp.join(self.__path, to_remove)
-                        )
+                        and osp.exists(path_to_remove := osp.join(self.__path, to_remove))
                     ):
                         os.remove(path_to_remove)
         for i, (fname, bname) in enumerate(zip(fnames, bnames)):
@@ -232,9 +228,7 @@ class PlanningCentralWidget(QSplitter):
 
         self.editor = PlanningEditor(self)
         self.preview = PlanningPreview(self)
-        self.editor.trees.chart_tree.SIG_CHART_CHANGED.connect(
-            self.preview.setCurrentIndex
-        )
+        self.editor.trees.chart_tree.SIG_CHART_CHANGED.connect(self.preview.setCurrentIndex)
         self.preview.currentChanged.connect(self.current_tab_changed)
         self.addWidget(self.preview)
 
@@ -309,9 +303,7 @@ class PlanningCentralWidget(QSplitter):
         """
         self.update_planning_charts(self.planning)
 
-    def update_planning_charts(
-        self, planning: Optional[PlanningData] = None, force=False
-    ):
+    def update_planning_charts(self, planning: Optional[PlanningData] = None, force=False):
         """Update charts. Generates all of them if there are new ones,
         or just the current one if it already exists.
 

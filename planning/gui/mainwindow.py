@@ -109,7 +109,7 @@ class PlanningMainWindow(QW.QMainWindow):
         self.tasks_menu = None
         self.projects_menu = None
         self.resources_menu = None
-        self.views_menu = None
+        self.view_menu = None
         self.help_menu = None
 
         self.closing_days_dialog = ClosingDaysDialog()
@@ -120,11 +120,6 @@ class PlanningMainWindow(QW.QMainWindow):
         self.create_actions()
         self.create_menus()
         self.create_toolbars()
-
-        # Connect signal to update bottom menus when switching between project and resource trees
-        self.central_widget.editor.trees.tree_switcher_coordinator.SIG_VIEW_CHANGED.connect(self._update_menus)
-        # Update bottom menus visibility according to the initial bottom tree view mode
-        self._update_menus(self.central_widget.editor.trees.tree_switcher_coordinator.view_mode)
 
         # This is necessary when the application is opened in xml mode
         if self.central_widget.editor.xml_mode:
@@ -142,26 +137,13 @@ class PlanningMainWindow(QW.QMainWindow):
             self.new_file()
             self.set_modified(False)
 
-
         self.__restore_pos_and_size()
-
-    def _update_menus(self, mode: Enum):
-        """Update menus visibility according to the current bottom tree view mode"""
-        if mode == ViewModes.PROJECTS:
-            self.projects_menu.setEnabled(True)
-        else:
-            self.projects_menu.setEnabled(False)
-
-        if mode == ViewModes.RESOURCES:
-            self.resources_menu.setEnabled(True)
-        else:
-            self.resources_menu.setEnabled(False)
 
     def check_for_previous_crash(self):  # pragma: no cover
         """Check for previous crash"""
-        if Conf.main.faulthandler_log_available.get(
+        if Conf.main.faulthandler_log_available.get(False) or Conf.main.traceback_log_available.get(
             False
-        ) or Conf.main.traceback_log_available.get(False):
+        ):
             txt = "<br>".join(
                 [
                     _("Log files were generated during last session."),
@@ -265,10 +247,8 @@ class PlanningMainWindow(QW.QMainWindow):
         QW.QMessageBox.critical(
             self,
             _("Error"),
-            _(
-                """This feature is not yet available.
-Thanks for your patience."""
-            ),
+            _("""This feature is not yet available.
+Thanks for your patience."""),
         )
 
     def update_title(self):
@@ -287,10 +267,12 @@ Thanks for your patience."""
         self.separator_act = create_action(self, "")
         self.separator_act.setSeparator(True)
 
-        self.xmlmode_act = create_action(
-            self, _("Advanced XML mode"), toggled=self.switch_xml_mode
-        )
+        self.xmlmode_act = create_action(self, _("Advanced XML mode"), toggled=self.switch_xml_mode)
         self.xmlmode_act.setChecked(Conf.main.xml_mode.get(False))
+
+        self.view_mode_act = create_action(
+            self, _("Switch view mode"), triggered=self.switch_view_mode
+        )
 
         self.new_act = create_action(
             self,
@@ -380,8 +362,16 @@ Thanks for your patience."""
         )
         self.file_menu.aboutToShow.connect(self.update_menu)
         actions = self.central_widget.editor.get_menu_actions()
+
         self.edit_menu = self.menuBar().addMenu(_("&Edit"))
         add_actions(self.edit_menu, actions["edit"])
+
+        self.view_menu = self.menuBar().addMenu(_("&View"))
+        add_actions(self.view_menu, (self.view_mode_act,))
+
+        # Task, chart, project and resource specific actions
+        # are added in their respective menus, which are updated
+        # when switching between project and resource trees
         self.tasks_menu = self.menuBar().addMenu(_("&Tasks"))
         add_actions(self.tasks_menu, actions["tasks"])
         self.charts_menu = self.menuBar().addMenu(_("&Charts"))
@@ -390,8 +380,6 @@ Thanks for your patience."""
         add_actions(self.projects_menu, actions["projects"])
         self.resources_menu = self.menuBar().addMenu(_("&Resources"))
         add_actions(self.resources_menu, actions["resources"])
-        self.views_menu = self.menuBar().addMenu(_("&Views"))
-        add_actions(self.views_menu, actions["views"])
 
         # Add plugin specific menus
         self.__create_plugins_menus()
@@ -409,6 +397,8 @@ Thanks for your patience."""
         if view_menu is not None:
             help_actions = view_menu.actions() + [None] + help_actions
         add_actions(help_menu, help_actions)
+
+        self.update_menus_visibility()
 
     def update_menu(self):
         """Update menu"""
@@ -463,12 +453,28 @@ Thanks for your patience."""
                     QW.QMessageBox.warning(
                         self,
                         _("Warning"),
-                        _(
-                            """This file cannot be opened in %s mode.
-Please check the file content."""
-                        )
-                        % (_("XML") if state else _("Tree")),
+                        _("""This file cannot be opened in %s mode.
+Please check the file content.""") % (_("XML") if state else _("Tree")),
                     )
+
+    def switch_view_mode(self):
+        """Switch view mode (between project and resource trees)"""
+        self.central_widget.editor.trees.switch_mode()
+
+        # Update menus content base on view mode
+        self.tasks_menu.clear()
+        actions = self.central_widget.editor.get_menu_actions()
+        add_actions(self.tasks_menu, actions["tasks"])
+
+        self.update_menus_visibility()
+
+    def update_menus_visibility(self):
+        """Update menus visibility and content based on current view mode and selected item"""
+
+        # Hide/show project and resource specific menus based on view mode
+        is_project_mode = self.central_widget.editor.trees.view_mode == ViewModes.PROJECTS
+        self.projects_menu.menuAction().setVisible(not is_project_mode)
+        self.resources_menu.menuAction().setVisible(is_project_mode)
 
     def maybe_save(self, title):
         """Eventually save file before continuing"""
@@ -540,18 +546,20 @@ Please check the file content."""
 
         if self.filename:
             QW.QMessageBox.warning(
-                    self,
-                    _("Warning"),
-                    _(
-                        "Merge operation will include the current planning, and replace it with the result. After the merge, you can replace the current file or save new planning in another file (via 'Save as...' command). Please save your work before proceeding."
-                    ),
-                )
+                self,
+                _("Warning"),
+                _(
+                    "Merge operation will include the current planning, and replace it with the result. After the merge, you can replace the current file or save new planning in another file (via 'Save as...' command). Please save your work before proceeding."
+                ),
+            )
             if not self.maybe_save(_("Merge files")):
                 return
             file_paths.append(self.filename)
             keep_charts = True
 
-        file_paths.extend(getopenfilenames(self, _("Merge files"), self.basedir, "*" + self.EXTENSION)[0])
+        file_paths.extend(
+            getopenfilenames(self, _("Merge files"), self.basedir, "*" + self.EXTENSION)[0]
+        )
         if len(file_paths) < 2:
             return False
 
@@ -561,9 +569,7 @@ Please check the file content."""
             QW.QMessageBox.warning(
                 self,
                 _("Merge error"),
-                _("The merge wasn't successful.")
-                + "\n"
-                + "\n\n".join(warnings),
+                _("The merge wasn't successful.") + "\n" + "\n\n".join(warnings),
             )
         else:
             if len(warnings) > 0:

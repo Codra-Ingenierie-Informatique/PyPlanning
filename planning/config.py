@@ -24,10 +24,8 @@ _ = configtools.get_translation(MOD_NAME)
 
 configtools.add_image_module_path(MOD_NAME, "data")
 
-APP_DESC = _(
-    """Manage team schedules and quickly create simple project plannings.
-"""
-)
+APP_DESC = _("""Manage team schedules and quickly create simple project plannings.
+""")
 
 DEBUG_VAR_STR = "PLANNINGDEBUG"
 try:
@@ -147,7 +145,7 @@ def get_old_log_fname(fname):
 
 def initialize():
     """Initialize application configuration"""
-    Conf.initialize(APP_NAME, CONF_VERSION, load = not DEBUG)
+    Conf.initialize(APP_NAME, CONF_VERSION, load=not DEBUG)
     Conf.main.traceback_log_path.get(f".{APP_NAME}_traceback.log")
     Conf.main.faulthandler_log_path.get(f".{APP_NAME}_faulthandler.log")
     Conf.main.plugins_enabled.get(True)
