@@ -792,7 +792,7 @@ class TaskTreeWidget(BaseTreeWidget):
         parent = ditem.parent
         if isinstance(parent, AbstractTaskData) and self.planning:
             self.planning.task_choices(True)
-            for data in self.planning.iterate_task_data():
+            for data in self.planning.iterate_all_task_data():
                 data.update_task_choices()
         elif isinstance(parent, ResourceData):
             self._update_resource_names()
@@ -1022,7 +1022,7 @@ class ResourceTaskTreeWidget(TaskTreeWidget):
                 data.duration.value = 1
 
             elif len(resids) == 1:
-                current_data = list(self.planning.iterate_task_data(resids))[-1]
+                current_data = list(self.planning.iterate_all_task_data(resids))[-1]
                 data.start.value = current_data.stop.value or current_data.start.value
                 data.duration.value = 1
 
@@ -1082,7 +1082,7 @@ class ResourceTaskTreeWidget(TaskTreeWidget):
         for data in self.planning.iterate_resource_data():
             self.__add_resourceitem(data)
         # add tasks
-        for data in self.planning.iterate_task_data():
+        for data in self.planning.iterate_all_task_data():
             self._add_taskitem(data)
         # add vacations
         for data in self.planning.iterate_leave_data():
@@ -1259,7 +1259,7 @@ class ProjectTaskTreeWidget(TaskTreeWidget):
         self.planning.project_choices(force=True)
         for chart in self.planning.iterate_chart_data():
             chart.update_project_choices()
-        for task in self.planning.iterate_task_data():
+        for task in self.planning.iterate_all_task_data():
             task.update_project_choice()
 
     def _add_projectitem(self, data: ProjectData):
@@ -1344,7 +1344,7 @@ class ProjectTaskTreeWidget(TaskTreeWidget):
             return
         for data in self.planning.iterate_project_data():
             self._add_projectitem(data)
-        for data in self.planning.iterate_task_data():
+        for data in self.planning.iterate_all_task_data():
             self._add_taskitem(data)
 
 
@@ -1616,7 +1616,7 @@ class ResourceTreeWidget(BaseTreeWidget):
             resid = data.id.value
             if resid is not None:
                 # Detach tasks from the resource being removed.
-                for task in self.planning.iterate_task_only():
+                for task in self.planning.iterate_task_data():
                     if task.is_assigned_to(resid):
                         task.set_resource_ids(
                             [rid for rid in task.get_resource_ids() if rid != resid]
@@ -1717,7 +1717,7 @@ class ProjectTreeWidget(BaseTreeWidget):
         self.planning.project_choices(force=True)
         for chart in self.planning.iterate_chart_data():
             chart.update_project_choices()
-        for task in self.planning.iterate_task_data():
+        for task in self.planning.iterate_all_task_data():
             task.update_project_choice()
 
     def new_project(self):
